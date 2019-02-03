@@ -2,6 +2,11 @@
 <html>
 <head>
 <title>FLO walletless</title>
+<style>
+table, th, td {
+  border: 1px solid black;
+}
+</style>
 </head>
 <body>
 <script>
@@ -9,7 +14,9 @@
         const testnet = `https://testnet.flocha.in`;
 
         let server = testnet;
-		
+        window["loadwait"] = false;
+        window["refreshwait"] = false;
+
 		const fee = 0.0005;
 </script>
     <h1>FLO</h1>
@@ -18,15 +25,15 @@
 	<button id="getDataBtn" onclick="getDataMode();">Monitor FLO Data</button>
 	<br/>
 	<div id="addrGen">
-	
+
 		<h2>Address Generator</h2>
-		
+
 		<button id="GenNewAddrBtn" onclick="GenNewAddr();">Generate New Address</button>
 		<button id="RecoverAddrBtn" onclick="RecoverAddr();">Recover FLO Address</button><br/><br/>
 		<table id="addrDisp" border="1"><tr><td><b>FLO Address</b></td><td><b>Secret (or) Private Key</b></td></tr></table>
-	
+
 	</div>
-	
+
 	<div id="sendData">
 		<h2>Send FLO Data</h2>
 		<label for="getBal_addr">Enter sender address : </label>
@@ -39,23 +46,23 @@
 		<textarea rows="15" cols="70" id="flotextdata"></textarea><br/>
 		<button id="sendBtn" onclick="sendTransaction()" disabled>Send</button>
 	</div>
-	
+
 	<div id="getData">
 		<h2>Monitor FLO Data</h2>
 		Enter Address : <input type="text" id="getAddr"><br/>
 		<button id="getData" onclick="monitorData()">Monitor Data</button><br/>
 		<button id="clearLocalData" onclick="clearLocalData()">Clear Local Data</button>
-		<div id="dispMsg"><h3>Received FLO Data : </h3><br/><table id="dispfloData" border="1"><tr><td>Sender</td><td>Receiver</td><td>Time</td><td>FLO data</td></tr><table></div>
-		
+		<div id="dispMsg"><h3>Received FLO Data : </h3><br/></div>
+
 	</div>
-	
-	
-	
+
+
+
 	<script>
-	
-	
+
+
 	addrGenMode(); //default start
-	
+
 	function clearLocalData()
 	{
 		var table = document.getElementById("dispfloData");
@@ -68,35 +75,35 @@
 			console.log(event.result);
 		};
 	}
-		
+
 	function addrGenMode(){
 		document.getElementById("addrGenBtn").disabled = true;
 		document.getElementById("sendDataBtn").disabled = false;
-		document.getElementById("getDataBtn").disabled = false;	
+		document.getElementById("getDataBtn").disabled = false;
 		document.getElementById("addrGen").style.display = 'block';
 		document.getElementById("sendData").style.display = 'none';
 		document.getElementById("getData").style.display = 'none';
 	}
-	
+
 	function sendDataMode(){
 		document.getElementById("addrGenBtn").disabled = false;
 		document.getElementById("sendDataBtn").disabled = true;
-		document.getElementById("getDataBtn").disabled = false;	
+		document.getElementById("getDataBtn").disabled = false;
 		document.getElementById("addrGen").style.display = 'none';
 		document.getElementById("sendData").style.display = 'block';
 		document.getElementById("getData").style.display = 'none';
 	}
-	
+
 	function getDataMode(){
 		document.getElementById("addrGenBtn").disabled = false;
 		document.getElementById("sendDataBtn").disabled = false;
-		document.getElementById("getDataBtn").disabled = true;	
+		document.getElementById("getDataBtn").disabled = true;
 		document.getElementById("addrGen").style.display = 'none';
 		document.getElementById("sendData").style.display = 'none';
 		document.getElementById("getData").style.display = 'block';
 	}
 	</script>
-	
+
 <script type="text/javascript">
 /*!
 * Crypto-JS v2.5.4	Crypto.js
@@ -246,13 +253,13 @@ if (typeof Crypto == "undefined" || !Crypto.util) {
 		};
 
 	})();
-}	
+}
 	</script>
-	
-	
+
+
 	 <!-- SHA1 -->
     <script type="text/javascript">
-	
+
         //Adding SHA1 to fix basic PKBDF2
         /*
          * Crypto-JS v2.5.4
@@ -594,11 +601,11 @@ if (typeof Crypto == "undefined" || !Crypto.util) {
 <script type="text/javascript">
 /*!
 * Random number generator with ArcFour PRNG
-* 
+*
 * NOTE: For best results, put code like
 * <body onclick='SecureRandom.seedTime();' onkeypress='SecureRandom.seedTime();'>
 * in your main HTML document.
-* 
+*
 * Copyright Tom Wu, bitaddress.org  BSD License.
 * http://www-cs-students.stanford.edu/~tjw/jsbn/LICENSE
 */
@@ -2571,7 +2578,7 @@ if (typeof Crypto == "undefined" || !Crypto.util) {
          * Basic Javascript Elliptic Curve implementation
          * Ported loosely from BouncyCastle's Java EC code
          * Only Fp curves implemented for now
-         * 
+         *
          * Copyright Tom Wu, bitaddress.org  BSD License.
          * http://www-cs-students.stanford.edu/~tjw/jsbn/LICENSE
          */
@@ -2633,7 +2640,7 @@ if (typeof Crypto == "undefined" || !Crypto.util) {
             /**
              * return a sqrt root - the routine verifies that the calculation
              * returns the right value - if none exists it returns null.
-             * 
+             *
              * Copyright (c) 2000 - 2011 The Legion Of The Bouncy Castle (http://www.bouncycastle.org)
              * Ported to JavaScript by bitaddress.org
              */
@@ -2929,7 +2936,7 @@ if (typeof Crypto == "undefined" || !Crypto.util) {
                 var len = 32; // integerToBytes will zero pad if integer is less than 32 bytes. 32 bytes length is required by the Bitcoin protocol.
                 var enc = ec.integerToBytes(x, len);
 
-                // when compressed prepend byte depending if y point is even or odd 
+                // when compressed prepend byte depending if y point is even or odd
                 if (compressed) {
                     if (y.isEven()) {
                         enc.unshift(0x02);
@@ -3402,7 +3409,7 @@ if (typeof Crypto == "undefined" || !Crypto.util) {
 
                 btrx.addflodata = function (txcomments) { // flochange - this whole function needs to be done
                     this.floData = txcomments;
-                    return this.floData; //flochange .. returning the txcomments -- check if the function return will assign 
+                    return this.floData; //flochange .. returning the txcomments -- check if the function return will assign
                 }
 
 
@@ -3694,13 +3701,13 @@ if (typeof Crypto == "undefined" || !Crypto.util) {
                         buffer = buffer.concat(scriptBytes);
                     }
 
-                    buffer = buffer.concat(bitjs.numToBytes(parseInt(this.locktime),4));  
+                    buffer = buffer.concat(bitjs.numToBytes(parseInt(this.locktime),4));
                     flohex = ascii_to_hexa(this.floData);
                     floDataCount = this.floData.length;
 
-                    //flochange -- creating unique data character count logic for floData. This string is prefixed before actual floData string in Raw Transaction 
+                    //flochange -- creating unique data character count logic for floData. This string is prefixed before actual floData string in Raw Transaction
                     if (floDataCount <= 16) {
-                                  floDataCountString = floDataCount.toString(16);   
+                                  floDataCountString = floDataCount.toString(16);
                                   floDataCountString = "0"+ floDataCountString;
                     } else if (floDataCount < 253) {
                                   floDataCountString = floDataCount.toString(16);
@@ -3841,8 +3848,8 @@ if (typeof Crypto == "undefined" || !Crypto.util) {
         })();
 
     </script>
-	
-	
+
+
 	<script type="text/javascript">
 /*
 Copyright (c) 2011 Stefan Thomas
@@ -3861,7 +3868,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 	'object' === typeof module ? module.exports : (window.Bitcoin = {})
 );
 	</script>
-	
+
 	<script type="text/javascript">
 //https://raw.github.com/bitcoinjs/bitcoinjs-lib/c952aaeb3ee472e3776655b8ea07299ebed702c7/src/base58.js
 (function (Bitcoin) {
@@ -4132,7 +4139,7 @@ Bitcoin.ECDSA = (function () {
 		* Parses a byte array containing a DER-encoded signature.
 		*
 		* This function will return an object of the form:
-		* 
+		*
 		* {
 		*   r: BigInteger,
 		*   s: BigInteger
@@ -4372,19 +4379,19 @@ Bitcoin.ECKey = (function () {
 		} else if ("string" == typeof input) {
 			var bytes = null;
 			try{
-			
+
 			// This part is edited for FLO. FLO WIF are always compressed WIF. FLO WIF (private key) starts with R for mainnet and c for testnet.
 				if((server == mainnet && /^R[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{51}$/.test(input)) ||
 					(server == testnet && /^c[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{51}$/.test(input))) {
 					bytes = ECKey.decodeCompressedWalletImportFormat(input);
 					this.compressed = true;
 				}
-					
+
 
 			/*
 				if (ECKey.isWalletImportFormat(input)) {
 					bytes = ECKey.decodeWalletImportFormat(input);
-				} else if (ECKey.isCompressedWalletImportFormat(input)) { 		
+				} else if (ECKey.isCompressedWalletImportFormat(input)) {
 					bytes = ECKey.decodeCompressedWalletImportFormat(input);
 					this.compressed = true;
 				} else if (ECKey.isMiniFormat(input)) {
@@ -4426,7 +4433,7 @@ Bitcoin.ECKey = (function () {
 			this.setError(exc2);
 		}
 	};
-	
+
 	if(server == mainnet)
 		ECKey.privateKeyPrefix = 0xA3; //(Bitcoin mainnet 0x80    testnet 0xEF) (FLO mainnet 0xA3 163 D)
 	else if(server == testnet)
@@ -4525,7 +4532,7 @@ Bitcoin.ECKey = (function () {
 		return this;
 	};
 
-	// Sipa Private Key Wallet Import Format 
+	// Sipa Private Key Wallet Import Format
 	ECKey.prototype.getBitcoinWalletImportFormat = function () {
 		var bytes = this.getBitcoinPrivateKeyByteArray();
 		if (bytes == null) return "";
@@ -4537,12 +4544,12 @@ Bitcoin.ECKey = (function () {
 		return privWif;
 	};
 
-	// Private Key Hex Format 
+	// Private Key Hex Format
 	ECKey.prototype.getBitcoinHexFormat = function () {
 		return Crypto.util.bytesToHex(this.getBitcoinPrivateKeyByteArray()).toString().toUpperCase();
 	};
 
-	// Private Key Base64 Format 
+	// Private Key Base64 Format
 	ECKey.prototype.getBitcoinBase64Format = function () {
 		return Crypto.util.bytesToBase64(this.getBitcoinPrivateKeyByteArray());
 	};
@@ -4551,7 +4558,7 @@ Bitcoin.ECKey = (function () {
 		if (this.priv == null) return null;
 		// Get a copy of private key as a byte array
 		var bytes = this.priv.toByteArrayUnsigned();
-		// zero pad if private key is less than 32 bytes 
+		// zero pad if private key is less than 32 bytes
 		while (bytes.length < 32) bytes.unshift(0x00);
 		return bytes;
 	};
@@ -4795,7 +4802,7 @@ Bitcoin.Util = {
 			request.open(method,url , false);
 			request.onload = function () {
 				if (request.readyState == 4 && request.status == 200)
-					result = this.response;	
+					result = this.response;
 				else {
 					console.log('error');
 					result = false;
@@ -4805,7 +4812,7 @@ Bitcoin.Util = {
 			console.log(result);
 			return result;
 		}
-		
+
 		function validateAddr(inputtxt) {
             try{
 				var addr = new Bitcoin.Address(inputtxt);
@@ -4815,7 +4822,7 @@ Bitcoin.Util = {
 				return false;
 			}
         }
-		
+
 		function verifyWIF(wif,addr){
 			try {
 				var key = new Bitcoin.ECKey(wif);
@@ -4836,9 +4843,9 @@ Bitcoin.Util = {
 			}
 		}
     </script>
-	 
+
 	<script>
-	
+
 	function GenNewAddr(){
 	try {
 				var key = new Bitcoin.ECKey(false);
@@ -4853,7 +4860,7 @@ Bitcoin.Util = {
 				var cell1 = row.insertCell(0);
 				var cell2 = row.insertCell(1);
 				cell1.innerHTML = bitcoinAddress;
-				cell2.innerHTML = privateKeyWif; 
+				cell2.innerHTML = privateKeyWif;
 			}
 			catch (e) {
 				// browser does not have sufficient JavaScript support to generate a bitcoin address
@@ -4861,7 +4868,7 @@ Bitcoin.Util = {
 				console.log("error");
 			}
 	}
-	
+
 	function RecoverAddr(){
 	try {
 				wif = prompt("Enter Secret (or) Private Key :");
@@ -4885,7 +4892,7 @@ Bitcoin.Util = {
 				var cell1 = row.insertCell(0);
 				var cell2 = row.insertCell(1);
 				cell1.innerHTML = bitcoinAddress;
-				cell2.innerHTML = privateKeyWif; 
+				cell2.innerHTML = privateKeyWif;
 			}
 			catch (e) {
 				// browser does not have sufficient JavaScript support to generate a bitcoin address
@@ -4893,7 +4900,7 @@ Bitcoin.Util = {
 			}
 	}
 	</script>
-	
+
 	<script>
         var getBal_btn = document.getElementById("getBal_btn");
         getBal_btn.onclick = function () {
@@ -4908,7 +4915,7 @@ Bitcoin.Util = {
 			let addrList = addrs.split(',');
 			addrList = Array.from(new Set(addrList));
 			var result = "";
-			var totBal = 0;
+			var totBal = 0.0;
 			var flag = 0;
 			addrList.forEach(function(addr){
 				if (!validateAddr(addr)){
@@ -4917,41 +4924,40 @@ Bitcoin.Util = {
 				}
 				var response = ajax("GET",`api/addr/${addr}/balance`);
 				if(response){
-					result += `<input type="radio" name="sender" value=${addr} checked> ${addr} ${response} <br/>\n`;
-					totBal+=response;
+					result += `<tr><td><input type="radio" name="sender" value=${addr} checked></td><td>${addr}</td><td>${response}</td></tr> \n`;
+					totBal+=parseFloat(response);
 					flag = 1;
 				}else{
 					console.log("error : connection failed!");
 					alert("error : connection failed!");
-				}					
-					
+				}
+
 			});
 			if(flag==0){
 				document.getElementById("sendBtn").disabled = true;
 				return ;
 			}
-			result+=`\nTotal Balance : ${totBal}`;
-			dispBal.innerHTML = result;
+			dispBal.innerHTML = `<table>${result}<tr><td colspan="2">Total Balance :</td><td>${totBal}</tr></table>`;
 			document.getElementById("sendBtn").disabled = false;
         }
-		
-		
+
+
    </script>
    <script>
 	function sendTransaction(){
-			
+
 		var radioButtons = document.getElementsByName("sender");
 		var sender;
-		for (var x = 0; x < radioButtons.length; x++) 
-			if (radioButtons[x].checked) 
+		for (var x = 0; x < radioButtons.length; x++)
+			if (radioButtons[x].checked)
 				sender=radioButtons[x].value;
-		
+
 		var receiver = document.getElementById("sendReceiver").value;
 		if (!validateAddr(receiver)){
 			alert(`Invalid address : ${receiver}`);
 			return;
 		}
-		
+
 		var trx = bitjs.transaction();
 		var sendAmt = parseFloat(document.getElementById("sendAmt").value);
 		var utxoAmt = 0.0;
@@ -4965,7 +4971,7 @@ Bitcoin.Util = {
 				var txid = utxos[x].txid;
 				var index = utxos[x].vout;
 				var scriptPubKey = utxos[x].scriptPubKey;
-				var bal = utxos[x].amount
+				var bal = utxos[x].amount;
 				console.log(""+utxoAmt+"::"+txid + " : " + index +" : "+scriptPubKey +":"+bal);
 				trx.addinput(txid, index, scriptPubKey)
 				utxoAmt += bal;
@@ -4977,12 +4983,12 @@ Bitcoin.Util = {
 			alert("Insufficient balance!");
 			return;
 		}
-		
 
-		
+
+
 		trx.addoutput(receiver, sendAmt);
 		console.log(receiver+":"+ sendAmt);
-		
+
 		var change = utxoAmt-sendAmt-fee;
 		if(change>0)
 			trx.addoutput(sender, change);
@@ -5010,7 +5016,7 @@ Bitcoin.Util = {
                 alert("Empty Signature");
                 return false;
             }
-            
+
             var params = `{"rawtx":"${signedTxHash}"}`;
             var result;
             http.open('POST', url, false);
@@ -5026,130 +5032,171 @@ Bitcoin.Util = {
                 } else {
                     console.log(http.responseText);
 					result = http.response;
-					
+
                 }
             }
             http.send(params);
 			return result;
         }
-    </script>     
-     
+    </script>
+
    <script>
+
+   var waitForGlobal = function(param, callback) {
+     if (!window[param]) {
+       callback();
+     } else {
+       setTimeout(function() {
+         waitForGlobal(param, callback);
+       }, 100);
+     }
+   };
+
 	function monitorData(){
-				
+
 		var addrList = document.getElementById("getAddr").value;
 		addrList = addrList.split(',');
 		addrList = Array.from(new Set(addrList));
-		
-		//clear the table
-		var table = document.getElementById("dispfloData");
-		for(var i = table.rows.length - 1; i > 0; i--)
-			table.deleteRow(i);
-			
+
+    var dispMsg = document.getElementById("dispMsg") ;
+    window["refreshwait"] = addrList.length;
 		addrList.forEach(function(addr){
 			if (!validateAddr(addr)){
 				alert(`Invalid address : ${addr}`);
+        window["refreshwait"] -= 1;
 				return;
 			}
-				
-			var idbtmp = indexedDB.open("FLO_Walletless");
-			idbtmp.onerror = function(event) {
-				console.log("Error in opening IndexedDB1!");
-			};
-			idbtmp.onupgradeneeded = function(event) {
-					console.log("up");
-				};
-			idbtmp.onsuccess = function(event) {
-				var db = event.target.result;
-				var version = db.version;
-				console.log("."+db.version);
-				if(!db.objectStoreNames.contains(addr))
-					version = db.version + 1;
-				db.close();
-				console.log(":"+version);
-				var idb = indexedDB.open("FLO_Walletless",version);	
-				idb.onerror = function(event) {
-					console.log("Error in opening IndexedDB!");
-				};
-				idb.onupgradeneeded = function(event) {
-					var objectStore = event.target.result.createObjectStore(addr, { keyPath: "tx", autoIncrement:true });
-					objectStore.createIndex("time", "time", { unique: false });
-					objectStore.createIndex("sender", "sender", { unique: false });
-					objectStore.createIndex("receiver", "receiver", { unique: false });
-					objectStore.createIndex("floData", "floData", { unique: false });
-					objectStore.createIndex("txid", "txid", { unique: true });
-				};
-				idb.onsuccess = function(event) {
-			
-					var db = event.target.result;
-					var obs = db.transaction(addr, "readwrite").objectStore(addr);
-					var countRequest = obs.count();
-					countRequest.onsuccess = function() {
-						console.log(countRequest.result);
-						var response = ajax("GET",`api/addrs/${addr}/txs`);
-						var nRequired = JSON.parse(response).totalItems - countRequest.result;
-						console.log(nRequired);
-						
-						while(true && nRequired){
-							var response = ajax("GET",`api/addrs/${addr}/txs?from=0&to=${nRequired}`);
-							response = JSON.parse(response);
-							if (nRequired + countRequest.result != response.totalItems ){
-								nRequired = response.totalItems - countRequest.result;
-								continue;
-							}
-							console.log("Yes");	
-							var i=1;
-							response.items.reverse().forEach(function(tx){
-								console.log(""+tx.time +":" +i); i++;
-								obs.put({time : tx.time, txid : tx.txid, sender : tx.vin[0].addr, receiver:tx.vout[0].scriptPubKey.addresses[0],floData : tx.floData});
-							});
-							break;
-						}
-						
-						var flag = false;
-						var table=document.getElementById("dispfloData");
-						var cursorRequest = obs.openCursor();
-						cursorRequest.onsuccess = function(event) {
-							var cursor = event.target.result;
-							//console.log("g");
-							if(cursor) {
-								// cursor.value contains the current record being iterated through
-								// this is where you'd do something with the result
-								console.log(cursor.value.sender+":"+cursor.value.receiver+":"+cursor.value.time+":"+cursor.value.txid+":"+cursor.value.floData);
-								var time = new Date(cursor.value.time*1000);
-								var row = table.insertRow(1) ;
-								row.insertCell(0).innerHTML = cursor.value.sender;
-								row.insertCell(1).innerHTML = cursor.value.receiver;
-								row.insertCell(2).innerHTML = time;
-								row.insertCell(3).innerHTML = cursor.value.floData;
-								flag = true;
-								//tmpResult = '<tr><td>'++'</td><td>'++'</td><td>'++'</td><td>'++'</td></tr>' + tmpResult;
-								cursor.continue();
-							} else {
-							
-								if(!flag){
-									var row1 = table.insertRow(1) ;
-									var cell1 = row1.insertCell(0);
-									cell1.innerHTML= "Sorry! No Flo Data received!";
-									cell1.colSpan = 4
-								}
-								var row2 = table.insertRow(1) ;
-								var cell2 = row2.insertCell(0);
-								cell2.innerHTML= '<b><center>'+addr+'</center></b>';
-								cell2.colSpan = 4
-							
-							}
-						};
-					};
-					
-					db.close();
-				};
-				
-			}
 
-		});
-		
+      waitForGlobal("loadwait", function() {
+        //console.log("found it");
+        console.log(window['loadwait']);
+        window["loadwait"] = true;
+  			var idbtmp = indexedDB.open("FLO_Walletless");
+  			idbtmp.onerror = function(event) {
+  				console.log("Error in opening IndexedDB1!");
+          window["loadwait"] = false;
+  			};
+  			idbtmp.onupgradeneeded = function(event) {
+  					console.log("up");
+  				};
+  			idbtmp.onsuccess = function(event) {
+  				var db = event.target.result;
+  				var version = db.version;
+  				console.log("."+db.version);
+  				if(!db.objectStoreNames.contains(addr))
+  					version = db.version + 1;
+  				db.close();
+  				console.log(":"+version);
+  				var idb = indexedDB.open("FLO_Walletless",version);
+  				idb.onerror = function(event) {
+  					console.log("Error in opening IndexedDB!");
+  				};
+  				idb.onupgradeneeded = function(event) {
+  					var objectStore = event.target.result.createObjectStore(addr, { keyPath: "tx", autoIncrement:true });
+  					objectStore.createIndex("time", "time", { unique: false });
+  					objectStore.createIndex("sender", "sender", { unique: false });
+  					objectStore.createIndex("receiver", "receiver", { unique: false });
+  					objectStore.createIndex("floData", "floData", { unique: false });
+  					objectStore.createIndex("txid", "txid", { unique: true });
+  				};
+  				idb.onsuccess = function(event) {
+            //window["loadwait"] = false;
+
+            var dispMsgAddr = document.createElement('div');
+            dispMsgAddr.id = addr;
+            dispMsgAddr.innerHTML = `<hr>${addr}<br><button onclick="refreshdata(this.parentNode)">refresh</button><button onclick="removedata(this.parentNode)">remove</button><br>`;
+            var table = document.createElement('table');
+            dispMsgAddr.appendChild(table);
+            dispMsg.appendChild(dispMsgAddr);
+            var row = table.insertRow(0) ;
+            row.insertCell(0).innerHTML = 'Sender';
+            row.insertCell(1).innerHTML = 'Receiver';
+            row.insertCell(2).innerHTML = 'Time';
+            row.insertCell(3).innerHTML = 'floData';
+
+  					var db = event.target.result;
+  					var obs = db.transaction(addr, "readwrite").objectStore(addr);
+
+            var cursorRequest = obs.openCursor();
+            cursorRequest.onsuccess = function(event) {
+              var cursor = event.target.result;
+              //console.log("g");
+              if(cursor) {
+                // cursor.value contains the current record being iterated through
+                // this is where you'd do something with the result
+                console.log(cursor.value.sender+":"+cursor.value.receiver+":"+cursor.value.time+":"+cursor.value.txid+":"+cursor.value.floData);
+                var time = new Date(cursor.value.time*1000);
+                var row = table.insertRow(1) ;
+                row.insertCell(0).innerHTML = cursor.value.sender;
+                row.insertCell(1).innerHTML = cursor.value.receiver;
+                row.insertCell(2).innerHTML = time;
+                row.insertCell(3).innerHTML = cursor.value.floData;
+                //tmpResult = '<tr><td>'++'</td><td>'++'</td><td>'++'</td><td>'++'</td></tr>' + tmpResult;
+                cursor.continue();
+              } else {
+                  refreshdata(dispMsgAddr);
+              }
+  					};
+  					db.close();
+            window["refreshwait"] -= 1;
+  				};
+        window["loadwait"] = false;
+  			};
+
+  		});
+    });
+
 	}
-	</script>      
+	</script>
+  <script>
+  function refreshdata(param){
+    var addr = param.id;
+    var table = param.getElementsByTagName('table')[0];
+    var row = table.insertRow(1) ;
+    var cell = row.insertCell(0);
+    cell.innerHTML = "<center>Refreshing...</center>";
+    cell.colSpan = 4;
+    waitForGlobal("refreshwait", function() {
+      var idb = indexedDB.open("FLO_Walletless");
+      idb.onerror = function(event) {
+        console.log("Error in opening IndexedDB!");
+      };
+      idb.onsuccess = function(event) {
+        var db = event.target.result;
+        var obs = db.transaction(addr, "readwrite").objectStore(addr);
+        var countRequest = obs.count();
+        countRequest.onsuccess = function() {
+          console.log(countRequest.result);
+          var response = ajax("GET",`api/addrs/${addr}/txs`);
+          var nRequired = JSON.parse(response).totalItems - countRequest.result;
+          console.log(nRequired);
+
+          while(true && nRequired){
+            var response = ajax("GET",`api/addrs/${addr}/txs?from=0&to=${nRequired}`);
+            response = JSON.parse(response);
+            if (nRequired + countRequest.result != response.totalItems ){
+              nRequired = response.totalItems - countRequest.result;
+              continue;
+            }
+            console.log("Yes");
+            response.items.reverse().forEach(function(tx){
+              obs.put({time : tx.time, txid : tx.txid, sender : tx.vin[0].addr, receiver:tx.vout[0].scriptPubKey.addresses[0],floData : tx.floData});
+              var time = new Date(tx.time*1000);
+              var row = table.insertRow(2) ;
+              row.insertCell(0).innerHTML = tx.vin[0].addr;
+              row.insertCell(1).innerHTML = tx.vout[0].scriptPubKey.addresses[0];
+              row.insertCell(2).innerHTML = time;
+              row.insertCell(3).innerHTML = tx.floData;
+            });
+            break;
+          }
+          table.deleteRow(1);
+        };
+        db.close();
+      };
+    });
+  }
+  </script>
+
 	</body>
 	</html>
