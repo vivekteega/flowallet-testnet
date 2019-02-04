@@ -30,7 +30,7 @@ table, th, td {
 
 		<button id="GenNewAddrBtn" onclick="GenNewAddr();">Generate New Address</button>
 		<button id="RecoverAddrBtn" onclick="RecoverAddr();">Recover FLO Address</button><br/><br/>
-		<table id="addrDisp" border="1"><tr><td><b>FLO Address</b></td><td><b>Secret (or) Private Key</b></td></tr></table>
+		<table id="addrDisp"><tr><td><b>FLO Address</b></td><td><b>Secret (or) Private Key</b></td></tr></table>
 
 	</div>
 
@@ -65,14 +65,11 @@ table, th, td {
 
 	function clearLocalData()
 	{
-		var table = document.getElementById("dispfloData");
-		for(var i = table.rows.length - 1; i > 0; i--)
-			table.deleteRow(i);
+    document.getElementById("dispMsg").innerHTML = '<h3>Received FLO Data : </h3><br/>';
 		var DBDeleteRequest = window.indexedDB.deleteDatabase("FLO_Walletless");
 		DBDeleteRequest.onsuccess = function(event) {
 			console.log("Database deleted successfully");
 			alert("Successfully Cleared Local Data!");
-			console.log(event.result);
 		};
 	}
 
@@ -4961,9 +4958,7 @@ Bitcoin.Util = {
 		var trx = bitjs.transaction();
 		var sendAmt = parseFloat(document.getElementById("sendAmt").value);
 		var utxoAmt = 0.0;
-		console.log(sender+":"+sendAmt);
 		var x = sendAmt+fee;
-		console.log(x);
 		var response = ajax("GET",`api/addr/${sender}/utxo`);
 		var utxos = JSON.parse(response);
 		for(var x = utxos.length-1; x >= 0; x--){
@@ -4972,13 +4967,11 @@ Bitcoin.Util = {
 				var index = utxos[x].vout;
 				var scriptPubKey = utxos[x].scriptPubKey;
 				var bal = utxos[x].amount;
-				console.log(""+utxoAmt+"::"+txid + " : " + index +" : "+scriptPubKey +":"+bal);
 				trx.addinput(txid, index, scriptPubKey)
 				utxoAmt += bal;
 			}else
 				break;
 		}
-		console.log(utxoAmt+":"+(sendAmt+fee));
 		if(utxoAmt < sendAmt+fee){
 			alert("Insufficient balance!");
 			return;
@@ -4996,7 +4989,6 @@ Bitcoin.Util = {
 
 		var sendFloData = document.getElementById("flotextdata").value;
 		trx.addflodata(sendFloData);
-		console.log(sendFloData);
 		var wif = prompt("Enter private key");
 		if (wif.length<1||!verifyWIF(wif,sender)){
 			alert("Invalid Private key!");
@@ -5060,33 +5052,44 @@ Bitcoin.Util = {
 
     var dispMsg = document.getElementById("dispMsg") ;
     window["refreshwait"] = addrList.length;
+
 		addrList.forEach(function(addr){
 			if (!validateAddr(addr)){
 				alert(`Invalid address : ${addr}`);
         window["refreshwait"] -= 1;
 				return;
 			}
+      var addrData = document.getElementById(addr);
+      if(addrData){
+        refreshdata(addrData);
+        window["refreshwait"] -= 1;
+        return;
+      }
 
       waitForGlobal("loadwait", function() {
-        //console.log("found it");
-        console.log(window['loadwait']);
         window["loadwait"] = true;
   			var idbtmp = indexedDB.open("FLO_Walletless");
   			idbtmp.onerror = function(event) {
-  				console.log("Error in opening IndexedDB1!");
+  				console.log("Error in opening IndexedDB!");
           window["loadwait"] = false;
   			};
   			idbtmp.onupgradeneeded = function(event) {
-  					console.log("up");
+  					var objectStore = event.target.result.createObjectStore('Label');
+            //objectStore.createIndex("label", "label", { unique: false });
   				};
   			idbtmp.onsuccess = function(event) {
   				var db = event.target.result;
-  				var version = db.version;
-  				console.log("."+db.version);
-  				if(!db.objectStoreNames.contains(addr))
-  					version = db.version + 1;
+
+  				if(!db.objectStoreNames.contains(addr)){
+            var newaddr = true;
+            var version = db.version + 1;
+          }
+
+          else {
+            var newaddr = false;
+            var version = db.version;
+          }
   				db.close();
-  				console.log(":"+version);
   				var idb = indexedDB.open("FLO_Walletless",version);
   				idb.onerror = function(event) {
   					console.log("Error in opening IndexedDB!");
@@ -5101,30 +5104,45 @@ Bitcoin.Util = {
   				};
   				idb.onsuccess = function(event) {
             //window["loadwait"] = false;
+            var db = event.target.result;
+            var obslabel = db.transaction('Label', "readwrite").objectStore('Label');
+            if(newaddr)
+              obslabel.add('',addr);
 
             var dispMsgAddr = document.createElement('div');
             dispMsgAddr.id = addr;
-            dispMsgAddr.innerHTML = `<hr>${addr}<br><button onclick="refreshdata(this.parentNode)">refresh</button><button onclick="removedata(this.parentNode)">remove</button><br>`;
+            dispMsgAddr.innerHTML = `<hr><h4>${addr}</h4>Label : <input type="text" id="label" disabled><br>
+                      <button onclick="editLabel(this.parentNode)" style="display:block;">edit</button>
+                      <button onclick="saveLabel(this.parentNode)" style="display:none;">save</button>
+                      <br>
+                      <button onclick="refreshdata(this.parentNode)">refresh</button>
+                      <button onclick="removedata(this.parentNode)">remove</button><br>`;
+
+
+            var labelRequest = obslabel.get(addr);
+            labelRequest.onsuccess = function(event){
+                dispMsgAddr.getElementsByTagName('input')[0].value = labelRequest.result;
+            };
+
             var table = document.createElement('table');
             dispMsgAddr.appendChild(table);
             dispMsg.appendChild(dispMsgAddr);
+
             var row = table.insertRow(0) ;
             row.insertCell(0).innerHTML = 'Sender';
             row.insertCell(1).innerHTML = 'Receiver';
             row.insertCell(2).innerHTML = 'Time';
             row.insertCell(3).innerHTML = 'floData';
 
-  					var db = event.target.result;
   					var obs = db.transaction(addr, "readwrite").objectStore(addr);
 
             var cursorRequest = obs.openCursor();
             cursorRequest.onsuccess = function(event) {
               var cursor = event.target.result;
-              //console.log("g");
               if(cursor) {
                 // cursor.value contains the current record being iterated through
                 // this is where you'd do something with the result
-                console.log(cursor.value.sender+":"+cursor.value.receiver+":"+cursor.value.time+":"+cursor.value.txid+":"+cursor.value.floData);
+                //console.log(cursor.value.sender+":"+cursor.value.receiver+":"+cursor.value.time+":"+cursor.value.txid+":"+cursor.value.floData);
                 var time = new Date(cursor.value.time*1000);
                 var row = table.insertRow(1) ;
                 row.insertCell(0).innerHTML = cursor.value.sender;
@@ -5178,7 +5196,6 @@ Bitcoin.Util = {
               nRequired = response.totalItems - countRequest.result;
               continue;
             }
-            console.log("Yes");
             response.items.reverse().forEach(function(tx){
               obs.put({time : tx.time, txid : tx.txid, sender : tx.vin[0].addr, receiver:tx.vout[0].scriptPubKey.addresses[0],floData : tx.floData});
               var time = new Date(tx.time*1000);
@@ -5195,6 +5212,33 @@ Bitcoin.Util = {
         db.close();
       };
     });
+  }
+
+  function removedata(param){
+    param.parentNode.removeChild(param);
+  }
+
+  function editLabel(param){
+      param.getElementsByTagName('input')[0].disabled = false;
+      param.getElementsByTagName('button')[0].style.display = "none";
+      param.getElementsByTagName('button')[1].style.display = "block";
+  }
+  function saveLabel(param){
+      label = param.getElementsByTagName('input')[0];
+      label.disabled = true;
+      label = label.value;
+      param.getElementsByTagName('button')[0].style.display = "block";
+      param.getElementsByTagName('button')[1].style.display = "none";
+      var idb = indexedDB.open("FLO_Walletless");
+      idb.onerror = function(event) {
+        console.log("Error in opening IndexedDB!");
+      };
+      idb.onsuccess = function(event) {
+        var db = event.target.result;
+        var obslabel = db.transaction('Label', "readwrite").objectStore('Label');
+        obslabel.put(label,param.id);
+        db.close();
+      }
   }
   </script>
 
