@@ -42,6 +42,9 @@ This function views the FLO data sent and received by the given address(es).
 1. Enter the address to monitor (for multiple address use comma `,`)
 2. Click Monitor Data
 3. FloData sent and received by the address(es) will be displayed
+4. Each address data will be displayed in seperate table.
+5. Add/Edit Label using Edit button of Label input field.
+6. Refresh and Remove data from view using refresh and remove buttons respectively.
 
 Note : For reducing API calls and processing time , monitored data are stored in local browser. While monitoring the same address, the data from browser database (IndexedDB) is used and only the new transactions are obtained using API.
 The local data can be cleared by clicking the 'Clear Local Data' button.
