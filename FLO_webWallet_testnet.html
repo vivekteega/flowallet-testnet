@@ -5197,13 +5197,24 @@ Bitcoin.Util = {
               continue;
             }
             response.items.reverse().forEach(function(tx){
-              obs.put({time : tx.time, txid : tx.txid, sender : tx.vin[0].addr, receiver:tx.vout[0].scriptPubKey.addresses[0],floData : tx.floData});
-              var time = new Date(tx.time*1000);
-              var row = table.insertRow(2) ;
-              row.insertCell(0).innerHTML = tx.vin[0].addr;
-              row.insertCell(1).innerHTML = tx.vout[0].scriptPubKey.addresses[0];
-              row.insertCell(2).innerHTML = time;
-              row.insertCell(3).innerHTML = tx.floData;
+              if(tx.isCoinBase){
+                //console.log(tx.vin[0].coinbase)
+                obs.put({time : tx.time, txid : tx.txid, sender : '(mined) '+tx.vin[0].coinbase, receiver:addr,floData : tx.floData});
+                var time = new Date(tx.time*1000);
+                var row = table.insertRow(2) ;
+                row.insertCell(0).innerHTML = '(mined) '+tx.vin[0].coinbase;
+                row.insertCell(1).innerHTML = addr;
+                row.insertCell(2).innerHTML = time;
+                row.insertCell(3).innerHTML = tx.floData;
+              }else{
+                obs.put({time : tx.time, txid : tx.txid, sender : tx.vin[0].addr, receiver:tx.vout[0].scriptPubKey.addresses[0],floData : tx.floData});
+                var time = new Date(tx.time*1000);
+                var row = table.insertRow(2) ;
+                row.insertCell(0).innerHTML = tx.vin[0].addr;
+                row.insertCell(1).innerHTML = tx.vout[0].scriptPubKey.addresses[0];
+                row.insertCell(2).innerHTML = time;
+                row.insertCell(3).innerHTML = tx.floData;
+              }
             });
             break;
           }
