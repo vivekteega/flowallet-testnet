@@ -10,10 +10,11 @@
 @import url('https://fonts.googleapis.com/css?family=Titillium+Web');
 
 body {
+  position:relative;
   font-family: 'Titillium Web', sans-serif;
   font-weight: 300;
   font-size: 1.05em; 
-  margin: 0;
+  margin: 40px;
   text-align:justify;
 
 }
@@ -44,12 +45,28 @@ button {
   transition-duration: 0.4s;
 }
 
-.newColor {
+.activeButton {
   color: black;
 }
 
 button:hover {
   box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24),0 17px 50px 0 rgba(0,0,0,0.19);
+}
+
+.firstColumn {
+position: absolute;;
+left:200px;
+
+}
+
+.secondColumn {
+position: absolute;
+left:450px;
+top:194px;
+}
+
+.dispBalTable {
+ border: 1px solid #ffffff; 
 }
 
 </style>
@@ -73,15 +90,15 @@ button:hover {
   <script>
    
    var mainButtonList = [];mainButtonList.push(document.getElementById("getDataBtn")); 
-   document.getElementById("getDataBtn").classList.add('newColor');
+   document.getElementById("getDataBtn").classList.add('activeButton');
    
    function   showSection(that,callback) {
       
       if (!(mainButtonList.length == 0 )) {
         var x = mainButtonList.pop();
-        x.classList.remove('newColor');
+        x.classList.remove('activeButton');
                                       }
-        that.classList.add('newColor');
+        that.classList.add('activeButton');
         mainButtonList.push(that)
         callback();
     }    
@@ -102,11 +119,11 @@ button:hover {
   <div id="sendData">
     <h2>Send FLO Data</h2>
     <label for="getBal_addr">Enter sender address : </label>
-    <input type="text" id="getBal_addr">
-    <button id="getBal_btn">Get Balance</button>
+    <input type="text" id="getBal_addr" class="firstColumn">
+    <button class="secondColumn" id="getBal_btn">Get Sender Balance</button>
     <div id="dispBal"></div>
-    Enter receiver Address : <input type="text" id="sendReceiver">
-    <br/>Enter amount : <input type="number" id="sendAmt">
+    Enter receiver Address : <input type="text" id="sendReceiver" class="firstColumn">
+    <br/>Enter amount : <input type="number" id="sendAmt" class="firstColumn">
     <h3>Enter the FLO Data</h3>
     <textarea rows="15" cols="70" id="flotextdata"></textarea><br/>
     <button id="sendBtn" onclick="sendTransaction()" disabled>Send</button>
@@ -4999,7 +5016,7 @@ Bitcoin.Util = {
         document.getElementById("sendBtn").disabled = true;
         return ;
       }
-      dispBal.innerHTML = `<table>${result}<tr><td colspan="2">Total Balance :</td><td>${totBal}</tr></table>`;
+      dispBal.innerHTML = `<table class="dispBalTable">${result}<tr><td colspan="2">Total Balance :</td><td>${totBal}</tr></table>`;
       document.getElementById("sendBtn").disabled = false;
         }
 
@@ -5098,8 +5115,13 @@ Bitcoin.Util = {
     </script>
 
    <script>
+//Converting old blocking waitForGlobal into non-blocking code
+    var waitForGlobal = function(param, callback) {
+      new Promise(callback);
+    };
 
-   var waitForGlobal = function(param, callback) {
+
+  /* var waitForGlobal = function(param, callback) {
      if (!window[param]) {
        callback();
      } else {
@@ -5107,7 +5129,7 @@ Bitcoin.Util = {
          waitForGlobal(param, callback);
        }, 100);
      }
-   };
+   };*/
 
   function monitorData(){
 
@@ -5233,12 +5255,14 @@ Bitcoin.Util = {
   </script>
   <script>
   function refreshdata(param){
+    
     var addr = param.id;
     var table = param.getElementsByTagName('table')[0];
     var row = table.insertRow(1) ;
     var cell = row.insertCell(0);
     cell.innerHTML = "<center>Refreshing...</center>";
     cell.colSpan = 4;
+    
     waitForGlobal("refreshwait", function() {
       var idb = indexedDB.open("FLO_Walletless");
       idb.onerror = function(event) {
