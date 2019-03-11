@@ -13,7 +13,7 @@ body {
   position:relative;
   font-family: 'Titillium Web', sans-serif;
   font-weight: 300;
-  font-size: 1.05em; 
+  font-size: 1.05em;
   margin: 40px;
   text-align:justify;
 
@@ -66,7 +66,7 @@ top:194px;
 }
 
 .dispBalTable {
- border: 1px solid #ffffff; 
+ border: 1px solid #ffffff;
 }
 
 </style>
@@ -88,12 +88,12 @@ top:194px;
   <button id="addrGenBtn" onclick="showSection(this,addrGenMode);">Address Generator</button>
 
   <script>
-   
-   var mainButtonList = [];mainButtonList.push(document.getElementById("getDataBtn")); 
+
+   var mainButtonList = [];mainButtonList.push(document.getElementById("getDataBtn"));
    document.getElementById("getDataBtn").classList.add('activeButton');
-   
+
    function   showSection(that,callback) {
-      
+
       if (!(mainButtonList.length == 0 )) {
         var x = mainButtonList.pop();
         x.classList.remove('activeButton');
@@ -101,7 +101,7 @@ top:194px;
         that.classList.add('activeButton');
         mainButtonList.push(that)
         callback();
-    }    
+    }
 
   </script>
 
@@ -144,7 +144,36 @@ top:194px;
 
 
   getDataMode(); //default start
+startup();
+function startup(){
+  var idb = indexedDB.open("FLO_Walletless");
+  new Promise(function(resolve,reject){
+    idb.onerror = function(event) {
+      //console.log("Error in opening IndexedDB!");
+      reject(Error("Error in opening IndexedDB!"));
+    };
+    idb.onupgradeneeded = function(event) {
+        var objectStore = event.target.result.createObjectStore('Label');
+      };
+    idb.onsuccess = function(event) {
+        var db = event.target.result;
+        var obslabel = db.transaction('Label', "readwrite").objectStore('Label');
+        var val = obslabel.getAllKeys();
+      //  console.log(val.result);
+       val.onsuccess = function(event){
+            resolve(event.target.result);
+        }
+    }
+  }).then(res => {
+    var input = document.getElementById("getAddr");
+    input.value = res.join(',');
+    monitorData();
+    input.value = "";
+  }).catch(error => {
+    console.log(error.message);
+  });
 
+}
   function clearLocalData()
   {
     document.getElementById("dispMsg").innerHTML = '<h3>Received FLO Data : </h3><br/>';
@@ -5131,6 +5160,7 @@ Bitcoin.Util = {
      }
    };*/
 
+
   function monitorData(){
 
     var addrList = document.getElementById("getAddr").value;
@@ -5222,26 +5252,21 @@ Bitcoin.Util = {
             row.insertCell(3).innerHTML = 'floData';
 
             var obs = db.transaction(addr, "readwrite").objectStore(addr);
-
-            var cursorRequest = obs.openCursor();
-            cursorRequest.onsuccess = function(event) {
-              var cursor = event.target.result;
-              if(cursor) {
-                // cursor.value contains the current record being iterated through
-                // this is where you'd do something with the result
-                //console.log(cursor.value.sender+":"+cursor.value.receiver+":"+cursor.value.time+":"+cursor.value.txid+":"+cursor.value.floData);
-                var time = new Date(cursor.value.time*1000);
+            var objreq = obs.getAll();
+            objreq.onsuccess = function(event){
+              data = event.target.result;
+            //  console.log(data);
+              data.forEach(tx => {
+                var time = new Date(tx.time*1000);
                 var row = table.insertRow(1) ;
-                row.insertCell(0).innerHTML = cursor.value.sender;
-                row.insertCell(1).innerHTML = cursor.value.receiver;
+                row.insertCell(0).innerHTML = tx.sender;
+                row.insertCell(1).innerHTML = tx.receiver;
                 row.insertCell(2).innerHTML = time;
-                row.insertCell(3).innerHTML = cursor.value.floData;
-                //tmpResult = '<tr><td>'++'</td><td>'++'</td><td>'++'</td><td>'++'</td></tr>' + tmpResult;
-                cursor.continue();
-              } else {
-                  refreshdata(dispMsgAddr);
-              }
-            };
+                row.insertCell(3).innerHTML = tx.floData;
+              })
+              refreshdata(dispMsgAddr);
+
+            }
             db.close();
             window["refreshwait"] -= 1;
           };
@@ -5255,14 +5280,14 @@ Bitcoin.Util = {
   </script>
   <script>
   function refreshdata(param){
-    
+
     var addr = param.id;
     var table = param.getElementsByTagName('table')[0];
     var row = table.insertRow(1) ;
     var cell = row.insertCell(0);
     cell.innerHTML = "<center>Refreshing...</center>";
     cell.colSpan = 4;
-    
+
     waitForGlobal("refreshwait", function() {
       var idb = indexedDB.open("FLO_Walletless");
       idb.onerror = function(event) {
