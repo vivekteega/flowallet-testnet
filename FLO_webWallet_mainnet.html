@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>FLO walletless</title>
+<title>FLO webWallet</title>
  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
 
 <style>
@@ -146,7 +146,7 @@ top:194px;
   getDataMode(); //default start
 startup();
 function startup(){
-  var idb = indexedDB.open("FLO_Walletless");
+  var idb = indexedDB.open("FLO_webWallet");
   new Promise(function(resolve,reject){
     idb.onerror = function(event) {
       //console.log("Error in opening IndexedDB!");
@@ -177,7 +177,7 @@ function startup(){
   function clearLocalData()
   {
     document.getElementById("dispMsg").innerHTML = '<h3>Received FLO Data : </h3><br/>';
-    var DBDeleteRequest = window.indexedDB.deleteDatabase("FLO_Walletless");
+    var DBDeleteRequest = window.indexedDB.deleteDatabase("FLO_webWallet");
     DBDeleteRequest.onsuccess = function(event) {
       console.log("Database deleted successfully");
       alert("Successfully Cleared Local Data!");
@@ -5185,7 +5185,7 @@ Bitcoin.Util = {
 
       waitForGlobal("loadwait", function() {
         window["loadwait"] = true;
-        var idbtmp = indexedDB.open("FLO_Walletless");
+        var idbtmp = indexedDB.open("FLO_webWallet");
         idbtmp.onerror = function(event) {
           console.log("Error in opening IndexedDB!");
           window["loadwait"] = false;
@@ -5207,7 +5207,7 @@ Bitcoin.Util = {
             var version = db.version;
           }
           db.close();
-          var idb = indexedDB.open("FLO_Walletless",version);
+          var idb = indexedDB.open("FLO_webWallet",version);
           idb.onerror = function(event) {
             console.log("Error in opening IndexedDB!");
           };
@@ -5289,7 +5289,7 @@ Bitcoin.Util = {
     cell.colSpan = 4;
 
     waitForGlobal("refreshwait", function() {
-      var idb = indexedDB.open("FLO_Walletless");
+      var idb = indexedDB.open("FLO_webWallet");
       idb.onerror = function(event) {
         console.log("Error in opening IndexedDB!");
       };
@@ -5354,7 +5354,7 @@ Bitcoin.Util = {
       label = label.value;
       param.getElementsByTagName('button')[0].style.display = "block";
       param.getElementsByTagName('button')[1].style.display = "none";
-      var idb = indexedDB.open("FLO_Walletless");
+      var idb = indexedDB.open("FLO_webWallet");
       idb.onerror = function(event) {
         console.log("Error in opening IndexedDB!");
       };
