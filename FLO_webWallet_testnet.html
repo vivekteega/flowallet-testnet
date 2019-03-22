@@ -1,11 +1,74 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>FLO walletless</title>
+<title>FLO webWallet Testnet</title>
+ <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+
 <style>
-table, th, td {
-  border: 1px solid black;
+
+
+@import url('https://fonts.googleapis.com/css?family=Titillium+Web');
+
+body {
+  position:relative;
+  font-family: 'Titillium Web', sans-serif;
+  font-weight: 300;
+  font-size: 1.05em;
+  margin: 40px;
+  text-align:justify;
+
 }
+
+
+table {
+  border-collapse: collapse;
+
+}
+
+table, tr, th, td {
+    border: 1px solid #e3e3e3;
+}
+
+button {
+  background-color: #4CAF50; /* Green */
+  border: none;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  border-radius: 8px;
+  cursor: pointer;
+  -webkit-transition-duration: 0.4s; /* Safari */
+  transition-duration: 0.4s;
+}
+
+.activeButton {
+  color: black;
+}
+
+button:hover {
+  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24),0 17px 50px 0 rgba(0,0,0,0.19);
+}
+
+.firstColumn {
+position: absolute;;
+left:200px;
+
+}
+
+.secondColumn {
+position: absolute;
+left:450px;
+top:194px;
+}
+
+.dispBalTable {
+ border: 1px solid #ffffff;
+}
+
 </style>
 </head>
 <body>
@@ -17,244 +80,292 @@ table, th, td {
         window["loadwait"] = false;
         window["refreshwait"] = false;
 
-		const fee = 0.0005;
+    const fee = 0.0005;
 </script>
     <h1>FLO</h1>
-	<button id="addrGenBtn" onclick="addrGenMode();">Address Generator</button>
-	<button id="sendDataBtn" onclick="sendDataMode();">Send FLO Data</button>
-	<button id="getDataBtn" onclick="getDataMode();">Monitor FLO Data</button>
-	<br/>
-	<div id="addrGen">
+  <button id="getDataBtn" onclick="showSection(this,getDataMode);">Monitor FLO Data</button>
+  <button id="sendDataBtn" onclick="showSection(this,sendDataMode);">Send FLO Data</button>
+  <button id="addrGenBtn" onclick="showSection(this,addrGenMode);">Address Generator</button>
 
-		<h2>Address Generator</h2>
+  <script>
 
-		<button id="GenNewAddrBtn" onclick="GenNewAddr();">Generate New Address</button>
-		<button id="RecoverAddrBtn" onclick="RecoverAddr();">Recover FLO Address</button><br/><br/>
-		<table id="addrDisp"><tr><td><b>FLO Address</b></td><td><b>Secret (or) Private Key</b></td></tr></table>
+   var mainButtonList = [];mainButtonList.push(document.getElementById("getDataBtn"));
+   document.getElementById("getDataBtn").classList.add('activeButton');
 
-	</div>
+   function   showSection(that,callback) {
 
-	<div id="sendData">
-		<h2>Send FLO Data</h2>
-		<label for="getBal_addr">Enter sender address : </label>
-		<input type="text" id="getBal_addr">
-		<button id="getBal_btn">Get Balance</button>
-		<div id="dispBal"></div>
-		Enter receiver Address : <input type="text" id="sendReceiver">
-		<br/>Enter amount : <input type="number" id="sendAmt">
-		<h3>Enter the FLO Data</h3>
-		<textarea rows="15" cols="70" id="flotextdata"></textarea><br/>
-		<button id="sendBtn" onclick="sendTransaction()" disabled>Send</button>
-	</div>
+      if (!(mainButtonList.length == 0 )) {
+        var x = mainButtonList.pop();
+        x.classList.remove('activeButton');
+                                      }
+        that.classList.add('activeButton');
+        mainButtonList.push(that)
+        callback();
+    }
 
-	<div id="getData">
-		<h2>Monitor FLO Data</h2>
-		Enter Address : <input type="text" id="getAddr"><br/>
-		<button id="getData" onclick="monitorData()">Monitor Data</button><br/>
-		<button id="clearLocalData" onclick="clearLocalData()">Clear Local Data</button>
-		<div id="dispMsg"><h3>Received FLO Data : </h3><br/></div>
+  </script>
 
-	</div>
+  <br/>
+  <div id="addrGen">
+
+    <h2>Address Generator</h2>
+
+    <button id="GenNewAddrBtn" onclick="GenNewAddr();">Generate New Address</button>
+    <button id="RecoverAddrBtn" onclick="RecoverAddr();">Recover FLO Address</button><br/><br/>
+    <table id="addrDisp"><tr><td><b>FLO Address</b></td><td><b>Secret (or) Private Key</b></td></tr></table>
+
+  </div>
+
+  <div id="sendData">
+    <h2>Send FLO Data</h2>
+    <label for="getBal_addr">Enter sender address : </label>
+    <input type="text" id="getBal_addr" class="firstColumn">
+    <button class="secondColumn" id="getBal_btn">Get Sender Balance</button>
+    <div id="dispBal"></div>
+    Enter receiver Address : <input type="text" id="sendReceiver" class="firstColumn">
+    <br/>Enter amount : <input type="number" id="sendAmt" class="firstColumn">
+    <h3>Enter the FLO Data</h3>
+    <textarea rows="15" cols="70" id="flotextdata"></textarea><br/>
+    <button id="sendBtn" onclick="sendTransaction()" disabled>Send</button>
+  </div>
+
+  <div id="getData">
+    <h2>Monitor FLO Data</h2>
+    Enter Address : <input type="text" id="getAddr"><br/>
+    <button id="getData" onclick="monitorData()">Monitor Data</button><br/>
+    <button id="clearLocalData" onclick="clearLocalData()">Clear Local Data</button>
+    <div id="dispMsg"><h3>Received FLO Data : </h3><br/></div>
+
+  </div>
 
 
 
-	<script>
+  <script>
 
 
-	addrGenMode(); //default start
+  getDataMode(); //default start
+startup();
+function startup(){
+  var idb = indexedDB.open("FLO_webWallet_testnet");
+  new Promise(function(resolve,reject){
+    idb.onerror = function(event) {
+      //console.log("Error in opening IndexedDB!");
+      reject(Error("Error in opening IndexedDB!"));
+    };
+    idb.onupgradeneeded = function(event) {
+        var objectStore = event.target.result.createObjectStore('Label');
+      };
+    idb.onsuccess = function(event) {
+        var db = event.target.result;
+        var obslabel = db.transaction('Label', "readwrite").objectStore('Label');
+        var val = obslabel.getAllKeys();
+      //  console.log(val.result);
+       val.onsuccess = function(event){
+            resolve(event.target.result);
+        }
+    }
+  }).then(res => {
+    var input = document.getElementById("getAddr");
+    input.value = res.join(',');
+    monitorData();
+    input.value = "";
+  }).catch(error => {
+    console.log(error.message);
+  });
 
-	function clearLocalData()
-	{
+}
+  function clearLocalData()
+  {
     document.getElementById("dispMsg").innerHTML = '<h3>Received FLO Data : </h3><br/>';
-		var DBDeleteRequest = window.indexedDB.deleteDatabase("FLO_Walletless");
-		DBDeleteRequest.onsuccess = function(event) {
-			console.log("Database deleted successfully");
-			alert("Successfully Cleared Local Data!");
-		};
-	}
+    var DBDeleteRequest = window.indexedDB.deleteDatabase("FLO_webWallet_testnet");
+    DBDeleteRequest.onsuccess = function(event) {
+      console.log("Database deleted successfully");
+      alert("Successfully Cleared Local Data!");
+    };
+  }
 
-	function addrGenMode(){
-		document.getElementById("addrGenBtn").disabled = true;
-		document.getElementById("sendDataBtn").disabled = false;
-		document.getElementById("getDataBtn").disabled = false;
-		document.getElementById("addrGen").style.display = 'block';
-		document.getElementById("sendData").style.display = 'none';
-		document.getElementById("getData").style.display = 'none';
-	}
+  function addrGenMode(){
+    document.getElementById("addrGenBtn").disabled = true;
+    document.getElementById("sendDataBtn").disabled = false;
+    document.getElementById("getDataBtn").disabled = false;
+    document.getElementById("addrGen").style.display = 'block';
+    document.getElementById("sendData").style.display = 'none';
+    document.getElementById("getData").style.display = 'none';
+  }
 
-	function sendDataMode(){
-		document.getElementById("addrGenBtn").disabled = false;
-		document.getElementById("sendDataBtn").disabled = true;
-		document.getElementById("getDataBtn").disabled = false;
-		document.getElementById("addrGen").style.display = 'none';
-		document.getElementById("sendData").style.display = 'block';
-		document.getElementById("getData").style.display = 'none';
-	}
+  function sendDataMode(){
+    document.getElementById("addrGenBtn").disabled = false;
+    document.getElementById("sendDataBtn").disabled = true;
+    document.getElementById("getDataBtn").disabled = false;
+    document.getElementById("addrGen").style.display = 'none';
+    document.getElementById("sendData").style.display = 'block';
+    document.getElementById("getData").style.display = 'none';
+  }
 
-	function getDataMode(){
-		document.getElementById("addrGenBtn").disabled = false;
-		document.getElementById("sendDataBtn").disabled = false;
-		document.getElementById("getDataBtn").disabled = true;
-		document.getElementById("addrGen").style.display = 'none';
-		document.getElementById("sendData").style.display = 'none';
-		document.getElementById("getData").style.display = 'block';
-	}
-	</script>
+  function getDataMode(){
+    document.getElementById("addrGenBtn").disabled = false;
+    document.getElementById("sendDataBtn").disabled = false;
+    document.getElementById("getDataBtn").disabled = true;
+    document.getElementById("addrGen").style.display = 'none';
+    document.getElementById("sendData").style.display = 'none';
+    document.getElementById("getData").style.display = 'block';
+  }
+  </script>
 
 <script type="text/javascript">
 /*!
-* Crypto-JS v2.5.4	Crypto.js
+* Crypto-JS v2.5.4  Crypto.js
 * http://code.google.com/p/crypto-js/
 * Copyright (c) 2009-2013, Jeff Mott. All rights reserved.
 * http://code.google.com/p/crypto-js/wiki/License
 */
 if (typeof Crypto == "undefined" || !Crypto.util) {
-	(function () {
+  (function () {
 
-		var base64map = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    var base64map = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-		// Global Crypto object
-		var Crypto = window.Crypto = {};
+    // Global Crypto object
+    var Crypto = window.Crypto = {};
 
-		// Crypto utilities
-		var util = Crypto.util = {
+    // Crypto utilities
+    var util = Crypto.util = {
 
-			// Bit-wise rotate left
-			rotl: function (n, b) {
-				return (n << b) | (n >>> (32 - b));
-			},
+      // Bit-wise rotate left
+      rotl: function (n, b) {
+        return (n << b) | (n >>> (32 - b));
+      },
 
-			// Bit-wise rotate right
-			rotr: function (n, b) {
-				return (n << (32 - b)) | (n >>> b);
-			},
+      // Bit-wise rotate right
+      rotr: function (n, b) {
+        return (n << (32 - b)) | (n >>> b);
+      },
 
-			// Swap big-endian to little-endian and vice versa
-			endian: function (n) {
+      // Swap big-endian to little-endian and vice versa
+      endian: function (n) {
 
-				// If number given, swap endian
-				if (n.constructor == Number) {
-					return util.rotl(n, 8) & 0x00FF00FF |
-			    util.rotl(n, 24) & 0xFF00FF00;
-				}
+        // If number given, swap endian
+        if (n.constructor == Number) {
+          return util.rotl(n, 8) & 0x00FF00FF |
+          util.rotl(n, 24) & 0xFF00FF00;
+        }
 
-				// Else, assume array and swap all items
-				for (var i = 0; i < n.length; i++)
-					n[i] = util.endian(n[i]);
-				return n;
+        // Else, assume array and swap all items
+        for (var i = 0; i < n.length; i++)
+          n[i] = util.endian(n[i]);
+        return n;
 
-			},
+      },
 
-			// Generate an array of any length of random bytes
-			randomBytes: function (n) {
-				for (var bytes = []; n > 0; n--)
-					bytes.push(Math.floor(Math.random() * 256));
-				return bytes;
-			},
+      // Generate an array of any length of random bytes
+      randomBytes: function (n) {
+        for (var bytes = []; n > 0; n--)
+          bytes.push(Math.floor(Math.random() * 256));
+        return bytes;
+      },
 
-			// Convert a byte array to big-endian 32-bit words
-			bytesToWords: function (bytes) {
-				for (var words = [], i = 0, b = 0; i < bytes.length; i++, b += 8)
-					words[b >>> 5] |= (bytes[i] & 0xFF) << (24 - b % 32);
-				return words;
-			},
+      // Convert a byte array to big-endian 32-bit words
+      bytesToWords: function (bytes) {
+        for (var words = [], i = 0, b = 0; i < bytes.length; i++, b += 8)
+          words[b >>> 5] |= (bytes[i] & 0xFF) << (24 - b % 32);
+        return words;
+      },
 
-			// Convert big-endian 32-bit words to a byte array
-			wordsToBytes: function (words) {
-				for (var bytes = [], b = 0; b < words.length * 32; b += 8)
-					bytes.push((words[b >>> 5] >>> (24 - b % 32)) & 0xFF);
-				return bytes;
-			},
+      // Convert big-endian 32-bit words to a byte array
+      wordsToBytes: function (words) {
+        for (var bytes = [], b = 0; b < words.length * 32; b += 8)
+          bytes.push((words[b >>> 5] >>> (24 - b % 32)) & 0xFF);
+        return bytes;
+      },
 
-			// Convert a byte array to a hex string
-			bytesToHex: function (bytes) {
-				for (var hex = [], i = 0; i < bytes.length; i++) {
-					hex.push((bytes[i] >>> 4).toString(16));
-					hex.push((bytes[i] & 0xF).toString(16));
-				}
-				return hex.join("");
-			},
+      // Convert a byte array to a hex string
+      bytesToHex: function (bytes) {
+        for (var hex = [], i = 0; i < bytes.length; i++) {
+          hex.push((bytes[i] >>> 4).toString(16));
+          hex.push((bytes[i] & 0xF).toString(16));
+        }
+        return hex.join("");
+      },
 
-			// Convert a hex string to a byte array
-			hexToBytes: function (hex) {
-				for (var bytes = [], c = 0; c < hex.length; c += 2)
-					bytes.push(parseInt(hex.substr(c, 2), 16));
-				return bytes;
-			},
+      // Convert a hex string to a byte array
+      hexToBytes: function (hex) {
+        for (var bytes = [], c = 0; c < hex.length; c += 2)
+          bytes.push(parseInt(hex.substr(c, 2), 16));
+        return bytes;
+      },
 
-			// Convert a byte array to a base-64 string
-			bytesToBase64: function (bytes) {
-				for (var base64 = [], i = 0; i < bytes.length; i += 3) {
-					var triplet = (bytes[i] << 16) | (bytes[i + 1] << 8) | bytes[i + 2];
-					for (var j = 0; j < 4; j++) {
-						if (i * 8 + j * 6 <= bytes.length * 8)
-							base64.push(base64map.charAt((triplet >>> 6 * (3 - j)) & 0x3F));
-						else base64.push("=");
-					}
-				}
+      // Convert a byte array to a base-64 string
+      bytesToBase64: function (bytes) {
+        for (var base64 = [], i = 0; i < bytes.length; i += 3) {
+          var triplet = (bytes[i] << 16) | (bytes[i + 1] << 8) | bytes[i + 2];
+          for (var j = 0; j < 4; j++) {
+            if (i * 8 + j * 6 <= bytes.length * 8)
+              base64.push(base64map.charAt((triplet >>> 6 * (3 - j)) & 0x3F));
+            else base64.push("=");
+          }
+        }
 
-				return base64.join("");
-			},
+        return base64.join("");
+      },
 
-			// Convert a base-64 string to a byte array
-			base64ToBytes: function (base64) {
-				// Remove non-base-64 characters
-				base64 = base64.replace(/[^A-Z0-9+\/]/ig, "");
+      // Convert a base-64 string to a byte array
+      base64ToBytes: function (base64) {
+        // Remove non-base-64 characters
+        base64 = base64.replace(/[^A-Z0-9+\/]/ig, "");
 
-				for (var bytes = [], i = 0, imod4 = 0; i < base64.length; imod4 = ++i % 4) {
-					if (imod4 == 0) continue;
-					bytes.push(((base64map.indexOf(base64.charAt(i - 1)) & (Math.pow(2, -2 * imod4 + 8) - 1)) << (imod4 * 2)) |
-			        (base64map.indexOf(base64.charAt(i)) >>> (6 - imod4 * 2)));
-				}
+        for (var bytes = [], i = 0, imod4 = 0; i < base64.length; imod4 = ++i % 4) {
+          if (imod4 == 0) continue;
+          bytes.push(((base64map.indexOf(base64.charAt(i - 1)) & (Math.pow(2, -2 * imod4 + 8) - 1)) << (imod4 * 2)) |
+              (base64map.indexOf(base64.charAt(i)) >>> (6 - imod4 * 2)));
+        }
 
-				return bytes;
-			}
+        return bytes;
+      }
 
-		};
+    };
 
-		// Crypto character encodings
-		var charenc = Crypto.charenc = {};
+    // Crypto character encodings
+    var charenc = Crypto.charenc = {};
 
-		// UTF-8 encoding
-		var UTF8 = charenc.UTF8 = {
+    // UTF-8 encoding
+    var UTF8 = charenc.UTF8 = {
 
-			// Convert a string to a byte array
-			stringToBytes: function (str) {
-				return Binary.stringToBytes(unescape(encodeURIComponent(str)));
-			},
+      // Convert a string to a byte array
+      stringToBytes: function (str) {
+        return Binary.stringToBytes(unescape(encodeURIComponent(str)));
+      },
 
-			// Convert a byte array to a string
-			bytesToString: function (bytes) {
-				return decodeURIComponent(escape(Binary.bytesToString(bytes)));
-			}
+      // Convert a byte array to a string
+      bytesToString: function (bytes) {
+        return decodeURIComponent(escape(Binary.bytesToString(bytes)));
+      }
 
-		};
+    };
 
-		// Binary encoding
-		var Binary = charenc.Binary = {
+    // Binary encoding
+    var Binary = charenc.Binary = {
 
-			// Convert a string to a byte array
-			stringToBytes: function (str) {
-				for (var bytes = [], i = 0; i < str.length; i++)
-					bytes.push(str.charCodeAt(i) & 0xFF);
-				return bytes;
-			},
+      // Convert a string to a byte array
+      stringToBytes: function (str) {
+        for (var bytes = [], i = 0; i < str.length; i++)
+          bytes.push(str.charCodeAt(i) & 0xFF);
+        return bytes;
+      },
 
-			// Convert a byte array to a string
-			bytesToString: function (bytes) {
-				for (var str = [], i = 0; i < bytes.length; i++)
-					str.push(String.fromCharCode(bytes[i]));
-				return str.join("");
-			}
+      // Convert a byte array to a string
+      bytesToString: function (bytes) {
+        for (var str = [], i = 0; i < bytes.length; i++)
+          str.push(String.fromCharCode(bytes[i]));
+        return str.join("");
+      }
 
-		};
+    };
 
-	})();
+  })();
 }
-	</script>
+  </script>
 
 
-	 <!-- SHA1 -->
+   <!-- SHA1 -->
     <script type="text/javascript">
 
         //Adding SHA1 to fix basic PKBDF2
@@ -608,181 +719,181 @@ if (typeof Crypto == "undefined" || !Crypto.util) {
 */
 (function () {
 
-	// Constructor function of Global SecureRandom object
-	var sr = window.SecureRandom = function () { };
+  // Constructor function of Global SecureRandom object
+  var sr = window.SecureRandom = function () { };
 
-	// Properties
-	sr.state;
-	sr.pool;
-	sr.pptr;
-	sr.poolCopyOnInit;
+  // Properties
+  sr.state;
+  sr.pool;
+  sr.pptr;
+  sr.poolCopyOnInit;
 
-	// Pool size must be a multiple of 4 and greater than 32.
-	// An array of bytes the size of the pool will be passed to init()
-	sr.poolSize = 256;
+  // Pool size must be a multiple of 4 and greater than 32.
+  // An array of bytes the size of the pool will be passed to init()
+  sr.poolSize = 256;
 
-	// --- object methods ---
+  // --- object methods ---
 
-	// public method
-	// ba: byte array
-	sr.prototype.nextBytes = function (ba) {
-		var i;
-		if (window.crypto && window.crypto.getRandomValues && window.Uint8Array) {
-			try {
-				var rvBytes = new Uint8Array(ba.length);
-				window.crypto.getRandomValues(rvBytes);
-				for (i = 0; i < ba.length; ++i)
-					ba[i] = sr.getByte() ^ rvBytes[i];
-				return;
-			} catch (e) {
-				alert(e);
-			}
-		}
-		for (i = 0; i < ba.length; ++i) ba[i] = sr.getByte();
-	};
-
-
-	// --- static methods ---
-
-	// Mix in the current time (w/milliseconds) into the pool
-	// NOTE: this method should be called from body click/keypress event handlers to increase entropy
-	sr.seedTime = function () {
-		sr.seedInt(new Date().getTime());
-	}
-
-	sr.getByte = function () {
-		if (sr.state == null) {
-			sr.seedTime();
-			sr.state = sr.ArcFour(); // Plug in your RNG constructor here
-			sr.state.init(sr.pool);
-			sr.poolCopyOnInit = [];
-			for (sr.pptr = 0; sr.pptr < sr.pool.length; ++sr.pptr)
-				sr.poolCopyOnInit[sr.pptr] = sr.pool[sr.pptr];
-			sr.pptr = 0;
-		}
-		// TODO: allow reseeding after first request
-		return sr.state.next();
-	}
-
-	// Mix in a 32-bit integer into the pool
-	sr.seedInt = function (x) {
-		sr.seedInt8(x);
-		sr.seedInt8((x >> 8));
-		sr.seedInt8((x >> 16));
-		sr.seedInt8((x >> 24));
-	}
-
-	// Mix in a 16-bit integer into the pool
-	sr.seedInt16 = function (x) {
-		sr.seedInt8(x);
-		sr.seedInt8((x >> 8));
-	}
-
-	// Mix in a 8-bit integer into the pool
-	sr.seedInt8 = function (x) {
-		sr.pool[sr.pptr++] ^= x & 255;
-		if (sr.pptr >= sr.poolSize) sr.pptr -= sr.poolSize;
-	}
-
-	// Arcfour is a PRNG
-	sr.ArcFour = function () {
-		function Arcfour() {
-			this.i = 0;
-			this.j = 0;
-			this.S = new Array();
-		}
-
-		// Initialize arcfour context from key, an array of ints, each from [0..255]
-		function ARC4init(key) {
-			var i, j, t;
-			for (i = 0; i < 256; ++i)
-				this.S[i] = i;
-			j = 0;
-			for (i = 0; i < 256; ++i) {
-				j = (j + this.S[i] + key[i % key.length]) & 255;
-				t = this.S[i];
-				this.S[i] = this.S[j];
-				this.S[j] = t;
-			}
-			this.i = 0;
-			this.j = 0;
-		}
-
-		function ARC4next() {
-			var t;
-			this.i = (this.i + 1) & 255;
-			this.j = (this.j + this.S[this.i]) & 255;
-			t = this.S[this.i];
-			this.S[this.i] = this.S[this.j];
-			this.S[this.j] = t;
-			return this.S[(t + this.S[this.i]) & 255];
-		}
-
-		Arcfour.prototype.init = ARC4init;
-		Arcfour.prototype.next = ARC4next;
-
-		return new Arcfour();
-	};
+  // public method
+  // ba: byte array
+  sr.prototype.nextBytes = function (ba) {
+    var i;
+    if (window.crypto && window.crypto.getRandomValues && window.Uint8Array) {
+      try {
+        var rvBytes = new Uint8Array(ba.length);
+        window.crypto.getRandomValues(rvBytes);
+        for (i = 0; i < ba.length; ++i)
+          ba[i] = sr.getByte() ^ rvBytes[i];
+        return;
+      } catch (e) {
+        alert(e);
+      }
+    }
+    for (i = 0; i < ba.length; ++i) ba[i] = sr.getByte();
+  };
 
 
-	// Initialize the pool with junk if needed.
-	if (sr.pool == null) {
-		sr.pool = new Array();
-		sr.pptr = 0;
-		var t;
-		if (window.crypto && window.crypto.getRandomValues && window.Uint8Array) {
-			try {
-				// Use webcrypto if available
-				var ua = new Uint8Array(sr.poolSize);
-				window.crypto.getRandomValues(ua);
-				for (t = 0; t < sr.poolSize; ++t)
-					sr.pool[sr.pptr++] = ua[t];
-			} catch (e) { alert(e); }
-		}
-		while (sr.pptr < sr.poolSize) {  // extract some randomness from Math.random()
-			t = Math.floor(65536 * Math.random());
-			sr.pool[sr.pptr++] = t >>> 8;
-			sr.pool[sr.pptr++] = t & 255;
-		}
-		sr.pptr = Math.floor(sr.poolSize * Math.random());
-		sr.seedTime();
-		// entropy
-		var entropyStr = "";
-		// screen size and color depth: ~4.8 to ~5.4 bits
-		entropyStr += (window.screen.height * window.screen.width * window.screen.colorDepth);
-		entropyStr += (window.screen.availHeight * window.screen.availWidth * window.screen.pixelDepth);
-		// time zone offset: ~4 bits
-		var dateObj = new Date();
-		var timeZoneOffset = dateObj.getTimezoneOffset();
-		entropyStr += timeZoneOffset;
-		// user agent: ~8.3 to ~11.6 bits
-		entropyStr += navigator.userAgent;
-		// browser plugin details: ~16.2 to ~21.8 bits
-		var pluginsStr = "";
-		for (var i = 0; i < navigator.plugins.length; i++) {
-			pluginsStr += navigator.plugins[i].name + " " + navigator.plugins[i].filename + " " + navigator.plugins[i].description + " " + navigator.plugins[i].version + ", ";
-		}
-		var mimeTypesStr = "";
-		for (var i = 0; i < navigator.mimeTypes.length; i++) {
-			mimeTypesStr += navigator.mimeTypes[i].description + " " + navigator.mimeTypes[i].type + " " + navigator.mimeTypes[i].suffixes + ", ";
-		}
-		entropyStr += pluginsStr + mimeTypesStr;
-		// cookies and storage: 1 bit
-		entropyStr += navigator.cookieEnabled + typeof (sessionStorage) + typeof (localStorage);
-		// language: ~7 bit
-		entropyStr += navigator.language;
-		// history: ~2 bit
-		entropyStr += window.history.length;
-		// location
-		entropyStr += window.location;
+  // --- static methods ---
 
-		var entropyBytes = Crypto.SHA256(entropyStr, { asBytes: true });
-		for (var i = 0 ; i < entropyBytes.length ; i++) {
-			sr.seedInt8(entropyBytes[i]);
-		}
-	}
+  // Mix in the current time (w/milliseconds) into the pool
+  // NOTE: this method should be called from body click/keypress event handlers to increase entropy
+  sr.seedTime = function () {
+    sr.seedInt(new Date().getTime());
+  }
+
+  sr.getByte = function () {
+    if (sr.state == null) {
+      sr.seedTime();
+      sr.state = sr.ArcFour(); // Plug in your RNG constructor here
+      sr.state.init(sr.pool);
+      sr.poolCopyOnInit = [];
+      for (sr.pptr = 0; sr.pptr < sr.pool.length; ++sr.pptr)
+        sr.poolCopyOnInit[sr.pptr] = sr.pool[sr.pptr];
+      sr.pptr = 0;
+    }
+    // TODO: allow reseeding after first request
+    return sr.state.next();
+  }
+
+  // Mix in a 32-bit integer into the pool
+  sr.seedInt = function (x) {
+    sr.seedInt8(x);
+    sr.seedInt8((x >> 8));
+    sr.seedInt8((x >> 16));
+    sr.seedInt8((x >> 24));
+  }
+
+  // Mix in a 16-bit integer into the pool
+  sr.seedInt16 = function (x) {
+    sr.seedInt8(x);
+    sr.seedInt8((x >> 8));
+  }
+
+  // Mix in a 8-bit integer into the pool
+  sr.seedInt8 = function (x) {
+    sr.pool[sr.pptr++] ^= x & 255;
+    if (sr.pptr >= sr.poolSize) sr.pptr -= sr.poolSize;
+  }
+
+  // Arcfour is a PRNG
+  sr.ArcFour = function () {
+    function Arcfour() {
+      this.i = 0;
+      this.j = 0;
+      this.S = new Array();
+    }
+
+    // Initialize arcfour context from key, an array of ints, each from [0..255]
+    function ARC4init(key) {
+      var i, j, t;
+      for (i = 0; i < 256; ++i)
+        this.S[i] = i;
+      j = 0;
+      for (i = 0; i < 256; ++i) {
+        j = (j + this.S[i] + key[i % key.length]) & 255;
+        t = this.S[i];
+        this.S[i] = this.S[j];
+        this.S[j] = t;
+      }
+      this.i = 0;
+      this.j = 0;
+    }
+
+    function ARC4next() {
+      var t;
+      this.i = (this.i + 1) & 255;
+      this.j = (this.j + this.S[this.i]) & 255;
+      t = this.S[this.i];
+      this.S[this.i] = this.S[this.j];
+      this.S[this.j] = t;
+      return this.S[(t + this.S[this.i]) & 255];
+    }
+
+    Arcfour.prototype.init = ARC4init;
+    Arcfour.prototype.next = ARC4next;
+
+    return new Arcfour();
+  };
+
+
+  // Initialize the pool with junk if needed.
+  if (sr.pool == null) {
+    sr.pool = new Array();
+    sr.pptr = 0;
+    var t;
+    if (window.crypto && window.crypto.getRandomValues && window.Uint8Array) {
+      try {
+        // Use webcrypto if available
+        var ua = new Uint8Array(sr.poolSize);
+        window.crypto.getRandomValues(ua);
+        for (t = 0; t < sr.poolSize; ++t)
+          sr.pool[sr.pptr++] = ua[t];
+      } catch (e) { alert(e); }
+    }
+    while (sr.pptr < sr.poolSize) {  // extract some randomness from Math.random()
+      t = Math.floor(65536 * Math.random());
+      sr.pool[sr.pptr++] = t >>> 8;
+      sr.pool[sr.pptr++] = t & 255;
+    }
+    sr.pptr = Math.floor(sr.poolSize * Math.random());
+    sr.seedTime();
+    // entropy
+    var entropyStr = "";
+    // screen size and color depth: ~4.8 to ~5.4 bits
+    entropyStr += (window.screen.height * window.screen.width * window.screen.colorDepth);
+    entropyStr += (window.screen.availHeight * window.screen.availWidth * window.screen.pixelDepth);
+    // time zone offset: ~4 bits
+    var dateObj = new Date();
+    var timeZoneOffset = dateObj.getTimezoneOffset();
+    entropyStr += timeZoneOffset;
+    // user agent: ~8.3 to ~11.6 bits
+    entropyStr += navigator.userAgent;
+    // browser plugin details: ~16.2 to ~21.8 bits
+    var pluginsStr = "";
+    for (var i = 0; i < navigator.plugins.length; i++) {
+      pluginsStr += navigator.plugins[i].name + " " + navigator.plugins[i].filename + " " + navigator.plugins[i].description + " " + navigator.plugins[i].version + ", ";
+    }
+    var mimeTypesStr = "";
+    for (var i = 0; i < navigator.mimeTypes.length; i++) {
+      mimeTypesStr += navigator.mimeTypes[i].description + " " + navigator.mimeTypes[i].type + " " + navigator.mimeTypes[i].suffixes + ", ";
+    }
+    entropyStr += pluginsStr + mimeTypesStr;
+    // cookies and storage: 1 bit
+    entropyStr += navigator.cookieEnabled + typeof (sessionStorage) + typeof (localStorage);
+    // language: ~7 bit
+    entropyStr += navigator.language;
+    // history: ~2 bit
+    entropyStr += window.history.length;
+    // location
+    entropyStr += window.location;
+
+    var entropyBytes = Crypto.SHA256(entropyStr, { asBytes: true });
+    for (var i = 0 ; i < entropyBytes.length ; i++) {
+      sr.seedInt8(entropyBytes[i]);
+    }
+  }
 })();
-	</script>
+  </script>
 
 
 <script>
@@ -3847,7 +3958,7 @@ if (typeof Crypto == "undefined" || !Crypto.util) {
     </script>
 
 
-	<script type="text/javascript">
+  <script type="text/javascript">
 /*
 Copyright (c) 2011 Stefan Thomas
 
@@ -3860,97 +3971,97 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 //https://raw.github.com/bitcoinjs/bitcoinjs-lib/1a7fc9d063f864058809d06ef4542af40be3558f/src/bitcoin.js
 (function (exports) {
-	var Bitcoin = exports;
+  var Bitcoin = exports;
 })(
-	'object' === typeof module ? module.exports : (window.Bitcoin = {})
+  'object' === typeof module ? module.exports : (window.Bitcoin = {})
 );
-	</script>
+  </script>
 
-	<script type="text/javascript">
+  <script type="text/javascript">
 //https://raw.github.com/bitcoinjs/bitcoinjs-lib/c952aaeb3ee472e3776655b8ea07299ebed702c7/src/base58.js
 (function (Bitcoin) {
-	Bitcoin.Base58 = {
-		alphabet: "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz",
-		validRegex: /^[1-9A-HJ-NP-Za-km-z]+$/,
-		base: BigInteger.valueOf(58),
+  Bitcoin.Base58 = {
+    alphabet: "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz",
+    validRegex: /^[1-9A-HJ-NP-Za-km-z]+$/,
+    base: BigInteger.valueOf(58),
 
-		/**
-		* Convert a byte array to a base58-encoded string.
-		*
-		* Written by Mike Hearn for BitcoinJ.
-		*   Copyright (c) 2011 Google Inc.
-		*
-		* Ported to JavaScript by Stefan Thomas.
-		*/
-		encode: function (input) {
-			var bi = BigInteger.fromByteArrayUnsigned(input);
-			var chars = [];
+    /**
+    * Convert a byte array to a base58-encoded string.
+    *
+    * Written by Mike Hearn for BitcoinJ.
+    *   Copyright (c) 2011 Google Inc.
+    *
+    * Ported to JavaScript by Stefan Thomas.
+    */
+    encode: function (input) {
+      var bi = BigInteger.fromByteArrayUnsigned(input);
+      var chars = [];
 
-			while (bi.compareTo(B58.base) >= 0) {
-				var mod = bi.mod(B58.base);
-				chars.unshift(B58.alphabet[mod.intValue()]);
-				bi = bi.subtract(mod).divide(B58.base);
-			}
-			chars.unshift(B58.alphabet[bi.intValue()]);
+      while (bi.compareTo(B58.base) >= 0) {
+        var mod = bi.mod(B58.base);
+        chars.unshift(B58.alphabet[mod.intValue()]);
+        bi = bi.subtract(mod).divide(B58.base);
+      }
+      chars.unshift(B58.alphabet[bi.intValue()]);
 
-			// Convert leading zeros too.
-			for (var i = 0; i < input.length; i++) {
-				if (input[i] == 0x00) {
-					chars.unshift(B58.alphabet[0]);
-				} else break;
-			}
+      // Convert leading zeros too.
+      for (var i = 0; i < input.length; i++) {
+        if (input[i] == 0x00) {
+          chars.unshift(B58.alphabet[0]);
+        } else break;
+      }
 
-			return chars.join('');
-		},
+      return chars.join('');
+    },
 
-		/**
-		* Convert a base58-encoded string to a byte array.
-		*
-		* Written by Mike Hearn for BitcoinJ.
-		*   Copyright (c) 2011 Google Inc.
-		*
-		* Ported to JavaScript by Stefan Thomas.
-		*/
-		decode: function (input) {
-			var bi = BigInteger.valueOf(0);
-			var leadingZerosNum = 0;
-			for (var i = input.length - 1; i >= 0; i--) {
-				var alphaIndex = B58.alphabet.indexOf(input[i]);
-				if (alphaIndex < 0) {
-					throw "Invalid character";
-				}
-				bi = bi.add(BigInteger.valueOf(alphaIndex)
-								.multiply(B58.base.pow(input.length - 1 - i)));
+    /**
+    * Convert a base58-encoded string to a byte array.
+    *
+    * Written by Mike Hearn for BitcoinJ.
+    *   Copyright (c) 2011 Google Inc.
+    *
+    * Ported to JavaScript by Stefan Thomas.
+    */
+    decode: function (input) {
+      var bi = BigInteger.valueOf(0);
+      var leadingZerosNum = 0;
+      for (var i = input.length - 1; i >= 0; i--) {
+        var alphaIndex = B58.alphabet.indexOf(input[i]);
+        if (alphaIndex < 0) {
+          throw "Invalid character";
+        }
+        bi = bi.add(BigInteger.valueOf(alphaIndex)
+                .multiply(B58.base.pow(input.length - 1 - i)));
 
-				// This counts leading zero bytes
-				if (input[i] == "1") leadingZerosNum++;
-				else leadingZerosNum = 0;
-			}
-			var bytes = bi.toByteArrayUnsigned();
+        // This counts leading zero bytes
+        if (input[i] == "1") leadingZerosNum++;
+        else leadingZerosNum = 0;
+      }
+      var bytes = bi.toByteArrayUnsigned();
 
-			// Add leading zeros
-			while (leadingZerosNum-- > 0) bytes.unshift(0);
+      // Add leading zeros
+      while (leadingZerosNum-- > 0) bytes.unshift(0);
 
-			return bytes;
-		}
-	};
+      return bytes;
+    }
+  };
 
-	var B58 = Bitcoin.Base58;
+  var B58 = Bitcoin.Base58;
 })(
-	'undefined' != typeof Bitcoin ? Bitcoin : module.exports
+  'undefined' != typeof Bitcoin ? Bitcoin : module.exports
 );
-	</script>
-	<script type="text/javascript">
+  </script>
+  <script type="text/javascript">
 //https://raw.github.com/bitcoinjs/bitcoinjs-lib/09e8c6e184d6501a0c2c59d73ca64db5c0d3eb95/src/address.js
 Bitcoin.Address = function (bytes) {
-	if(server == mainnet)
-		this.version = 0x23; // FLO mainnet public address
-	else if(server == testnet)
-		this.version = 0x73; // FLO testnet public address
-	if ("string" == typeof bytes) {
-		bytes = Bitcoin.Address.decodeString(bytes,this.version);
-	}
-	this.hash = bytes;
+  if(server == mainnet)
+    this.version = 0x23; // FLO mainnet public address
+  else if(server == testnet)
+    this.version = 0x73; // FLO testnet public address
+  if ("string" == typeof bytes) {
+    bytes = Bitcoin.Address.decodeString(bytes,this.version);
+  }
+  this.hash = bytes;
 };
 
 Bitcoin.Address.networkVersion = 0x23; // (FLO mainnet 0x23, 35D), (Bitcoin Mainnet, 0x00, 0D) // *this has no effect *
@@ -3961,944 +4072,944 @@ Bitcoin.Address.networkVersion = 0x23; // (FLO mainnet 0x23, 35D), (Bitcoin Main
 * Returns the address as a base58-encoded string in the standardized format.
 */
 Bitcoin.Address.prototype.toString = function () {
-	// Get a copy of the hash
-	var hash = this.hash.slice(0);
+  // Get a copy of the hash
+  var hash = this.hash.slice(0);
 
-	// Version
-	hash.unshift(this.version);
-	var checksum = Crypto.SHA256(Crypto.SHA256(hash, { asBytes: true }), { asBytes: true });
-	var bytes = hash.concat(checksum.slice(0, 4));
-	return Bitcoin.Base58.encode(bytes);
+  // Version
+  hash.unshift(this.version);
+  var checksum = Crypto.SHA256(Crypto.SHA256(hash, { asBytes: true }), { asBytes: true });
+  var bytes = hash.concat(checksum.slice(0, 4));
+  return Bitcoin.Base58.encode(bytes);
 };
 
 Bitcoin.Address.prototype.getHashBase64 = function () {
-	return Crypto.util.bytesToBase64(this.hash);
+  return Crypto.util.bytesToBase64(this.hash);
 };
 
 /**
 * Parse a Bitcoin address contained in a string.
 */
 Bitcoin.Address.decodeString = function (string,version) {
-	var bytes = Bitcoin.Base58.decode(string);
-	var hash = bytes.slice(0, 21);
-	var checksum = Crypto.SHA256(Crypto.SHA256(hash, { asBytes: true }), { asBytes: true });
+  var bytes = Bitcoin.Base58.decode(string);
+  var hash = bytes.slice(0, 21);
+  var checksum = Crypto.SHA256(Crypto.SHA256(hash, { asBytes: true }), { asBytes: true });
 
-	if (checksum[0] != bytes[21] ||
-			checksum[1] != bytes[22] ||
-			checksum[2] != bytes[23] ||
-			checksum[3] != bytes[24]) {
-		throw "Checksum validation failed!";
-	}
+  if (checksum[0] != bytes[21] ||
+      checksum[1] != bytes[22] ||
+      checksum[2] != bytes[23] ||
+      checksum[3] != bytes[24]) {
+    throw "Checksum validation failed!";
+  }
 
-	if (version != hash.shift()) {
-		throw "Version " + hash.shift() + " not supported!";
-	}
+  if (version != hash.shift()) {
+    throw "Version " + hash.shift() + " not supported!";
+  }
 
-	return hash;
+  return hash;
 };
-	</script>
-	<script type="text/javascript">
+  </script>
+  <script type="text/javascript">
 //https://raw.github.com/bitcoinjs/bitcoinjs-lib/e90780d3d3b8fc0d027d2bcb38b80479902f223e/src/ecdsa.js
 Bitcoin.ECDSA = (function () {
-	var ecparams = EllipticCurve.getSECCurveByName("secp256k1");
-	var rng = new SecureRandom();
+  var ecparams = EllipticCurve.getSECCurveByName("secp256k1");
+  var rng = new SecureRandom();
 
-	var P_OVER_FOUR = null;
+  var P_OVER_FOUR = null;
 
-	function implShamirsTrick(P, k, Q, l) {
-		var m = Math.max(k.bitLength(), l.bitLength());
-		var Z = P.add2D(Q);
-		var R = P.curve.getInfinity();
+  function implShamirsTrick(P, k, Q, l) {
+    var m = Math.max(k.bitLength(), l.bitLength());
+    var Z = P.add2D(Q);
+    var R = P.curve.getInfinity();
 
-		for (var i = m - 1; i >= 0; --i) {
-			R = R.twice2D();
+    for (var i = m - 1; i >= 0; --i) {
+      R = R.twice2D();
 
-			R.z = BigInteger.ONE;
+      R.z = BigInteger.ONE;
 
-			if (k.testBit(i)) {
-				if (l.testBit(i)) {
-					R = R.add2D(Z);
-				} else {
-					R = R.add2D(P);
-				}
-			} else {
-				if (l.testBit(i)) {
-					R = R.add2D(Q);
-				}
-			}
-		}
+      if (k.testBit(i)) {
+        if (l.testBit(i)) {
+          R = R.add2D(Z);
+        } else {
+          R = R.add2D(P);
+        }
+      } else {
+        if (l.testBit(i)) {
+          R = R.add2D(Q);
+        }
+      }
+    }
 
-		return R;
-	};
+    return R;
+  };
 
-	var ECDSA = {
-		getBigRandom: function (limit) {
-			return new BigInteger(limit.bitLength(), rng)
-				.mod(limit.subtract(BigInteger.ONE))
-				.add(BigInteger.ONE);
-		},
-		sign: function (hash, priv) {
-			var d = priv;
-			var n = ecparams.getN();
-			var e = BigInteger.fromByteArrayUnsigned(hash);
+  var ECDSA = {
+    getBigRandom: function (limit) {
+      return new BigInteger(limit.bitLength(), rng)
+        .mod(limit.subtract(BigInteger.ONE))
+        .add(BigInteger.ONE);
+    },
+    sign: function (hash, priv) {
+      var d = priv;
+      var n = ecparams.getN();
+      var e = BigInteger.fromByteArrayUnsigned(hash);
 
-			do {
-				var k = ECDSA.getBigRandom(n);
-				var G = ecparams.getG();
-				var Q = G.multiply(k);
-				var r = Q.getX().toBigInteger().mod(n);
-			} while (r.compareTo(BigInteger.ZERO) <= 0);
+      do {
+        var k = ECDSA.getBigRandom(n);
+        var G = ecparams.getG();
+        var Q = G.multiply(k);
+        var r = Q.getX().toBigInteger().mod(n);
+      } while (r.compareTo(BigInteger.ZERO) <= 0);
 
-			var s = k.modInverse(n).multiply(e.add(d.multiply(r))).mod(n);
+      var s = k.modInverse(n).multiply(e.add(d.multiply(r))).mod(n);
 
-			return ECDSA.serializeSig(r, s);
-		},
+      return ECDSA.serializeSig(r, s);
+    },
 
-		verify: function (hash, sig, pubkey) {
-			var r, s;
-			if (Bitcoin.Util.isArray(sig)) {
-				var obj = ECDSA.parseSig(sig);
-				r = obj.r;
-				s = obj.s;
-			} else if ("object" === typeof sig && sig.r && sig.s) {
-				r = sig.r;
-				s = sig.s;
-			} else {
-				throw "Invalid value for signature";
-			}
+    verify: function (hash, sig, pubkey) {
+      var r, s;
+      if (Bitcoin.Util.isArray(sig)) {
+        var obj = ECDSA.parseSig(sig);
+        r = obj.r;
+        s = obj.s;
+      } else if ("object" === typeof sig && sig.r && sig.s) {
+        r = sig.r;
+        s = sig.s;
+      } else {
+        throw "Invalid value for signature";
+      }
 
-			var Q;
-			if (pubkey instanceof ec.PointFp) {
-				Q = pubkey;
-			} else if (Bitcoin.Util.isArray(pubkey)) {
-				Q = EllipticCurve.PointFp.decodeFrom(ecparams.getCurve(), pubkey);
-			} else {
-				throw "Invalid format for pubkey value, must be byte array or ec.PointFp";
-			}
-			var e = BigInteger.fromByteArrayUnsigned(hash);
+      var Q;
+      if (pubkey instanceof ec.PointFp) {
+        Q = pubkey;
+      } else if (Bitcoin.Util.isArray(pubkey)) {
+        Q = EllipticCurve.PointFp.decodeFrom(ecparams.getCurve(), pubkey);
+      } else {
+        throw "Invalid format for pubkey value, must be byte array or ec.PointFp";
+      }
+      var e = BigInteger.fromByteArrayUnsigned(hash);
 
-			return ECDSA.verifyRaw(e, r, s, Q);
-		},
+      return ECDSA.verifyRaw(e, r, s, Q);
+    },
 
-		verifyRaw: function (e, r, s, Q) {
-			var n = ecparams.getN();
-			var G = ecparams.getG();
+    verifyRaw: function (e, r, s, Q) {
+      var n = ecparams.getN();
+      var G = ecparams.getG();
 
-			if (r.compareTo(BigInteger.ONE) < 0 ||
+      if (r.compareTo(BigInteger.ONE) < 0 ||
           r.compareTo(n) >= 0)
-				return false;
+        return false;
 
-			if (s.compareTo(BigInteger.ONE) < 0 ||
+      if (s.compareTo(BigInteger.ONE) < 0 ||
           s.compareTo(n) >= 0)
-				return false;
+        return false;
 
-			var c = s.modInverse(n);
+      var c = s.modInverse(n);
 
-			var u1 = e.multiply(c).mod(n);
-			var u2 = r.multiply(c).mod(n);
+      var u1 = e.multiply(c).mod(n);
+      var u2 = r.multiply(c).mod(n);
 
-			// TODO(!!!): For some reason Shamir's trick isn't working with
-			// signed message verification!? Probably an implementation
-			// error!
-			//var point = implShamirsTrick(G, u1, Q, u2);
-			var point = G.multiply(u1).add(Q.multiply(u2));
+      // TODO(!!!): For some reason Shamir's trick isn't working with
+      // signed message verification!? Probably an implementation
+      // error!
+      //var point = implShamirsTrick(G, u1, Q, u2);
+      var point = G.multiply(u1).add(Q.multiply(u2));
 
-			var v = point.getX().toBigInteger().mod(n);
+      var v = point.getX().toBigInteger().mod(n);
 
-			return v.equals(r);
-		},
+      return v.equals(r);
+    },
 
-		/**
-		* Serialize a signature into DER format.
-		*
-		* Takes two BigIntegers representing r and s and returns a byte array.
-		*/
-		serializeSig: function (r, s) {
-			var rBa = r.toByteArraySigned();
-			var sBa = s.toByteArraySigned();
+    /**
+    * Serialize a signature into DER format.
+    *
+    * Takes two BigIntegers representing r and s and returns a byte array.
+    */
+    serializeSig: function (r, s) {
+      var rBa = r.toByteArraySigned();
+      var sBa = s.toByteArraySigned();
 
-			var sequence = [];
-			sequence.push(0x02); // INTEGER
-			sequence.push(rBa.length);
-			sequence = sequence.concat(rBa);
+      var sequence = [];
+      sequence.push(0x02); // INTEGER
+      sequence.push(rBa.length);
+      sequence = sequence.concat(rBa);
 
-			sequence.push(0x02); // INTEGER
-			sequence.push(sBa.length);
-			sequence = sequence.concat(sBa);
+      sequence.push(0x02); // INTEGER
+      sequence.push(sBa.length);
+      sequence = sequence.concat(sBa);
 
-			sequence.unshift(sequence.length);
-			sequence.unshift(0x30); // SEQUENCE
+      sequence.unshift(sequence.length);
+      sequence.unshift(0x30); // SEQUENCE
 
-			return sequence;
-		},
+      return sequence;
+    },
 
-		/**
-		* Parses a byte array containing a DER-encoded signature.
-		*
-		* This function will return an object of the form:
-		*
-		* {
-		*   r: BigInteger,
-		*   s: BigInteger
-		* }
-		*/
-		parseSig: function (sig) {
-			var cursor;
-			if (sig[0] != 0x30)
-				throw new Error("Signature not a valid DERSequence");
+    /**
+    * Parses a byte array containing a DER-encoded signature.
+    *
+    * This function will return an object of the form:
+    *
+    * {
+    *   r: BigInteger,
+    *   s: BigInteger
+    * }
+    */
+    parseSig: function (sig) {
+      var cursor;
+      if (sig[0] != 0x30)
+        throw new Error("Signature not a valid DERSequence");
 
-			cursor = 2;
-			if (sig[cursor] != 0x02)
-				throw new Error("First element in signature must be a DERInteger"); ;
-			var rBa = sig.slice(cursor + 2, cursor + 2 + sig[cursor + 1]);
+      cursor = 2;
+      if (sig[cursor] != 0x02)
+        throw new Error("First element in signature must be a DERInteger"); ;
+      var rBa = sig.slice(cursor + 2, cursor + 2 + sig[cursor + 1]);
 
-			cursor += 2 + sig[cursor + 1];
-			if (sig[cursor] != 0x02)
-				throw new Error("Second element in signature must be a DERInteger");
-			var sBa = sig.slice(cursor + 2, cursor + 2 + sig[cursor + 1]);
+      cursor += 2 + sig[cursor + 1];
+      if (sig[cursor] != 0x02)
+        throw new Error("Second element in signature must be a DERInteger");
+      var sBa = sig.slice(cursor + 2, cursor + 2 + sig[cursor + 1]);
 
-			cursor += 2 + sig[cursor + 1];
+      cursor += 2 + sig[cursor + 1];
 
-			//if (cursor != sig.length)
-			//	throw new Error("Extra bytes in signature");
+      //if (cursor != sig.length)
+      //  throw new Error("Extra bytes in signature");
 
-			var r = BigInteger.fromByteArrayUnsigned(rBa);
-			var s = BigInteger.fromByteArrayUnsigned(sBa);
+      var r = BigInteger.fromByteArrayUnsigned(rBa);
+      var s = BigInteger.fromByteArrayUnsigned(sBa);
 
-			return { r: r, s: s };
-		},
+      return { r: r, s: s };
+    },
 
-		parseSigCompact: function (sig) {
-			if (sig.length !== 65) {
-				throw "Signature has the wrong length";
-			}
+    parseSigCompact: function (sig) {
+      if (sig.length !== 65) {
+        throw "Signature has the wrong length";
+      }
 
-			// Signature is prefixed with a type byte storing three bits of
-			// information.
-			var i = sig[0] - 27;
-			if (i < 0 || i > 7) {
-				throw "Invalid signature type";
-			}
+      // Signature is prefixed with a type byte storing three bits of
+      // information.
+      var i = sig[0] - 27;
+      if (i < 0 || i > 7) {
+        throw "Invalid signature type";
+      }
 
-			var n = ecparams.getN();
-			var r = BigInteger.fromByteArrayUnsigned(sig.slice(1, 33)).mod(n);
-			var s = BigInteger.fromByteArrayUnsigned(sig.slice(33, 65)).mod(n);
+      var n = ecparams.getN();
+      var r = BigInteger.fromByteArrayUnsigned(sig.slice(1, 33)).mod(n);
+      var s = BigInteger.fromByteArrayUnsigned(sig.slice(33, 65)).mod(n);
 
-			return { r: r, s: s, i: i };
-		},
+      return { r: r, s: s, i: i };
+    },
 
-		/**
-		* Recover a public key from a signature.
-		*
-		* See SEC 1: Elliptic Curve Cryptography, section 4.1.6, "Public
-		* Key Recovery Operation".
-		*
-		* http://www.secg.org/download/aid-780/sec1-v2.pdf
-		*/
-		recoverPubKey: function (r, s, hash, i) {
-			// The recovery parameter i has two bits.
-			i = i & 3;
+    /**
+    * Recover a public key from a signature.
+    *
+    * See SEC 1: Elliptic Curve Cryptography, section 4.1.6, "Public
+    * Key Recovery Operation".
+    *
+    * http://www.secg.org/download/aid-780/sec1-v2.pdf
+    */
+    recoverPubKey: function (r, s, hash, i) {
+      // The recovery parameter i has two bits.
+      i = i & 3;
 
-			// The less significant bit specifies whether the y coordinate
-			// of the compressed point is even or not.
-			var isYEven = i & 1;
+      // The less significant bit specifies whether the y coordinate
+      // of the compressed point is even or not.
+      var isYEven = i & 1;
 
-			// The more significant bit specifies whether we should use the
-			// first or second candidate key.
-			var isSecondKey = i >> 1;
+      // The more significant bit specifies whether we should use the
+      // first or second candidate key.
+      var isSecondKey = i >> 1;
 
-			var n = ecparams.getN();
-			var G = ecparams.getG();
-			var curve = ecparams.getCurve();
-			var p = curve.getQ();
-			var a = curve.getA().toBigInteger();
-			var b = curve.getB().toBigInteger();
+      var n = ecparams.getN();
+      var G = ecparams.getG();
+      var curve = ecparams.getCurve();
+      var p = curve.getQ();
+      var a = curve.getA().toBigInteger();
+      var b = curve.getB().toBigInteger();
 
-			// We precalculate (p + 1) / 4 where p is if the field order
-			if (!P_OVER_FOUR) {
-				P_OVER_FOUR = p.add(BigInteger.ONE).divide(BigInteger.valueOf(4));
-			}
+      // We precalculate (p + 1) / 4 where p is if the field order
+      if (!P_OVER_FOUR) {
+        P_OVER_FOUR = p.add(BigInteger.ONE).divide(BigInteger.valueOf(4));
+      }
 
-			// 1.1 Compute x
-			var x = isSecondKey ? r.add(n) : r;
+      // 1.1 Compute x
+      var x = isSecondKey ? r.add(n) : r;
 
-			// 1.3 Convert x to point
-			var alpha = x.multiply(x).multiply(x).add(a.multiply(x)).add(b).mod(p);
-			var beta = alpha.modPow(P_OVER_FOUR, p);
+      // 1.3 Convert x to point
+      var alpha = x.multiply(x).multiply(x).add(a.multiply(x)).add(b).mod(p);
+      var beta = alpha.modPow(P_OVER_FOUR, p);
 
-			var xorOdd = beta.isEven() ? (i % 2) : ((i + 1) % 2);
-			// If beta is even, but y isn't or vice versa, then convert it,
-			// otherwise we're done and y == beta.
-			var y = (beta.isEven() ? !isYEven : isYEven) ? beta : p.subtract(beta);
+      var xorOdd = beta.isEven() ? (i % 2) : ((i + 1) % 2);
+      // If beta is even, but y isn't or vice versa, then convert it,
+      // otherwise we're done and y == beta.
+      var y = (beta.isEven() ? !isYEven : isYEven) ? beta : p.subtract(beta);
 
-			// 1.4 Check that nR is at infinity
-			var R = new EllipticCurve.PointFp(curve,
+      // 1.4 Check that nR is at infinity
+      var R = new EllipticCurve.PointFp(curve,
                             curve.fromBigInteger(x),
                             curve.fromBigInteger(y));
-			R.validate();
+      R.validate();
 
-			// 1.5 Compute e from M
-			var e = BigInteger.fromByteArrayUnsigned(hash);
-			var eNeg = BigInteger.ZERO.subtract(e).mod(n);
+      // 1.5 Compute e from M
+      var e = BigInteger.fromByteArrayUnsigned(hash);
+      var eNeg = BigInteger.ZERO.subtract(e).mod(n);
 
-			// 1.6 Compute Q = r^-1 (sR - eG)
-			var rInv = r.modInverse(n);
-			var Q = implShamirsTrick(R, s, G, eNeg).multiply(rInv);
+      // 1.6 Compute Q = r^-1 (sR - eG)
+      var rInv = r.modInverse(n);
+      var Q = implShamirsTrick(R, s, G, eNeg).multiply(rInv);
 
-			Q.validate();
-			if (!ECDSA.verifyRaw(e, r, s, Q)) {
-				throw "Pubkey recovery unsuccessful";
-			}
+      Q.validate();
+      if (!ECDSA.verifyRaw(e, r, s, Q)) {
+        throw "Pubkey recovery unsuccessful";
+      }
 
-			var pubKey = new Bitcoin.ECKey();
-			pubKey.pub = Q;
-			return pubKey;
-		},
+      var pubKey = new Bitcoin.ECKey();
+      pubKey.pub = Q;
+      return pubKey;
+    },
 
-		/**
-		* Calculate pubkey extraction parameter.
-		*
-		* When extracting a pubkey from a signature, we have to
-		* distinguish four different cases. Rather than putting this
-		* burden on the verifier, Bitcoin includes a 2-bit value with the
-		* signature.
-		*
-		* This function simply tries all four cases and returns the value
-		* that resulted in a successful pubkey recovery.
-		*/
-		calcPubkeyRecoveryParam: function (address, r, s, hash) {
-			for (var i = 0; i < 4; i++) {
-				try {
-					var pubkey = Bitcoin.ECDSA.recoverPubKey(r, s, hash, i);
-					if (pubkey.getBitcoinAddress().toString() == address) {
-						return i;
-					}
-				} catch (e) { }
-			}
-			throw "Unable to find valid recovery factor";
-		}
-	};
+    /**
+    * Calculate pubkey extraction parameter.
+    *
+    * When extracting a pubkey from a signature, we have to
+    * distinguish four different cases. Rather than putting this
+    * burden on the verifier, Bitcoin includes a 2-bit value with the
+    * signature.
+    *
+    * This function simply tries all four cases and returns the value
+    * that resulted in a successful pubkey recovery.
+    */
+    calcPubkeyRecoveryParam: function (address, r, s, hash) {
+      for (var i = 0; i < 4; i++) {
+        try {
+          var pubkey = Bitcoin.ECDSA.recoverPubKey(r, s, hash, i);
+          if (pubkey.getBitcoinAddress().toString() == address) {
+            return i;
+          }
+        } catch (e) { }
+      }
+      throw "Unable to find valid recovery factor";
+    }
+  };
 
-	return ECDSA;
+  return ECDSA;
 })();
-	</script>
-	<script type="text/javascript">
+  </script>
+  <script type="text/javascript">
 Bitcoin.KeyPool = (function () {
-	var KeyPool = function () {
-		this.keyArray = [];
+  var KeyPool = function () {
+    this.keyArray = [];
 
-		this.push = function (item) {
-			if (item == null || item.priv == null) return;
-			var doAdd = true;
-			// prevent duplicates from being added to the array
-			for (var index in this.keyArray) {
-				var currentItem = this.keyArray[index];
-				if (currentItem != null && currentItem.priv != null && item.getBitcoinAddress() == currentItem.getBitcoinAddress()) {
-					doAdd = false;
-					break;
-				}
-			}
-			if (doAdd) this.keyArray.push(item);
-		};
+    this.push = function (item) {
+      if (item == null || item.priv == null) return;
+      var doAdd = true;
+      // prevent duplicates from being added to the array
+      for (var index in this.keyArray) {
+        var currentItem = this.keyArray[index];
+        if (currentItem != null && currentItem.priv != null && item.getBitcoinAddress() == currentItem.getBitcoinAddress()) {
+          doAdd = false;
+          break;
+        }
+      }
+      if (doAdd) this.keyArray.push(item);
+    };
 
-		this.reset = function () {
-			this.keyArray = [];
-		};
+    this.reset = function () {
+      this.keyArray = [];
+    };
 
-		this.getArray = function () {
-			// copy array
-			return this.keyArray.slice(0);
-		};
+    this.getArray = function () {
+      // copy array
+      return this.keyArray.slice(0);
+    };
 
-		this.setArray = function (ka) {
-			this.keyArray = ka;
-		};
+    this.setArray = function (ka) {
+      this.keyArray = ka;
+    };
 
-		this.length = function () {
-			return this.keyArray.length;
-		};
+    this.length = function () {
+      return this.keyArray.length;
+    };
 
-		this.toString = function () {
-			var keyPoolString = "# = " + this.length() + "\n";
-			var pool = this.getArray();
-			for (var index in pool) {
-				var item = pool[index];
-				if (Bitcoin.Util.hasMethods(item, 'getBitcoinAddress', 'toString')) {
-					if (item != null) {
-						keyPoolString += "\"" + item.getBitcoinAddress() + "\"" + ", \"" + item.toString("wif") + "\"\n";
-					}
-				}
-			}
+    this.toString = function () {
+      var keyPoolString = "# = " + this.length() + "\n";
+      var pool = this.getArray();
+      for (var index in pool) {
+        var item = pool[index];
+        if (Bitcoin.Util.hasMethods(item, 'getBitcoinAddress', 'toString')) {
+          if (item != null) {
+            keyPoolString += "\"" + item.getBitcoinAddress() + "\"" + ", \"" + item.toString("wif") + "\"\n";
+          }
+        }
+      }
 
-			return keyPoolString;
-		};
+      return keyPoolString;
+    };
 
-		return this;
-	};
+    return this;
+  };
 
-	return new KeyPool();
+  return new KeyPool();
 })();
 
 Bitcoin.Bip38Key = (function () {
-	var Bip38 = function (address, encryptedKey) {
-		this.address = address;
-		this.priv = encryptedKey;
-	};
+  var Bip38 = function (address, encryptedKey) {
+    this.address = address;
+    this.priv = encryptedKey;
+  };
 
-	Bip38.prototype.getBitcoinAddress = function () {
-		return this.address;
-	};
+  Bip38.prototype.getBitcoinAddress = function () {
+    return this.address;
+  };
 
-	Bip38.prototype.toString = function () {
-		return this.priv;
-	};
+  Bip38.prototype.toString = function () {
+    return this.priv;
+  };
 
-	return Bip38;
+  return Bip38;
 })();
 
 //https://raw.github.com/pointbiz/bitcoinjs-lib/9b2f94a028a7bc9bed94e0722563e9ff1d8e8db8/src/eckey.js
 Bitcoin.ECKey = (function () {
-	var ECDSA = Bitcoin.ECDSA;
-	var KeyPool = Bitcoin.KeyPool;
-	var ecparams = EllipticCurve.getSECCurveByName("secp256k1");
+  var ECDSA = Bitcoin.ECDSA;
+  var KeyPool = Bitcoin.KeyPool;
+  var ecparams = EllipticCurve.getSECCurveByName("secp256k1");
 
-	var ECKey = function (input) {
-		if (!input) {
-			// Generate new key
-			var n = ecparams.getN();
-			this.priv = ECDSA.getBigRandom(n);
-		} else if (input instanceof BigInteger) {
-			// Input is a private key value
-			this.priv = input;
-		} else if (Bitcoin.Util.isArray(input)) {
-			// Prepend zero byte to prevent interpretation as negative integer
-			this.priv = BigInteger.fromByteArrayUnsigned(input);
-		} else if ("string" == typeof input) {
-			var bytes = null;
-			try{
+  var ECKey = function (input) {
+    if (!input) {
+      // Generate new key
+      var n = ecparams.getN();
+      this.priv = ECDSA.getBigRandom(n);
+    } else if (input instanceof BigInteger) {
+      // Input is a private key value
+      this.priv = input;
+    } else if (Bitcoin.Util.isArray(input)) {
+      // Prepend zero byte to prevent interpretation as negative integer
+      this.priv = BigInteger.fromByteArrayUnsigned(input);
+    } else if ("string" == typeof input) {
+      var bytes = null;
+      try{
 
-			// This part is edited for FLO. FLO WIF are always compressed WIF. FLO WIF (private key) starts with R for mainnet and c for testnet.
-				if((server == mainnet && /^R[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{51}$/.test(input)) ||
-					(server == testnet && /^c[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{51}$/.test(input))) {
-					bytes = ECKey.decodeCompressedWalletImportFormat(input);
-					this.compressed = true;
-				}
+      // This part is edited for FLO. FLO WIF are always compressed WIF. FLO WIF (private key) starts with R for mainnet and c for testnet.
+        if((server == mainnet && /^R[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{51}$/.test(input)) ||
+          (server == testnet && /^c[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{51}$/.test(input))) {
+          bytes = ECKey.decodeCompressedWalletImportFormat(input);
+          this.compressed = true;
+        }
 
 
-			/*
-				if (ECKey.isWalletImportFormat(input)) {
-					bytes = ECKey.decodeWalletImportFormat(input);
-				} else if (ECKey.isCompressedWalletImportFormat(input)) {
-					bytes = ECKey.decodeCompressedWalletImportFormat(input);
-					this.compressed = true;
-				} else if (ECKey.isMiniFormat(input)) {
-					bytes = Crypto.SHA256(input, { asBytes: true });
-				} else if (ECKey.isHexFormat(input)) {
-					bytes = Crypto.util.hexToBytes(input);
-				} else if (ECKey.isBase64Format(input)) {
-					bytes = Crypto.util.base64ToBytes(input);
-				}
-				*/
-			} catch (exc1) {
-				this.setError(exc1);
-			}
+      /*
+        if (ECKey.isWalletImportFormat(input)) {
+          bytes = ECKey.decodeWalletImportFormat(input);
+        } else if (ECKey.isCompressedWalletImportFormat(input)) {
+          bytes = ECKey.decodeCompressedWalletImportFormat(input);
+          this.compressed = true;
+        } else if (ECKey.isMiniFormat(input)) {
+          bytes = Crypto.SHA256(input, { asBytes: true });
+        } else if (ECKey.isHexFormat(input)) {
+          bytes = Crypto.util.hexToBytes(input);
+        } else if (ECKey.isBase64Format(input)) {
+          bytes = Crypto.util.base64ToBytes(input);
+        }
+        */
+      } catch (exc1) {
+        this.setError(exc1);
+      }
 
-			if (ECKey.isBase6Format(input)) {
-				this.priv = new BigInteger(input, 6);
-			} else if (bytes == null || bytes.length != 32) {
-				this.priv = null;
-			} else {
-				// Prepend zero byte to prevent interpretation as negative integer
-				this.priv = BigInteger.fromByteArrayUnsigned(bytes);
-			}
-		}
+      if (ECKey.isBase6Format(input)) {
+        this.priv = new BigInteger(input, 6);
+      } else if (bytes == null || bytes.length != 32) {
+        this.priv = null;
+      } else {
+        // Prepend zero byte to prevent interpretation as negative integer
+        this.priv = BigInteger.fromByteArrayUnsigned(bytes);
+      }
+    }
 
-		this.compressed = (this.compressed == undefined) ? !!ECKey.compressByDefault : this.compressed;
-		try {
-			// check not zero
-			if (this.priv != null && BigInteger.ZERO.compareTo(this.priv) == 0) this.setError("Error: BigInteger equal to zero.");
-			// valid range [0x1, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364140])
-			var hexKeyRangeLimit = "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364140";
-			var rangeLimitBytes = Crypto.util.hexToBytes(hexKeyRangeLimit);
-			var limitBigInt = BigInteger.fromByteArrayUnsigned(rangeLimitBytes);
-			if (this.priv != null && limitBigInt.compareTo(this.priv) < 0) this.setError("Error: BigInteger outside of curve range.")
+    this.compressed = (this.compressed == undefined) ? !!ECKey.compressByDefault : this.compressed;
+    try {
+      // check not zero
+      if (this.priv != null && BigInteger.ZERO.compareTo(this.priv) == 0) this.setError("Error: BigInteger equal to zero.");
+      // valid range [0x1, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364140])
+      var hexKeyRangeLimit = "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364140";
+      var rangeLimitBytes = Crypto.util.hexToBytes(hexKeyRangeLimit);
+      var limitBigInt = BigInteger.fromByteArrayUnsigned(rangeLimitBytes);
+      if (this.priv != null && limitBigInt.compareTo(this.priv) < 0) this.setError("Error: BigInteger outside of curve range.")
 
-			if (this.priv != null) {
-				KeyPool.push(this);
-			}
-		} catch (exc2) {
-			this.setError(exc2);
-		}
-	};
+      if (this.priv != null) {
+        KeyPool.push(this);
+      }
+    } catch (exc2) {
+      this.setError(exc2);
+    }
+  };
 
-	if(server == mainnet)
-		ECKey.privateKeyPrefix = 0xA3; //(Bitcoin mainnet 0x80    testnet 0xEF) (FLO mainnet 0xA3 163 D)
-	else if(server == testnet)
-		ECKey.privateKeyPrefix = 0xEF; //FLO testnet
+  if(server == mainnet)
+    ECKey.privateKeyPrefix = 0xA3; //(Bitcoin mainnet 0x80    testnet 0xEF) (FLO mainnet 0xA3 163 D)
+  else if(server == testnet)
+    ECKey.privateKeyPrefix = 0xEF; //FLO testnet
 
-	/**
-	* Whether public keys should be returned compressed by default.
-	*/
-	ECKey.compressByDefault = false;
+  /**
+  * Whether public keys should be returned compressed by default.
+  */
+  ECKey.compressByDefault = false;
 
-	/**
-	* Set whether the public key should be returned compressed or not.
-	*/
-	ECKey.prototype.setError = function (err) {
-		this.error = err;
-		this.priv = null;
-		return this;
-	};
+  /**
+  * Set whether the public key should be returned compressed or not.
+  */
+  ECKey.prototype.setError = function (err) {
+    this.error = err;
+    this.priv = null;
+    return this;
+  };
 
-	/**
-	* Set whether the public key should be returned compressed or not.
-	*/
-	ECKey.prototype.setCompressed = function (v) {
-		this.compressed = !!v;
-		if (this.pubPoint) this.pubPoint.compressed = this.compressed;
-		return this;
-	};
+  /**
+  * Set whether the public key should be returned compressed or not.
+  */
+  ECKey.prototype.setCompressed = function (v) {
+    this.compressed = !!v;
+    if (this.pubPoint) this.pubPoint.compressed = this.compressed;
+    return this;
+  };
 
-	/*
-	* Return public key as a byte array in DER encoding
-	*/
-	ECKey.prototype.getPub = function () {
-		if (this.compressed) {
-			if (this.pubComp) return this.pubComp;
-			return this.pubComp = this.getPubPoint().getEncoded(1);
-		} else {
-			if (this.pubUncomp) return this.pubUncomp;
-			return this.pubUncomp = this.getPubPoint().getEncoded(0);
-		}
-	};
+  /*
+  * Return public key as a byte array in DER encoding
+  */
+  ECKey.prototype.getPub = function () {
+    if (this.compressed) {
+      if (this.pubComp) return this.pubComp;
+      return this.pubComp = this.getPubPoint().getEncoded(1);
+    } else {
+      if (this.pubUncomp) return this.pubUncomp;
+      return this.pubUncomp = this.getPubPoint().getEncoded(0);
+    }
+  };
 
-	/**
-	* Return public point as ECPoint object.
-	*/
-	ECKey.prototype.getPubPoint = function () {
-		if (!this.pubPoint) {
-			this.pubPoint = ecparams.getG().multiply(this.priv);
-			this.pubPoint.compressed = this.compressed;
-		}
-		return this.pubPoint;
-	};
+  /**
+  * Return public point as ECPoint object.
+  */
+  ECKey.prototype.getPubPoint = function () {
+    if (!this.pubPoint) {
+      this.pubPoint = ecparams.getG().multiply(this.priv);
+      this.pubPoint.compressed = this.compressed;
+    }
+    return this.pubPoint;
+  };
 
-	ECKey.prototype.getPubKeyHex = function () {
-		if (this.compressed) {
-			if (this.pubKeyHexComp) return this.pubKeyHexComp;
-			return this.pubKeyHexComp = Crypto.util.bytesToHex(this.getPub()).toString().toUpperCase();
-		} else {
-			if (this.pubKeyHexUncomp) return this.pubKeyHexUncomp;
-			return this.pubKeyHexUncomp = Crypto.util.bytesToHex(this.getPub()).toString().toUpperCase();
-		}
-	};
+  ECKey.prototype.getPubKeyHex = function () {
+    if (this.compressed) {
+      if (this.pubKeyHexComp) return this.pubKeyHexComp;
+      return this.pubKeyHexComp = Crypto.util.bytesToHex(this.getPub()).toString().toUpperCase();
+    } else {
+      if (this.pubKeyHexUncomp) return this.pubKeyHexUncomp;
+      return this.pubKeyHexUncomp = Crypto.util.bytesToHex(this.getPub()).toString().toUpperCase();
+    }
+  };
 
-	/**
-	* Get the pubKeyHash for this key.
-	*
-	* This is calculated as RIPE160(SHA256([encoded pubkey])) and returned as
-	* a byte array.
-	*/
-	ECKey.prototype.getPubKeyHash = function () {
-		if (this.compressed) {
-			if (this.pubKeyHashComp) return this.pubKeyHashComp;
-			return this.pubKeyHashComp = Bitcoin.Util.sha256ripe160(this.getPub());
-		} else {
-			if (this.pubKeyHashUncomp) return this.pubKeyHashUncomp;
-			return this.pubKeyHashUncomp = Bitcoin.Util.sha256ripe160(this.getPub());
-		}
-	};
+  /**
+  * Get the pubKeyHash for this key.
+  *
+  * This is calculated as RIPE160(SHA256([encoded pubkey])) and returned as
+  * a byte array.
+  */
+  ECKey.prototype.getPubKeyHash = function () {
+    if (this.compressed) {
+      if (this.pubKeyHashComp) return this.pubKeyHashComp;
+      return this.pubKeyHashComp = Bitcoin.Util.sha256ripe160(this.getPub());
+    } else {
+      if (this.pubKeyHashUncomp) return this.pubKeyHashUncomp;
+      return this.pubKeyHashUncomp = Bitcoin.Util.sha256ripe160(this.getPub());
+    }
+  };
 
-	ECKey.prototype.getBitcoinAddress = function () {
-		var hash = this.getPubKeyHash();
-		var addr = new Bitcoin.Address(hash);
-		return addr.toString();
-	};
+  ECKey.prototype.getBitcoinAddress = function () {
+    var hash = this.getPubKeyHash();
+    var addr = new Bitcoin.Address(hash);
+    return addr.toString();
+  };
 
-	/*
-	* Takes a public point as a hex string or byte array
-	*/
-	ECKey.prototype.setPub = function (pub) {
-		// byte array
-		if (Bitcoin.Util.isArray(pub)) {
-			pub = Crypto.util.bytesToHex(pub).toString().toUpperCase();
-		}
-		var ecPoint = ecparams.getCurve().decodePointHex(pub);
-		this.setCompressed(ecPoint.compressed);
-		this.pubPoint = ecPoint;
-		return this;
-	};
+  /*
+  * Takes a public point as a hex string or byte array
+  */
+  ECKey.prototype.setPub = function (pub) {
+    // byte array
+    if (Bitcoin.Util.isArray(pub)) {
+      pub = Crypto.util.bytesToHex(pub).toString().toUpperCase();
+    }
+    var ecPoint = ecparams.getCurve().decodePointHex(pub);
+    this.setCompressed(ecPoint.compressed);
+    this.pubPoint = ecPoint;
+    return this;
+  };
 
-	// Sipa Private Key Wallet Import Format
-	ECKey.prototype.getBitcoinWalletImportFormat = function () {
-		var bytes = this.getBitcoinPrivateKeyByteArray();
-		if (bytes == null) return "";
-		bytes.unshift(ECKey.privateKeyPrefix); // prepend 0x80 byte
-		if (this.compressed) bytes.push(0x01); // append 0x01 byte for compressed format
-		var checksum = Crypto.SHA256(Crypto.SHA256(bytes, { asBytes: true }), { asBytes: true });
-		bytes = bytes.concat(checksum.slice(0, 4));
-		var privWif = Bitcoin.Base58.encode(bytes);
-		return privWif;
-	};
+  // Sipa Private Key Wallet Import Format
+  ECKey.prototype.getBitcoinWalletImportFormat = function () {
+    var bytes = this.getBitcoinPrivateKeyByteArray();
+    if (bytes == null) return "";
+    bytes.unshift(ECKey.privateKeyPrefix); // prepend 0x80 byte
+    if (this.compressed) bytes.push(0x01); // append 0x01 byte for compressed format
+    var checksum = Crypto.SHA256(Crypto.SHA256(bytes, { asBytes: true }), { asBytes: true });
+    bytes = bytes.concat(checksum.slice(0, 4));
+    var privWif = Bitcoin.Base58.encode(bytes);
+    return privWif;
+  };
 
-	// Private Key Hex Format
-	ECKey.prototype.getBitcoinHexFormat = function () {
-		return Crypto.util.bytesToHex(this.getBitcoinPrivateKeyByteArray()).toString().toUpperCase();
-	};
+  // Private Key Hex Format
+  ECKey.prototype.getBitcoinHexFormat = function () {
+    return Crypto.util.bytesToHex(this.getBitcoinPrivateKeyByteArray()).toString().toUpperCase();
+  };
 
-	// Private Key Base64 Format
-	ECKey.prototype.getBitcoinBase64Format = function () {
-		return Crypto.util.bytesToBase64(this.getBitcoinPrivateKeyByteArray());
-	};
+  // Private Key Base64 Format
+  ECKey.prototype.getBitcoinBase64Format = function () {
+    return Crypto.util.bytesToBase64(this.getBitcoinPrivateKeyByteArray());
+  };
 
-	ECKey.prototype.getBitcoinPrivateKeyByteArray = function () {
-		if (this.priv == null) return null;
-		// Get a copy of private key as a byte array
-		var bytes = this.priv.toByteArrayUnsigned();
-		// zero pad if private key is less than 32 bytes
-		while (bytes.length < 32) bytes.unshift(0x00);
-		return bytes;
-	};
+  ECKey.prototype.getBitcoinPrivateKeyByteArray = function () {
+    if (this.priv == null) return null;
+    // Get a copy of private key as a byte array
+    var bytes = this.priv.toByteArrayUnsigned();
+    // zero pad if private key is less than 32 bytes
+    while (bytes.length < 32) bytes.unshift(0x00);
+    return bytes;
+  };
 
-	ECKey.prototype.toString = function (format) {
-		format = format || "";
-		if (format.toString().toLowerCase() == "base64" || format.toString().toLowerCase() == "b64") {
-			return this.getBitcoinBase64Format();
-		}
-		// Wallet Import Format
-		else if (format.toString().toLowerCase() == "wif") {
-			return this.getBitcoinWalletImportFormat();
-		}
-		else {
-			return this.getBitcoinHexFormat();
-		}
-	};
+  ECKey.prototype.toString = function (format) {
+    format = format || "";
+    if (format.toString().toLowerCase() == "base64" || format.toString().toLowerCase() == "b64") {
+      return this.getBitcoinBase64Format();
+    }
+    // Wallet Import Format
+    else if (format.toString().toLowerCase() == "wif") {
+      return this.getBitcoinWalletImportFormat();
+    }
+    else {
+      return this.getBitcoinHexFormat();
+    }
+  };
 
-	ECKey.prototype.sign = function (hash) {
-		return ECDSA.sign(hash, this.priv);
-	};
+  ECKey.prototype.sign = function (hash) {
+    return ECDSA.sign(hash, this.priv);
+  };
 
-	ECKey.prototype.verify = function (hash, sig) {
-		return ECDSA.verify(hash, sig, this.getPub());
-	};
+  ECKey.prototype.verify = function (hash, sig) {
+    return ECDSA.verify(hash, sig, this.getPub());
+  };
 
-	/**
-	* Parse a wallet import format private key contained in a string.
-	*/
-	ECKey.decodeWalletImportFormat = function (privStr) {
-		var bytes = Bitcoin.Base58.decode(privStr);
-		var hash = bytes.slice(0, 33);
-		var checksum = Crypto.SHA256(Crypto.SHA256(hash, { asBytes: true }), { asBytes: true });
-		if (checksum[0] != bytes[33] ||
-					checksum[1] != bytes[34] ||
-					checksum[2] != bytes[35] ||
-					checksum[3] != bytes[36]) {
-			throw "Checksum validation failed!";
+  /**
+  * Parse a wallet import format private key contained in a string.
+  */
+  ECKey.decodeWalletImportFormat = function (privStr) {
+    var bytes = Bitcoin.Base58.decode(privStr);
+    var hash = bytes.slice(0, 33);
+    var checksum = Crypto.SHA256(Crypto.SHA256(hash, { asBytes: true }), { asBytes: true });
+    if (checksum[0] != bytes[33] ||
+          checksum[1] != bytes[34] ||
+          checksum[2] != bytes[35] ||
+          checksum[3] != bytes[36]) {
+      throw "Checksum validation failed!";
 
-		}
-		var version = hash.shift();
-		if (version != ECKey.privateKeyPrefix) {
-			throw "Version " + version + " not supported!";
-		}
-		return hash;
-	};
+    }
+    var version = hash.shift();
+    if (version != ECKey.privateKeyPrefix) {
+      throw "Version " + version + " not supported!";
+    }
+    return hash;
+  };
 
-	/**
-	* Parse a compressed wallet import format private key contained in a string.
-	*/
-	ECKey.decodeCompressedWalletImportFormat = function (privStr) {
-		var bytes = Bitcoin.Base58.decode(privStr);
-		var hash = bytes.slice(0, 34);
-		var checksum = Crypto.SHA256(Crypto.SHA256(hash, { asBytes: true }), { asBytes: true });
-		if (checksum[0] != bytes[34] ||
-					checksum[1] != bytes[35] ||
-					checksum[2] != bytes[36] ||
-					checksum[3] != bytes[37]) {
-			throw "Checksum validation failed!";
-		}
-		var version = hash.shift();
-		if (version != ECKey.privateKeyPrefix) {
-			throw "Version " + version + " not supported!";
-		}
-		hash.pop();
-		return hash;
-	};
+  /**
+  * Parse a compressed wallet import format private key contained in a string.
+  */
+  ECKey.decodeCompressedWalletImportFormat = function (privStr) {
+    var bytes = Bitcoin.Base58.decode(privStr);
+    var hash = bytes.slice(0, 34);
+    var checksum = Crypto.SHA256(Crypto.SHA256(hash, { asBytes: true }), { asBytes: true });
+    if (checksum[0] != bytes[34] ||
+          checksum[1] != bytes[35] ||
+          checksum[2] != bytes[36] ||
+          checksum[3] != bytes[37]) {
+      throw "Checksum validation failed!";
+    }
+    var version = hash.shift();
+    if (version != ECKey.privateKeyPrefix) {
+      throw "Version " + version + " not supported!";
+    }
+    hash.pop();
+    return hash;
+  };
 
-	// 64 characters [0-9A-F]
-	ECKey.isHexFormat = function (key) {
-		key = key.toString();
-		return /^[A-Fa-f0-9]{64}$/.test(key);
-	};
+  // 64 characters [0-9A-F]
+  ECKey.isHexFormat = function (key) {
+    key = key.toString();
+    return /^[A-Fa-f0-9]{64}$/.test(key);
+  };
 
-	// 51 characters base58, always starts with a '5'
-	ECKey.isWalletImportFormat = function (key) {
-		key = key.toString();
-		return (ECKey.privateKeyPrefix == 0x80) ?
-							(/^5[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{50}$/.test(key)) :
-							(/^R[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{50}$/.test(key));
-	};
+  // 51 characters base58, always starts with a '5'
+  ECKey.isWalletImportFormat = function (key) {
+    key = key.toString();
+    return (ECKey.privateKeyPrefix == 0x80) ?
+              (/^5[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{50}$/.test(key)) :
+              (/^R[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{50}$/.test(key));
+  };
 
-	// 52 characters base58
-	ECKey.isCompressedWalletImportFormat = function (key) {
-		key = key.toString();
-		return (ECKey.privateKeyPrefix == 0x80) ?
-							(/^[LK][123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{51}$/.test(key)) :
-							(/^R[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{51}$/.test(key));
-	};
+  // 52 characters base58
+  ECKey.isCompressedWalletImportFormat = function (key) {
+    key = key.toString();
+    return (ECKey.privateKeyPrefix == 0x80) ?
+              (/^[LK][123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{51}$/.test(key)) :
+              (/^R[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{51}$/.test(key));
+  };
 
-	// 44 characters
-	ECKey.isBase64Format = function (key) {
-		key = key.toString();
-		return (/^[ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789=+\/]{44}$/.test(key));
-	};
+  // 44 characters
+  ECKey.isBase64Format = function (key) {
+    key = key.toString();
+    return (/^[ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789=+\/]{44}$/.test(key));
+  };
 
-	// 99 characters, 1=1, if using dice convert 6 to 0
-	ECKey.isBase6Format = function (key) {
-		key = key.toString();
-		return (/^[012345]{99}$/.test(key));
-	};
+  // 99 characters, 1=1, if using dice convert 6 to 0
+  ECKey.isBase6Format = function (key) {
+    key = key.toString();
+    return (/^[012345]{99}$/.test(key));
+  };
 
-	// 22, 26 or 30 characters, always starts with an 'S'
-	ECKey.isMiniFormat = function (key) {
-		key = key.toString();
-		var validChars22 = /^S[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21}$/.test(key);
-		var validChars26 = /^S[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{25}$/.test(key);
-		var validChars30 = /^S[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{29}$/.test(key);
-		var testBytes = Crypto.SHA256(key + "?", { asBytes: true });
+  // 22, 26 or 30 characters, always starts with an 'S'
+  ECKey.isMiniFormat = function (key) {
+    key = key.toString();
+    var validChars22 = /^S[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21}$/.test(key);
+    var validChars26 = /^S[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{25}$/.test(key);
+    var validChars30 = /^S[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{29}$/.test(key);
+    var testBytes = Crypto.SHA256(key + "?", { asBytes: true });
 
-		return ((testBytes[0] === 0x00 || testBytes[0] === 0x01) && (validChars22 || validChars26 || validChars30));
-	};
+    return ((testBytes[0] === 0x00 || testBytes[0] === 0x01) && (validChars22 || validChars26 || validChars30));
+  };
 
-	return ECKey;
+  return ECKey;
 })();
-	</script>
-	<script type="text/javascript">
+  </script>
+  <script type="text/javascript">
 //https://raw.github.com/bitcoinjs/bitcoinjs-lib/09e8c6e184d6501a0c2c59d73ca64db5c0d3eb95/src/util.js
 // Bitcoin utility functions
 Bitcoin.Util = {
-	/**
-	* Cross-browser compatibility version of Array.isArray.
-	*/
-	isArray: Array.isArray || function (o) {
-		return Object.prototype.toString.call(o) === '[object Array]';
-	},
-	/**
-	* Create an array of a certain length filled with a specific value.
-	*/
-	makeFilledArray: function (len, val) {
-		var array = [];
-		var i = 0;
-		while (i < len) {
-			array[i++] = val;
-		}
-		return array;
-	},
-	/**
-	* Turn an integer into a "var_int".
-	*
-	* "var_int" is a variable length integer used by Bitcoin's binary format.
-	*
-	* Returns a byte array.
-	*/
-	numToVarInt: function (i) {
-		if (i < 0xfd) {
-			// unsigned char
-			return [i];
-		} else if (i <= 1 << 16) {
-			// unsigned short (LE)
-			return [0xfd, i >>> 8, i & 255];
-		} else if (i <= 1 << 32) {
-			// unsigned int (LE)
-			return [0xfe].concat(Crypto.util.wordsToBytes([i]));
-		} else {
-			// unsigned long long (LE)
-			return [0xff].concat(Crypto.util.wordsToBytes([i >>> 32, i]));
-		}
-	},
-	/**
-	* Parse a Bitcoin value byte array, returning a BigInteger.
-	*/
-	valueToBigInt: function (valueBuffer) {
-		if (valueBuffer instanceof BigInteger) return valueBuffer;
+  /**
+  * Cross-browser compatibility version of Array.isArray.
+  */
+  isArray: Array.isArray || function (o) {
+    return Object.prototype.toString.call(o) === '[object Array]';
+  },
+  /**
+  * Create an array of a certain length filled with a specific value.
+  */
+  makeFilledArray: function (len, val) {
+    var array = [];
+    var i = 0;
+    while (i < len) {
+      array[i++] = val;
+    }
+    return array;
+  },
+  /**
+  * Turn an integer into a "var_int".
+  *
+  * "var_int" is a variable length integer used by Bitcoin's binary format.
+  *
+  * Returns a byte array.
+  */
+  numToVarInt: function (i) {
+    if (i < 0xfd) {
+      // unsigned char
+      return [i];
+    } else if (i <= 1 << 16) {
+      // unsigned short (LE)
+      return [0xfd, i >>> 8, i & 255];
+    } else if (i <= 1 << 32) {
+      // unsigned int (LE)
+      return [0xfe].concat(Crypto.util.wordsToBytes([i]));
+    } else {
+      // unsigned long long (LE)
+      return [0xff].concat(Crypto.util.wordsToBytes([i >>> 32, i]));
+    }
+  },
+  /**
+  * Parse a Bitcoin value byte array, returning a BigInteger.
+  */
+  valueToBigInt: function (valueBuffer) {
+    if (valueBuffer instanceof BigInteger) return valueBuffer;
 
-		// Prepend zero byte to prevent interpretation as negative integer
-		return BigInteger.fromByteArrayUnsigned(valueBuffer);
-	},
-	/**
-	* Format a Bitcoin value as a string.
-	*
-	* Takes a BigInteger or byte-array and returns that amount of Bitcoins in a
-	* nice standard formatting.
-	*
-	* Examples:
-	* 12.3555
-	* 0.1234
-	* 900.99998888
-	* 34.00
-	*/
-	formatValue: function (valueBuffer) {
-		var value = this.valueToBigInt(valueBuffer).toString();
-		var integerPart = value.length > 8 ? value.substr(0, value.length - 8) : '0';
-		var decimalPart = value.length > 8 ? value.substr(value.length - 8) : value;
-		while (decimalPart.length < 8) decimalPart = "0" + decimalPart;
-		decimalPart = decimalPart.replace(/0*$/, '');
-		while (decimalPart.length < 2) decimalPart += "0";
-		return integerPart + "." + decimalPart;
-	},
-	/**
-	* Parse a floating point string as a Bitcoin value.
-	*
-	* Keep in mind that parsing user input is messy. You should always display
-	* the parsed value back to the user to make sure we understood his input
-	* correctly.
-	*/
-	parseValue: function (valueString) {
-		// TODO: Detect other number formats (e.g. comma as decimal separator)
-		var valueComp = valueString.split('.');
-		var integralPart = valueComp[0];
-		var fractionalPart = valueComp[1] || "0";
-		while (fractionalPart.length < 8) fractionalPart += "0";
-		fractionalPart = fractionalPart.replace(/^0+/g, '');
-		var value = BigInteger.valueOf(parseInt(integralPart));
-		value = value.multiply(BigInteger.valueOf(100000000));
-		value = value.add(BigInteger.valueOf(parseInt(fractionalPart)));
-		return value;
-	},
-	/**
-	* Calculate RIPEMD160(SHA256(data)).
-	*
-	* Takes an arbitrary byte array as inputs and returns the hash as a byte
-	* array.
-	*/
-	sha256ripe160: function (data) {
-		return ripemd160(Crypto.SHA256(data, { asBytes: true }), { asBytes: true });
-	},
-	// double sha256
-	dsha256: function (data) {
-		return Crypto.SHA256(Crypto.SHA256(data, { asBytes: true }), { asBytes: true });
-	},
-	// duck typing method
-	hasMethods: function(obj /*, method list as strings */){
-		var i = 1, methodName;
-		while((methodName = arguments[i++])){
-			if(typeof obj[methodName] != 'function') {
-				return false;
-			}
-		}
-		return true;
-	}
+    // Prepend zero byte to prevent interpretation as negative integer
+    return BigInteger.fromByteArrayUnsigned(valueBuffer);
+  },
+  /**
+  * Format a Bitcoin value as a string.
+  *
+  * Takes a BigInteger or byte-array and returns that amount of Bitcoins in a
+  * nice standard formatting.
+  *
+  * Examples:
+  * 12.3555
+  * 0.1234
+  * 900.99998888
+  * 34.00
+  */
+  formatValue: function (valueBuffer) {
+    var value = this.valueToBigInt(valueBuffer).toString();
+    var integerPart = value.length > 8 ? value.substr(0, value.length - 8) : '0';
+    var decimalPart = value.length > 8 ? value.substr(value.length - 8) : value;
+    while (decimalPart.length < 8) decimalPart = "0" + decimalPart;
+    decimalPart = decimalPart.replace(/0*$/, '');
+    while (decimalPart.length < 2) decimalPart += "0";
+    return integerPart + "." + decimalPart;
+  },
+  /**
+  * Parse a floating point string as a Bitcoin value.
+  *
+  * Keep in mind that parsing user input is messy. You should always display
+  * the parsed value back to the user to make sure we understood his input
+  * correctly.
+  */
+  parseValue: function (valueString) {
+    // TODO: Detect other number formats (e.g. comma as decimal separator)
+    var valueComp = valueString.split('.');
+    var integralPart = valueComp[0];
+    var fractionalPart = valueComp[1] || "0";
+    while (fractionalPart.length < 8) fractionalPart += "0";
+    fractionalPart = fractionalPart.replace(/^0+/g, '');
+    var value = BigInteger.valueOf(parseInt(integralPart));
+    value = value.multiply(BigInteger.valueOf(100000000));
+    value = value.add(BigInteger.valueOf(parseInt(fractionalPart)));
+    return value;
+  },
+  /**
+  * Calculate RIPEMD160(SHA256(data)).
+  *
+  * Takes an arbitrary byte array as inputs and returns the hash as a byte
+  * array.
+  */
+  sha256ripe160: function (data) {
+    return ripemd160(Crypto.SHA256(data, { asBytes: true }), { asBytes: true });
+  },
+  // double sha256
+  dsha256: function (data) {
+    return Crypto.SHA256(Crypto.SHA256(data, { asBytes: true }), { asBytes: true });
+  },
+  // duck typing method
+  hasMethods: function(obj /*, method list as strings */){
+    var i = 1, methodName;
+    while((methodName = arguments[i++])){
+      if(typeof obj[methodName] != 'function') {
+        return false;
+      }
+    }
+    return true;
+  }
 };
 </script>
 
-	<script>
-		function ajax(method, uri){
-			var request = new XMLHttpRequest();
-			var url = `${server}/${uri}`
-			console.log(url)
-			var result;
-			request.open(method,url , false);
-			request.onload = function () {
-				if (request.readyState == 4 && request.status == 200)
-					result = this.response;
-				else {
-					console.log('error');
-					result = false;
-				}
-			};
-			request.send();
-			console.log(result);
-			return result;
-		}
+  <script>
+    function ajax(method, uri){
+      var request = new XMLHttpRequest();
+      var url = `${server}/${uri}`
+      console.log(url)
+      var result;
+      request.open(method,url , false);
+      request.onload = function () {
+        if (request.readyState == 4 && request.status == 200)
+          result = this.response;
+        else {
+          console.log('error');
+          result = false;
+        }
+      };
+      request.send();
+      console.log(result);
+      return result;
+    }
 
-		function validateAddr(inputtxt) {
+    function validateAddr(inputtxt) {
             try{
-				var addr = new Bitcoin.Address(inputtxt);
-				return true;
+        var addr = new Bitcoin.Address(inputtxt);
+        return true;
 
-			}catch{
-				return false;
-			}
+      }catch{
+        return false;
+      }
         }
 
-		function verifyWIF(wif,addr){
-			try {
-				var key = new Bitcoin.ECKey(wif);
-				if(key.priv == null){
-					return false;
-				}
-				key.setCompressed(true);
-				var bitcoinAddress = key.getBitcoinAddress();
-				if (addr == bitcoinAddress)
-					return true;
-				else
-					return false;
-			}
-			catch (e) {
-				// browser does not have sufficient JavaScript support to generate a bitcoin address
-				alert(e);
-				console.log("error");
-			}
-		}
+    function verifyWIF(wif,addr){
+      try {
+        var key = new Bitcoin.ECKey(wif);
+        if(key.priv == null){
+          return false;
+        }
+        key.setCompressed(true);
+        var bitcoinAddress = key.getBitcoinAddress();
+        if (addr == bitcoinAddress)
+          return true;
+        else
+          return false;
+      }
+      catch (e) {
+        // browser does not have sufficient JavaScript support to generate a bitcoin address
+        alert(e);
+        console.log("error");
+      }
+    }
     </script>
 
-	<script>
+  <script>
 
-	function GenNewAddr(){
-	try {
-				var key = new Bitcoin.ECKey(false);
-				key.setCompressed(true);
-				var bitcoinAddress = key.getBitcoinAddress();
-				var privateKeyWif = key.getBitcoinWalletImportFormat();
-				console.log(bitcoinAddress);
-				console.log(privateKeyWif);
-				alert("FLO Address \t: "+bitcoinAddress+"\nSecret Key \t: "+privateKeyWif);
-				var table=document.getElementById("addrDisp");
-				var row = table.insertRow(1);
-				var cell1 = row.insertCell(0);
-				var cell2 = row.insertCell(1);
-				cell1.innerHTML = bitcoinAddress;
-				cell2.innerHTML = privateKeyWif;
-			}
-			catch (e) {
-				// browser does not have sufficient JavaScript support to generate a bitcoin address
-				alert(e);
-				console.log("error");
-			}
-	}
+  function GenNewAddr(){
+  try {
+        var key = new Bitcoin.ECKey(false);
+        key.setCompressed(true);
+        var bitcoinAddress = key.getBitcoinAddress();
+        var privateKeyWif = key.getBitcoinWalletImportFormat();
+        console.log(bitcoinAddress);
+        console.log(privateKeyWif);
+        alert("FLO Address \t: "+bitcoinAddress+"\nSecret Key \t: "+privateKeyWif);
+        var table=document.getElementById("addrDisp");
+        var row = table.insertRow(1);
+        var cell1 = row.insertCell(0);
+        var cell2 = row.insertCell(1);
+        cell1.innerHTML = bitcoinAddress;
+        cell2.innerHTML = privateKeyWif;
+      }
+      catch (e) {
+        // browser does not have sufficient JavaScript support to generate a bitcoin address
+        alert(e);
+        console.log("error");
+      }
+  }
 
-	function RecoverAddr(){
-	try {
-				wif = prompt("Enter Secret (or) Private Key :");
-				if(wif.length<1){
-					alert("Private Key cannot be empty");
-					return;
-				}
-				var key = new Bitcoin.ECKey(wif);
-				if(key.priv == null){
-					alert("Invalid Private key");
-					return;
-				}
-				key.setCompressed(true);
-				var bitcoinAddress = key.getBitcoinAddress();
-				var privateKeyWif = key.getBitcoinWalletImportFormat();
-				console.log(bitcoinAddress);
-				console.log(privateKeyWif);
-				alert("FLO Address \t: "+bitcoinAddress+"\nSecret Key \t: "+privateKeyWif);
-				var table=document.getElementById("addrDisp");
-				var row = table.insertRow(1);
-				var cell1 = row.insertCell(0);
-				var cell2 = row.insertCell(1);
-				cell1.innerHTML = bitcoinAddress;
-				cell2.innerHTML = privateKeyWif;
-			}
-			catch (e) {
-				// browser does not have sufficient JavaScript support to generate a bitcoin address
-				console.log(e);
-			}
-	}
-	</script>
+  function RecoverAddr(){
+  try {
+        wif = prompt("Enter Secret (or) Private Key :");
+        if(wif.length<1){
+          alert("Private Key cannot be empty");
+          return;
+        }
+        var key = new Bitcoin.ECKey(wif);
+        if(key.priv == null){
+          alert("Invalid Private key");
+          return;
+        }
+        key.setCompressed(true);
+        var bitcoinAddress = key.getBitcoinAddress();
+        var privateKeyWif = key.getBitcoinWalletImportFormat();
+        console.log(bitcoinAddress);
+        console.log(privateKeyWif);
+        alert("FLO Address \t: "+bitcoinAddress+"\nSecret Key \t: "+privateKeyWif);
+        var table=document.getElementById("addrDisp");
+        var row = table.insertRow(1);
+        var cell1 = row.insertCell(0);
+        var cell2 = row.insertCell(1);
+        cell1.innerHTML = bitcoinAddress;
+        cell2.innerHTML = privateKeyWif;
+      }
+      catch (e) {
+        // browser does not have sufficient JavaScript support to generate a bitcoin address
+        console.log(e);
+      }
+  }
+  </script>
 
-	<script>
+  <script>
         var getBal_btn = document.getElementById("getBal_btn");
         getBal_btn.onclick = function () {
 
@@ -4909,97 +5020,97 @@ Bitcoin.Util = {
                 alert("Address field cannot be empty.");
                 return false;
             }
-			let addrList = addrs.split(',');
-			addrList = Array.from(new Set(addrList));
-			var result = "";
-			var totBal = 0.0;
-			var flag = 0;
-			addrList.forEach(function(addr){
-				if (!validateAddr(addr)){
-					alert(`Invalid address : ${addr}`);
-					return;
-				}
-				var response = ajax("GET",`api/addr/${addr}/balance`);
-				if(response){
-					result += `<tr><td><input type="radio" name="sender" value=${addr} checked></td><td>${addr}</td><td>${response}</td></tr> \n`;
-					totBal+=parseFloat(response);
-					flag = 1;
-				}else{
-					console.log("error : connection failed!");
-					alert("error : connection failed!");
-				}
+      let addrList = addrs.split(',');
+      addrList = Array.from(new Set(addrList));
+      var result = "";
+      var totBal = 0.0;
+      var flag = 0;
+      addrList.forEach(function(addr){
+        if (!validateAddr(addr)){
+          alert(`Invalid address : ${addr}`);
+          return;
+        }
+        var response = ajax("GET",`api/addr/${addr}/balance`);
+        if(response){
+          result += `<tr><td><input type="radio" name="sender" value=${addr} checked></td><td>${addr}</td><td>${response}</td></tr> \n`;
+          totBal+=parseFloat(response);
+          flag = 1;
+        }else{
+          console.log("error : connection failed!");
+          alert("error : connection failed!");
+        }
 
-			});
-			if(flag==0){
-				document.getElementById("sendBtn").disabled = true;
-				return ;
-			}
-			dispBal.innerHTML = `<table>${result}<tr><td colspan="2">Total Balance :</td><td>${totBal}</tr></table>`;
-			document.getElementById("sendBtn").disabled = false;
+      });
+      if(flag==0){
+        document.getElementById("sendBtn").disabled = true;
+        return ;
+      }
+      dispBal.innerHTML = `<table class="dispBalTable">${result}<tr><td colspan="2">Total Balance :</td><td>${totBal}</tr></table>`;
+      document.getElementById("sendBtn").disabled = false;
         }
 
 
    </script>
    <script>
-	function sendTransaction(){
+  function sendTransaction(){
 
-		var radioButtons = document.getElementsByName("sender");
-		var sender;
-		for (var x = 0; x < radioButtons.length; x++)
-			if (radioButtons[x].checked)
-				sender=radioButtons[x].value;
+    var radioButtons = document.getElementsByName("sender");
+    var sender;
+    for (var x = 0; x < radioButtons.length; x++)
+      if (radioButtons[x].checked)
+        sender=radioButtons[x].value;
 
-		var receiver = document.getElementById("sendReceiver").value;
-		if (!validateAddr(receiver)){
-			alert(`Invalid address : ${receiver}`);
-			return;
-		}
+    var receiver = document.getElementById("sendReceiver").value;
+    if (!validateAddr(receiver)){
+      alert(`Invalid address : ${receiver}`);
+      return;
+    }
 
-		var trx = bitjs.transaction();
-		var sendAmt = parseFloat(document.getElementById("sendAmt").value);
-		var utxoAmt = 0.0;
-		var x = sendAmt+fee;
-		var response = ajax("GET",`api/addr/${sender}/utxo`);
-		var utxos = JSON.parse(response);
-		for(var x = utxos.length-1; x >= 0; x--){
-			if(utxoAmt < sendAmt+fee){
-				var txid = utxos[x].txid;
-				var index = utxos[x].vout;
-				var scriptPubKey = utxos[x].scriptPubKey;
-				var bal = utxos[x].amount;
-				trx.addinput(txid, index, scriptPubKey)
-				utxoAmt += bal;
-			}else
-				break;
-		}
-		if(utxoAmt < sendAmt+fee){
-			alert("Insufficient balance!");
-			return;
-		}
+    var trx = bitjs.transaction();
+    var sendAmt = parseFloat(document.getElementById("sendAmt").value);
+    var utxoAmt = 0.0;
+    var x = sendAmt+fee;
+    var response = ajax("GET",`api/addr/${sender}/utxo`);
+    var utxos = JSON.parse(response);
+    for(var x = utxos.length-1; x >= 0; x--){
+      if(utxoAmt < sendAmt+fee){
+        var txid = utxos[x].txid;
+        var index = utxos[x].vout;
+        var scriptPubKey = utxos[x].scriptPubKey;
+        var bal = utxos[x].amount;
+        trx.addinput(txid, index, scriptPubKey)
+        utxoAmt += bal;
+      }else
+        break;
+    }
+    if(utxoAmt < sendAmt+fee){
+      alert("Insufficient balance!");
+      return;
+    }
 
 
 
-		trx.addoutput(receiver, sendAmt);
-		console.log(receiver+":"+ sendAmt);
+    trx.addoutput(receiver, sendAmt);
+    console.log(receiver+":"+ sendAmt);
 
-		var change = utxoAmt-sendAmt-fee;
-		if(change>0)
-			trx.addoutput(sender, change);
-		console.log(sender+":"+ change);
+    var change = utxoAmt-sendAmt-fee;
+    if(change>0)
+      trx.addoutput(sender, change);
+    console.log(sender+":"+ change);
 
-		var sendFloData = document.getElementById("flotextdata").value;
-		trx.addflodata(sendFloData);
-		var wif = prompt("Enter private key");
-		if (wif.length<1||!verifyWIF(wif,sender)){
-			alert("Invalid Private key!");
-			return;
-		}
-		var signedTxHash = trx.sign(wif, 1);
-		console.log(signedTxHash);
-		var result = broadcastTx(signedTxHash);
-		alert(result);
-	}
-	</script>
+    var sendFloData = document.getElementById("flotextdata").value;
+    trx.addflodata(sendFloData);
+    var wif = prompt("Enter private key");
+    if (wif.length<1||!verifyWIF(wif,sender)){
+      alert("Invalid Private key!");
+      return;
+    }
+    var signedTxHash = trx.sign(wif, 1);
+    console.log(signedTxHash);
+    var result = broadcastTx(signedTxHash);
+    alert(result);
+  }
+  </script>
     <script>
         function broadcastTx(signedTxHash) {
             var http = new XMLHttpRequest();
@@ -5018,23 +5129,28 @@ Bitcoin.Util = {
 
             http.onreadystatechange = function () { //Call a function when the state changes.
                 if (http.readyState == 4 && http.status == 200) {
-					console.log(http.response);
-					var txid = JSON.parse(http.response).txid.result;
-					result = "Transaction successful! txid : " + txid;
+          console.log(http.response);
+          var txid = JSON.parse(http.response).txid.result;
+          result = "Transaction successful! txid : " + txid;
                 } else {
                     console.log(http.responseText);
-					result = http.response;
+          result = http.response;
 
                 }
             }
             http.send(params);
-			return result;
+      return result;
         }
     </script>
 
    <script>
+//Converting old blocking waitForGlobal into non-blocking code
+    var waitForGlobal = function(param, callback) {
+      new Promise(callback);
+    };
 
-   var waitForGlobal = function(param, callback) {
+
+  /* var waitForGlobal = function(param, callback) {
      if (!window[param]) {
        callback();
      } else {
@@ -5042,23 +5158,24 @@ Bitcoin.Util = {
          waitForGlobal(param, callback);
        }, 100);
      }
-   };
+   };*/
 
-	function monitorData(){
 
-		var addrList = document.getElementById("getAddr").value;
-		addrList = addrList.split(',');
-		addrList = Array.from(new Set(addrList));
+  function monitorData(){
+
+    var addrList = document.getElementById("getAddr").value;
+    addrList = addrList.split(',');
+    addrList = Array.from(new Set(addrList));
 
     var dispMsg = document.getElementById("dispMsg") ;
     window["refreshwait"] = addrList.length;
 
-		addrList.forEach(function(addr){
-			if (!validateAddr(addr)){
-				alert(`Invalid address : ${addr}`);
+    addrList.forEach(function(addr){
+      if (!validateAddr(addr)){
+        alert(`Invalid address : ${addr}`);
         window["refreshwait"] -= 1;
-				return;
-			}
+        return;
+      }
       var addrData = document.getElementById(addr);
       if(addrData){
         refreshdata(addrData);
@@ -5068,19 +5185,19 @@ Bitcoin.Util = {
 
       waitForGlobal("loadwait", function() {
         window["loadwait"] = true;
-  			var idbtmp = indexedDB.open("FLO_Walletless");
-  			idbtmp.onerror = function(event) {
-  				console.log("Error in opening IndexedDB!");
+        var idbtmp = indexedDB.open("FLO_webWallet_testnet");
+        idbtmp.onerror = function(event) {
+          console.log("Error in opening IndexedDB!");
           window["loadwait"] = false;
-  			};
-  			idbtmp.onupgradeneeded = function(event) {
-  					var objectStore = event.target.result.createObjectStore('Label');
+        };
+        idbtmp.onupgradeneeded = function(event) {
+            var objectStore = event.target.result.createObjectStore('Label');
             //objectStore.createIndex("label", "label", { unique: false });
-  				};
-  			idbtmp.onsuccess = function(event) {
-  				var db = event.target.result;
+          };
+        idbtmp.onsuccess = function(event) {
+          var db = event.target.result;
 
-  				if(!db.objectStoreNames.contains(addr)){
+          if(!db.objectStoreNames.contains(addr)){
             var newaddr = true;
             var version = db.version + 1;
           }
@@ -5089,20 +5206,20 @@ Bitcoin.Util = {
             var newaddr = false;
             var version = db.version;
           }
-  				db.close();
-  				var idb = indexedDB.open("FLO_Walletless",version);
-  				idb.onerror = function(event) {
-  					console.log("Error in opening IndexedDB!");
-  				};
-  				idb.onupgradeneeded = function(event) {
-  					var objectStore = event.target.result.createObjectStore(addr, { keyPath: "tx", autoIncrement:true });
-  					objectStore.createIndex("time", "time", { unique: false });
-  					objectStore.createIndex("sender", "sender", { unique: false });
-  					objectStore.createIndex("receiver", "receiver", { unique: false });
-  					objectStore.createIndex("floData", "floData", { unique: false });
-  					objectStore.createIndex("txid", "txid", { unique: true });
-  				};
-  				idb.onsuccess = function(event) {
+          db.close();
+          var idb = indexedDB.open("FLO_webWallet_testnet",version);
+          idb.onerror = function(event) {
+            console.log("Error in opening IndexedDB!");
+          };
+          idb.onupgradeneeded = function(event) {
+            var objectStore = event.target.result.createObjectStore(addr, { keyPath: "tx", autoIncrement:true });
+            objectStore.createIndex("time", "time", { unique: false });
+            objectStore.createIndex("sender", "sender", { unique: false });
+            objectStore.createIndex("receiver", "receiver", { unique: false });
+            objectStore.createIndex("floData", "floData", { unique: false });
+            objectStore.createIndex("txid", "txid", { unique: true });
+          };
+          idb.onsuccess = function(event) {
             //window["loadwait"] = false;
             var db = event.target.result;
             var obslabel = db.transaction('Label', "readwrite").objectStore('Label');
@@ -5134,48 +5251,45 @@ Bitcoin.Util = {
             row.insertCell(2).innerHTML = 'Time';
             row.insertCell(3).innerHTML = 'floData';
 
-  					var obs = db.transaction(addr, "readwrite").objectStore(addr);
-
-            var cursorRequest = obs.openCursor();
-            cursorRequest.onsuccess = function(event) {
-              var cursor = event.target.result;
-              if(cursor) {
-                // cursor.value contains the current record being iterated through
-                // this is where you'd do something with the result
-                //console.log(cursor.value.sender+":"+cursor.value.receiver+":"+cursor.value.time+":"+cursor.value.txid+":"+cursor.value.floData);
-                var time = new Date(cursor.value.time*1000);
+            var obs = db.transaction(addr, "readwrite").objectStore(addr);
+            var objreq = obs.getAll();
+            objreq.onsuccess = function(event){
+              data = event.target.result;
+            //  console.log(data);
+              data.forEach(tx => {
+                var time = new Date(tx.time*1000);
                 var row = table.insertRow(1) ;
-                row.insertCell(0).innerHTML = cursor.value.sender;
-                row.insertCell(1).innerHTML = cursor.value.receiver;
+                row.insertCell(0).innerHTML = tx.sender;
+                row.insertCell(1).innerHTML = tx.receiver;
                 row.insertCell(2).innerHTML = time;
-                row.insertCell(3).innerHTML = cursor.value.floData;
-                //tmpResult = '<tr><td>'++'</td><td>'++'</td><td>'++'</td><td>'++'</td></tr>' + tmpResult;
-                cursor.continue();
-              } else {
-                  refreshdata(dispMsgAddr);
-              }
-  					};
-  					db.close();
-            window["refreshwait"] -= 1;
-  				};
-        window["loadwait"] = false;
-  			};
+                row.insertCell(3).innerHTML = tx.floData;
+              })
+              refreshdata(dispMsgAddr);
 
-  		});
+            }
+            db.close();
+            window["refreshwait"] -= 1;
+          };
+        window["loadwait"] = false;
+        };
+
+      });
     });
 
-	}
-	</script>
+  }
+  </script>
   <script>
   function refreshdata(param){
+
     var addr = param.id;
     var table = param.getElementsByTagName('table')[0];
     var row = table.insertRow(1) ;
     var cell = row.insertCell(0);
     cell.innerHTML = "<center>Refreshing...</center>";
     cell.colSpan = 4;
+
     waitForGlobal("refreshwait", function() {
-      var idb = indexedDB.open("FLO_Walletless");
+      var idb = indexedDB.open("FLO_webWallet_testnet");
       idb.onerror = function(event) {
         console.log("Error in opening IndexedDB!");
       };
@@ -5240,7 +5354,7 @@ Bitcoin.Util = {
       label = label.value;
       param.getElementsByTagName('button')[0].style.display = "block";
       param.getElementsByTagName('button')[1].style.display = "none";
-      var idb = indexedDB.open("FLO_Walletless");
+      var idb = indexedDB.open("FLO_webWallet_testnet");
       idb.onerror = function(event) {
         console.log("Error in opening IndexedDB!");
       };
@@ -5253,5 +5367,5 @@ Bitcoin.Util = {
   }
   </script>
 
-	</body>
-	</html>
+  </body>
+  </html>
