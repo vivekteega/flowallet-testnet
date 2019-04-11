@@ -165,10 +165,13 @@ function startup(){
         }
     }
   }).then(res => {
-    var input = document.getElementById("getAddr");
-    input.value = res.join(',');
-    monitorData();
-    input.value = "";
+    console.log(res);
+  	if(res.length){
+	    var input = document.getElementById("getAddr");
+	    input.value = res.join(',');
+	    monitorData();
+	    input.value = "";
+	}
   }).catch(error => {
     console.log(error.message);
   });
