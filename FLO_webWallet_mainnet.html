@@ -172,9 +172,7 @@ function startup(){
     }
   }).then(res => {
     if(res.length){
-    monitorData();
 	    var input = document.getElementById("getAddr");
-    input.value = "";
 	    input.value = res.join(',');
 	    monitorData();
 	    input.value = "";
