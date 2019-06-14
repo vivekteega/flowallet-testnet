@@ -2,81 +2,444 @@
 <html>
 <head>
 <title>FLO webWallet</title>
- <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
-
-
-@import url('https://fonts.googleapis.com/css?family=Titillium+Web');
-
-body {
-  position:relative;
-  font-family: 'Titillium Web', sans-serif;
-  font-weight: 300;
-  font-size: 1.05em;
-  margin: 40px;
-  text-align:justify;
-
+body{
+  font-family: Avenir;
+  -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+}
+*{
+  box-sizing: border-box;
 }
 
-
-table {
-  border-collapse: collapse;
-
+.inp{
+  position: relative;
+  margin: auto;
+  width: 100%;
+  margin-bottom:10px;
+  background: linear-gradient(to bottom, #b5bdc8 0%,#828c95 49%,#b5bdc8 100%);
+  //transform: rotateX(45deg) rotateY(-10deg) rotate(25deg) scale(2);
 }
-
-table, tr, th, td {
-    border: 1px solid #e3e3e3;
-}
-
-button {
-  background-color: #4CAF50; /* Green */
-  border: none;
-  color: white;
-  padding: 15px 32px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
+.inp .label{
+  position: absolute;
+  top: 16px;
+  left: 8px;
   font-size: 16px;
-  margin: 4px 2px;
-  border-radius: 8px;
+  color: #9098A9;
+  font-weight: 500;
+  transform-origin: 0 0;
+  transition: all .2s ease;
+}
+.inp .border{
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  width: 100%;
+  background: #0077FF;
+  transform: scaleX(0);
+  transform-origin: 0 0;
+  transition: all .15s ease;
+}
+.inp input,textarea{
+  -webkit-appearance: none;
+  width: 100%;
+  border: 0;
+  font-family: inherit;
+  padding: 12px;
+  height: 48px;
+  font-size: 16px;
+  font-weight: 500;
+  border-bottom: 2px solid #C8CCD4;
+  background-color: rgba(255,255,255,0.7);
+  border-radius: 0;
+  color: #223254;
+  transition: all .15s ease;
+}
+.inp textarea{
+  height: 200px;
+  resize: none;
+}
+.inp input:hover:enabled,textarea:hover:enabled{
+  background:rgba(255,255,255,0.5);
+}
+.inp input:not(:placeholder-shown)+span, textarea:not(:placeholder-shown)+span{
+  color: #5A667F;
+  transform: translateY(-24px) scale(.75);
+}
+.inp input:focus, textarea:focus{
+    background: rgba(255,255,255,0.5);
+    outline: none;
+}
+.inp input:focus+span, textarea:focus+span{
+  color: #0077FF;
+  transform: translateY(-24px) scale(.75);
+}
+.inp input:focus+span+.border, textarea:focus+span+.border{
+  transform: scaleX(1);
+}
+.inpContainer{
+  display: grid;
+  padding: 5px;
+}
+.addrLabelContainer{
+  font-family: Avenir;
+  display: grid;
+  padding: 0px;
+}
+.addrLabel{
+  margin-bottom: 0px;
+}
+.col-50 {
+  float: left;
+  width: 50%;
+  margin-top: 6px;
+}
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+@media screen and (max-width: 800px) {
+  .col-50{
+    width: 100%;
+    margin-top: 0;
+    padding: 20px;
+  }
+}
+</style>
+<style media="screen">
+.option-input {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  -ms-appearance: none;
+  -o-appearance: none;
+  appearance: none;
+  position: relative;
+  top: 8px;
+  height: 30px;
+  width: 30px;
+  transition: all 0.15s ease-out 0s;
+  background: #cbd1d8;
+  border: none;
+  color: #fff;
   cursor: pointer;
-  -webkit-transition-duration: 0.4s; /* Safari */
-  transition-duration: 0.4s;
+  display: inline-block;
+  margin-right: 0.5rem;
+  outline: none;
+  position: relative;
+  z-index: 1000;
+}
+.option-input:hover {
+  background: #9faab7;
+}
+.option-input:checked {
+  background: #aaa;
+}
+.option-input:checked::before {
+  height: 30px;
+  width: 30px;
+  position: absolute;
+  content: '✔';
+  display: inline-block;
+  font-size: 20px;
+  text-align: center;
+  line-height: 30px;
+}
+.option-input:checked::after {
+  -webkit-animation: click-wave 0.65s;
+  -moz-animation: click-wave 0.65s;
+  animation: click-wave 0.65s;
+  background: #40e0d0;
+  content: '';
+  display: block;
+  position: relative;
+  z-index: 100;
+}
+.option-input.radio {
+  border-radius: 50%;
+}
+.option-input.radio::after {
+  border-radius: 50%;
 }
 
-.activeButton {
-  color: black;
+.radioContainer {
+  display: -webkit-box;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: box;
+  color: #9faab7;
+  font-family: "Helvetica Neue", "Helvetica", "Roboto", "Arial", sans-serif;
+  text-align: left;
+}
+.radioContainer label {
+  display: block;
+  line-height: 30px;
+  width:100%;
+}
+</style>
+<style media="screen">
+
+.DataTable h4{
+  font-family: Avenir;
+font-size: 30px;
+color: #fff;
+font-weight: 300;
+text-align: center;
+margin-bottom: 0px;
+background-color: rgba(255,255,255,0.3);
+}
+.DataTable table{
+width:100%;
+table-layout: fixed;
+}
+.tbl-header{
+background-color: rgba(255,255,255,0.3);
+}
+.tbl-content{
+height:300px;
+overflow-x:auto;
+margin-top: 0px;
+border: 1px solid rgba(255,255,255,0.3);
+}
+.DataTable th{
+padding: 20px 15px;
+text-align: left;
+font-weight: 500;
+font-size: 12px;
+color: #fff;
+text-transform: uppercase;
+}
+.DataTable td{
+padding: 15px;
+text-align: left;
+vertical-align:middle;
+font-weight: 300;
+font-size: 12px;
+color: #fff;
+border-bottom: solid 1px rgba(255,255,255,0.1);
 }
 
-button:hover {
-  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24),0 17px 50px 0 rgba(0,0,0,0.19);
+
+/* demo styles */
+section.DataTable{
+background: -webkit-linear-gradient(left, #25c481, #25b7c4);
+background: linear-gradient(to bottom, #b5bdc8 0%,#828c95 49%,#b5bdc8 100%);
+font-family: 'Roboto', sans-serif;
 }
 
-.firstColumn {
-position: absolute;;
-left:200px;
-
+/* for custom scrollbar for webkit browser*/
+::-webkit-scrollbar {
+width: 6px;
 }
-
-.secondColumn {
-position: absolute;
-left:450px;
-top:194px;
+::-webkit-scrollbar-track {
+-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
 }
-
-.dispBalTable {
- border: 1px solid #ffffff;
+::-webkit-scrollbar-thumb {
+-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
 }
-
+</style>
+<style media="screen">
+/*Glass Theme*/
+.btn-glass {
+  flex-grow: 1;
+  text-align: center;
+  display: inline-block;
+  color: rgba(255,255,255,0.7);
+  text-decoration: none;
+  padding: 1em 2em;
+  font-family: Lato;
+  font-weight: 300;
+  border: 1px dotted transparent;
+  letter-spacing: 0.98pt;
+  text-transform: uppercase;
+  transition: background-position 2s cubic-bezier(0,1,0,1), border-color 500ms, background-color 500ms;
+  position: relative;
+  background-attachment: fixed, scroll;
+  background-size: 100vw 100vh, cover;
+  background-position: center center, 0 0;
+  background-image: repeating-linear-gradient(-45deg,rgba(255,255,255,0) 8%,rgba(255,255,255,0.075) 10%,rgba(255,255,255,0.075) 14%,rgba(255,255,255,0.15) 14%,rgba(255,255,255,0.15) 15%,rgba(255,255,255,0.075) 17%,rgba(255,255,255,0) 30%,rgba(255,255,255,0) 36%,rgba(255,255,255,0.075) 40%,rgba(255,255,255,0.15) 42%,rgba(255,255,255,0) 43%,rgba(255,255,255,0) 55%,rgba(255,255,255,0.075) 60%,rgba(255,255,255,0.075) 66%,rgba(255,255,255,0.15) 66%,rgba(255,255,255,0.075) 70%,rgba(255,255,255,0) 75%,rgba(255,255,255,0) 100%), radial-gradient(ellipse farthest-corner,transparent,rgba(0,0,0,0.2) 110%);
+}
+.btn-glass:hover:enabled ,.btn-glass:disabled{
+  background-position: -100vw 0, 0 0;
+}
+.btn-glass:active {
+  background-position: -75vw 0, 0 0;
+  border-style: solid;
+}
+.nav-light {
+  background-color: white;
+}
+.nav-light .btn-glass {
+  color: #585858;
+  background-color: rgba(17,17,17,0);
+}
+.nav-light .btn-glass:hover:enabled {
+  color: rgba(255,255,255,0.7);
+  border-color: #000000;
+  background-color: #111111;
+}
+.nav-light .btn-glass:active {
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 0 1em 0.5ex rgba(17,17,17,0.5);
+}
+.nav-light .btn-glass.btn-blue {
+  color: #6ab1d1;
+  background-color: rgba(42,143,189,0);
+}
+.nav-light .btn-glass.btn-blue:hover:enabled {
+  color: rgba(255,255,255,0.7);
+  border-color: #1c607e;
+  background-color: #2A8FBD;
+}
+.nav-light .btn-glass.btn-blue:active {
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 0 1em 0.5ex rgba(42,143,189,0.5);
+}
+.nav-light .btn-glass.btn-green {
+  color: #a5c75f;
+  background-color: rgba(127,175,27,0);
+}
+.nav-light .btn-glass.btn-green:hover:enabled {
+  color: rgba(255,255,255,0.7);
+  border-color: #4f6d11;
+  background-color: #7FAF1B;
+}
+.nav-light .btn-glass.btn-green:active {
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 0 1em 0.5ex rgba(127,175,27,0.5);
+}
+.nav-light .btn-glass.btn-yellow {
+  color: #fccd69;
+  background-color: rgba(251,184,41,0);
+}
+.nav-light .btn-glass.btn-yellow:hover:enabled {
+  color: rgba(255,255,255,0.7);
+  border-color: #d49104;
+  background-color: #FBB829;
+}
+.nav-light .btn-glass.btn-yellow:active {
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 0 1em 0.5ex rgba(251,184,41,0.5);
+}
+.nav-light .btn-glass.btn-red {
+  color: #f56558;
+  background-color: rgba(240,35,17,0);
+}
+.nav-light .btn-glass.btn-red:hover:enabled {
+  color: rgba(255,255,255,0.7);
+  border-color: #aa180b;
+  background-color: #F02311;
+}
+.nav-light .btn-glass.btn-red:active {
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 0 1em 0.5ex rgba(240,35,17,0.5);
+}
+.nav-light .btn-glass.btn-info {
+  color: #6CDFFF;
+  background-color: rgba(108,223,234,0);
+}
+.nav-light .btn-glass.btn-info:hover:enabled {
+  color: rgba(255,255,255,0.7);
+  border-color: #29d0e0;
+  background-color: #6CDFEA;
+}
+.nav-light .btn-glass.btn-info:active {
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 0 1em 0.5ex rgba(108,223,234,0.5);
+}
+.nav-dark {
+  background-color: #444;
+}
+.nav-dark .btn-glass {
+  color: rgba(255,255,255,0.7);
+  background-color: rgba(17,17,17,0);
+}
+.nav-dark .btn-glass:hover:enabled, .nav-dark .btn-glass:disabled{
+  border-color: #000000;
+  background-color: #111111;
+}
+.nav-dark .btn-glass:active {
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 0 1em 0.5ex rgba(17,17,17,0.5);
+}
+nav.btn-bar {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+:root {
+  font-family: 'Open Sans', sans;
+  font-size: 11pt;
+  line-height: 1.6;
+  min-height: 100vh;
+  background-attachment: fixed, scroll;
+  background-image: url(https://s3-us-west-2.amazonaws.com/s.cdpn.io/49914/grit-fs8.png), radial-gradient(ellipse farthest-corner,#555,#999);
+}
+body {
+  width: 85vw;
+  margin: 4em auto;
+  line-height: inherit;
+}
+article {
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 2px;
+  box-sizing: border-box;
+  background-color: white;
+  box-shadow: 0 1ex 1em rgba(0,0,0,0.3);
+}
+article + article {
+  margin-top: 4em;
+}
+article section {
+  margin: 5px;
+}
+article>section>h2 {
+  font-family: 'Lato';
+  font-weight: 800;
+  font-size: 1.3em;
+  margin-bottom: 0.8em;
+}
+article>section>p {
+  margin-bottom: 1em;
+  text-indent: 2ch;
+}
+article>section>p:first-child, article>section>h2+p {
+  text-indent: 0;
+}
+h1 {
+  font-family: 'Lato';
+  font-weight: 800;
+  text-align: center;
+  font-size: 5vw;
+  color: rgba(255,255,255,0.3);
+}
+.btn{
+  cursor: pointer
+}
+.nav-light .btn:disabled{
+  cursor:no-drop;
+}
+.nav-dark .btn:disabled{
+  cursor: auto;
+}
 </style>
 </head>
 <body>
-
-    <script>
+<script>
     const  crypto = "FLO"
-    const mainnet = `https://flosight.duckdns.org/`;
-    const testnet = `https://testnet-flosight.duckdns.org/`;
+    const mainnet = `https://flosight.duckdns.org`;
+    const testnet = `https://testnet-flosight.duckdns.org`;
     if(crypto == "FLO")
       var server = mainnet;
     else if(crypto == "FLO_TEST")
@@ -84,107 +447,137 @@ top:194px;
 
     window["loadwait"] = false;
     window["refreshwait"] = false;
+    const fee = 0.0005;
+</script>
 
-  const fee = 0.0005;
-    </script>
+  <h1>FLO Web Wallet</h1>
 
-    <h1>FLO</h1>
-  <button id="getDataBtn" onclick="showSection(this,getDataMode);">Monitor FLO Data</button>
-  <button id="sendDataBtn" onclick="showSection(this,sendDataMode);">Send FLO Data</button>
-  <button id="addrGenBtn" onclick="showSection(this,addrGenMode);">Address Generator</button>
+  <article>
+    <nav class="btn-bar nav-dark">
+      <button id="getDataBtn" class="btn btn-glass" onclick="getDataMode()">Monitor FLO Data</button>
+      <button id="sendDataBtn" class="btn btn-glass" onclick="sendDataMode()">Send FLO Data</button>
+      <button id="addrGenBtn" class="btn btn-glass" onclick="addrGenMode()">Address Generator</button>
+    </nav>
+  </article>
 
-  <script>
+  <article id="addrGen">
+    <div class="inpContainer">
+      <nav class="btn-bar nav-light">
+        <button id="GenNewAddrBtn" class="btn btn-glass btn-green" onclick="GenNewAddr()">Generate New Address</button>
+        <button id="RecoverAddrBtn" class="btn btn-glass btn-yellow" onclick="RecoverAddr()">Recover FLO Address</button>
+      </nav>
+    </div>
+    <section class="DataTable">
+      <div class="tbl-header">
+        <table cellpadding="0" cellspacing="0" border="0">
+          <thead>
+            <tr>
+              <th>FLO Address</th>
+              <th>Private Key</th>
+            </tr>
+          </thead>
+        </table>
+      </div>
+      <div class="tbl-content">
+        <table id="addrDisp" cellpadding="0" cellspacing="0" border="0">
+        </table>
+      </div>
+    </section>
+  </article>
 
-   var mainButtonList = [];mainButtonList.push(document.getElementById("getDataBtn"));
-   document.getElementById("getDataBtn").classList.add('activeButton');
+  <article id="sendData">
+      <div class="row">
+        <div class="col-50 inpContainer">
+            <label for="getBal_addr" class="inp">
+              <input type="text" id="getBal_addr" placeholder="&nbsp;">
+              <span class="label">Sender IDs</span>
+              <span class="border"></span>
+            </label>
+            <nav class="btn-bar nav-light">
+              <button class="btn btn-glass btn-blue" onclick="getBalance()">Get Sender Balance</button>
+            </nav>
+            <div class="radioContainer">
+              <div id="dispBal"></div>
+            </div>
+        </div>
+        <div class="col-50 inpContainer">
+            <label for="sendReceiver" class="inp">
+              <input type="text" id="sendReceiver" placeholder="&nbsp;">
+              <span class="label">Receiver ID</span>
+              <span class="border"></span>
+            </label>
+            <label for="sendAmt" class="inp">
+              <input type="number" id="sendAmt" placeholder="&nbsp;">
+              <span class="label">Amount</span>
+              <span class="border"></span>
+            </label>
+            <label for="flotextdata" class="inp">
+              <textarea id="flotextdata" placeholder="&nbsp;"></textarea>
+              <span class="label">FLO Data</span>
+              <span class="border"></span>
+            </label>
+            <nav class="btn-bar nav-light">
+              <button class="btn btn-glass btn-green" id="sendBtn" onclick="sendTransaction()" disabled>Send</button>
+            </nav>
+        </div>
+      </div>
+  </article>
 
-   function   showSection(that,callback) {
+  <article id="getData">
+      <div class="inpContainer">
+        <label for="getAddr" class="inp">
+          <input type="text" id="getAddr" placeholder="&nbsp;">
+          <span class="label">FLO ID</span>
+          <span class="border"></span>
+        </label>
+        <nav class="btn-bar nav-light">
+          <button id="getData" class="btn btn-glass btn-blue" onclick="monitorData()">Monitor Data</button>
+          <button id="clearLocalData" class="btn btn-glass btn-red" onclick="clearLocalData()">Clear Local Data</button>
+        </nav>
+      </div>
+    </div>
 
-      if (!(mainButtonList.length == 0 )) {
-        var x = mainButtonList.pop();
-        x.classList.remove('activeButton');
-                                      }
-        that.classList.add('activeButton');
-        mainButtonList.push(that)
-        callback();
-    }
+    <h3>Received FLO Data : </h3>
+    <div id="dispData"></div>
+  </article>
 
-  </script>
-
-  <br/>
-  <div id="addrGen">
-
-    <h2>Address Generator</h2>
-
-    <button id="GenNewAddrBtn" onclick="GenNewAddr();">Generate New Address</button>
-    <button id="RecoverAddrBtn" onclick="RecoverAddr();">Recover FLO Address</button><br/><br/>
-    <table id="addrDisp"><tr><td><b>FLO Address</b></td><td><b>Secret (or) Private Key</b></td></tr></table>
-
-  </div>
-
-  <div id="sendData">
-    <h2>Send FLO Data</h2>
-    <label for="getBal_addr">Enter sender address : </label>
-    <input type="text" id="getBal_addr" class="firstColumn">
-    <button class="secondColumn" id="getBal_btn">Get Sender Balance</button>
-    <div id="dispBal"></div>
-    Enter receiver Address : <input type="text" id="sendReceiver" class="firstColumn">
-    <br/>Enter amount : <input type="number" id="sendAmt" class="firstColumn">
-    <h3>Enter the FLO Data</h3>
-    <textarea rows="15" cols="70" id="flotextdata"></textarea><br/>
-    <button id="sendBtn" onclick="sendTransaction()" disabled>Send</button>
-  </div>
-
-  <div id="getData">
-    <h2>Monitor FLO Data</h2>
-    Enter Address : <input type="text" id="getAddr"><br/>
-    <button id="getData" onclick="monitorData()">Monitor Data</button><br/>
-    <button id="clearLocalData" onclick="clearLocalData()">Clear Local Data</button>
-    <div id="dispMsg"><h3>Received FLO Data : </h3><br/></div>
-
-  </div>
-
-
-
-  <script>
-
-
+<script>
   getDataMode(); //default start
-startup();
-function startup(){
-  var idb = indexedDB.open("FLO_webWallet");
-  new Promise(function(resolve,reject){
-    idb.onerror = function(event) {
-      //console.log("Error in opening IndexedDB!");
-      reject(Error("Error in opening IndexedDB!"));
-    };
-    idb.onupgradeneeded = function(event) {
-        var objectStore = event.target.result.createObjectStore('Label');
-      };
-    idb.onsuccess = function(event) {
-        var db = event.target.result;
-        var obslabel = db.transaction('Label', "readwrite").objectStore('Label');
-        var val = obslabel.getAllKeys();
-      //  console.log(val.result);
-       val.onsuccess = function(event){
-            resolve(event.target.result);
-        }
-    }
-  }).then(res => {
-    if(res.length){
-	    var input = document.getElementById("getAddr");
-	    input.value = res.join(',');
-	    monitorData();
-	    input.value = "";
-	}
-  }).catch(error => {
-    console.log(error.message);
-  });
+  startup();
 
-}
-  function clearLocalData()
-  {
-    document.getElementById("dispMsg").innerHTML = '<h3>Received FLO Data : </h3><br/>';
+  function startup(){
+    var idb = indexedDB.open("FLO_webWallet");
+    new Promise(function(resolve,reject){
+      idb.onerror = function(event) {
+        //console.log("Error in opening IndexedDB!");
+        reject(Error("Error in opening IndexedDB!"));
+      };
+      idb.onupgradeneeded = function(event) {
+          var objectStore = event.target.result.createObjectStore('Label');
+        };
+      idb.onsuccess = function(event) {
+          var db = event.target.result;
+          var obslabel = db.transaction('Label', "readwrite").objectStore('Label');
+          var val = obslabel.getAllKeys();
+        //  console.log(val.result);
+         val.onsuccess = function(event){
+              resolve(event.target.result);
+          }
+      }
+    }).then(res => {
+      if(res.length){
+  	    var input = document.getElementById("getAddr");
+  	    input.value = res.join(',');
+  	    monitorData();
+  	    input.value = "";
+  	}
+    }).catch(error => {
+      console.log(error.message);
+    });
+  }
+
+  function clearLocalData(){
+    document.getElementById("dispData").innerHTML = '';
     var DBDeleteRequest = window.indexedDB.deleteDatabase("FLO_webWallet");
     DBDeleteRequest.onsuccess = function(event) {
       console.log("Database deleted successfully");
@@ -218,9 +611,478 @@ function startup(){
     document.getElementById("sendData").style.display = 'none';
     document.getElementById("getData").style.display = 'block';
   }
+</script>
+
+<script>
+    function ajax(method, uri){
+      var request = new XMLHttpRequest();
+      var url = `${server}/${uri}`
+      console.log(url)
+      var result;
+      request.open(method,url , false);
+      request.onload = function () {
+        if (request.readyState == 4 && request.status == 200)
+          result = this.response;
+        else {
+          console.log('error');
+          result = false;
+        }
+      };
+      request.send();
+      console.log(result);
+      return result;
+    }
+
+    function validateAddr(inputtxt) {
+            try{
+        var addr = new Bitcoin.Address(inputtxt);
+        return true;
+
+      }catch{
+        return false;
+      }
+    }
+
+    function verifyWIF(wif,addr){
+      try {
+        var key = new Bitcoin.ECKey(wif);
+        if(key.priv == null){
+          return false;
+        }
+        key.setCompressed(true);
+        var bitcoinAddress = key.getBitcoinAddress();
+        if (addr == bitcoinAddress)
+          return true;
+        else
+          return false;
+      }
+      catch (e) {
+        // browser does not have sufficient JavaScript support to generate a bitcoin address
+        alert(e);
+        console.log("error");
+      }
+    }
+</script>
+
+<script>
+  function GenNewAddr(){
+      try {
+        var key = new Bitcoin.ECKey(false);
+        key.setCompressed(true);
+        var bitcoinAddress = key.getBitcoinAddress();
+        var privateKeyWif = key.getBitcoinWalletImportFormat();
+        console.log(bitcoinAddress);
+        console.log(privateKeyWif);
+        alert("FLO Address \t: "+bitcoinAddress+"\nSecret Key \t: "+privateKeyWif);
+        var table=document.getElementById("addrDisp");
+        var row = table.insertRow(0);
+        var cell1 = row.insertCell(0);
+        var cell2 = row.insertCell(1);
+        cell1.innerHTML = bitcoinAddress;
+        cell2.innerHTML = privateKeyWif;
+      }
+      catch (e) {
+        // browser does not have sufficient JavaScript support to generate a bitcoin address
+        alert(e);
+        console.log("error");
+      }
+  }
+
+  function RecoverAddr(){
+      try {
+        wif = prompt("Enter Secret (or) Private Key :");
+        if(wif.length<1){
+          alert("Private Key cannot be empty");
+          return;
+        }
+        var key = new Bitcoin.ECKey(wif);
+        if(key.priv == null){
+          alert("Invalid Private key");
+          return;
+        }
+        key.setCompressed(true);
+        var bitcoinAddress = key.getBitcoinAddress();
+        var privateKeyWif = key.getBitcoinWalletImportFormat();
+        console.log(bitcoinAddress);
+        console.log(privateKeyWif);
+        alert("FLO Address \t: "+bitcoinAddress+"\nSecret Key \t: "+privateKeyWif);
+        var table=document.getElementById("addrDisp");
+        var row = table.insertRow(0);
+        var cell1 = row.insertCell(0);
+        var cell2 = row.insertCell(1);
+        cell1.innerHTML = bitcoinAddress;
+        cell2.innerHTML = privateKeyWif;
+      }
+      catch (e) {
+        // browser does not have sufficient JavaScript support to generate a bitcoin address
+        console.log(e);
+      }
+  }
+</script>
+
+<script>
+    function getBalance() {
+      var addrs = document.getElementById("getBal_addr").value;
+      var dispBal = document.getElementById("dispBal");
+      if (addrs.length < 1) {
+        alert("Address field cannot be empty.");
+        return false;
+      }
+      let addrList = addrs.split(',');
+      addrList = Array.from(new Set(addrList));
+      var result = "";
+      var totBal = 0.0;
+      var flag = 0;
+      addrList.forEach(function(addr){
+        if (!validateAddr(addr)){
+          alert(`Invalid address : ${addr}`);
+          return;
+        }
+        var response = ajax("GET",`api/addr/${addr}/balance`);
+        if(response){
+          result += `<label><input class="option-input radio" type="radio" name="sender" value=${addr} checked>${addr} ${response}</label>\n`;
+          totBal+=parseFloat(response);
+          flag = 1;
+        }else{
+          console.log("error : connection failed!");
+          alert("error : connection failed!");
+        }
+
+      });
+      if(flag==0){
+        document.getElementById("sendBtn").disabled = true;
+        return ;
+      }
+      dispBal.innerHTML = `${result}<label>Total Balance : ${totBal}</label>`;
+      document.getElementById("sendBtn").disabled = false;
+    }
+</script>
+<script>
+  function sendTransaction(){
+    var radioButtons = document.getElementsByName("sender");
+    var sender;
+    for (var x = 0; x < radioButtons.length; x++)
+      if (radioButtons[x].checked)
+        sender=radioButtons[x].value;
+
+    var receiver = document.getElementById("sendReceiver").value;
+    if (!validateAddr(receiver)){
+      alert(`Invalid address : ${receiver}`);
+      return;
+    }
+
+    var trx = bitjs.transaction();
+    var sendAmt = parseFloat(document.getElementById("sendAmt").value);
+    var utxoAmt = 0.0;
+    var x = sendAmt+fee;
+    var response = ajax("GET",`api/addr/${sender}/utxo`);
+    var utxos = JSON.parse(response);
+    for(var x = utxos.length-1; (x >= 0) && (utxoAmt < sendAmt+fee); x--){
+      if(utxos[x].confirmations){
+        trx.addinput(utxos[x].txid, utxos[x].vout, utxos[x].scriptPubKey)
+        utxoAmt += utxos[x].amount;
+      }else
+        break;
+    }
+    if(utxoAmt < sendAmt+fee){
+      alert("Insufficient balance!");
+      return;
+    }
+
+    trx.addoutput(receiver, sendAmt);
+    console.log(receiver+":"+ sendAmt);
+
+    var change = utxoAmt-sendAmt-fee;
+    if(change>0)
+      trx.addoutput(sender, change);
+    console.log(sender+":"+ change);
+
+    var sendFloData = document.getElementById("flotextdata").value;
+    trx.addflodata(sendFloData);
+    var wif = prompt("Enter private key");
+    if (wif.length<1||!verifyWIF(wif,sender)){
+      alert("Invalid Private key!");
+      return;
+    }
+    var signedTxHash = trx.sign(wif, 1);
+    console.log(signedTxHash);
+    var result = broadcastTx(signedTxHash);
+    alert(result);
+  }
   </script>
+    <script>
+        function broadcastTx(signedTxHash) {
+            var http = new XMLHttpRequest();
+            var url = `${server}/api/tx/send`;
+            if (signedTxHash.length < 1) {
+                alert("Empty Signature");
+                return false;
+            }
+
+            var params = `{"rawtx":"${signedTxHash}"}`;
+            var result;
+            http.open('POST', url, false);
+
+            //Send the proper header information along with the request
+            http.setRequestHeader('Content-type', 'application/json');
+
+            http.onreadystatechange = function () { //Call a function when the state changes.
+                if (http.readyState == 4 && http.status == 200) {
+          console.log(http.response);
+          var txid = JSON.parse(http.response).txid.result;
+          result = "Transaction successful! txid : " + txid;
+                } else {
+                    console.log(http.responseText);
+          result = http.response;
+
+                }
+            }
+            http.send(params);
+      return result;
+        }
+    </script>
+
+   <script>
+  //Converting old blocking waitForGlobal into non-blocking code
+    var waitForGlobal = function(param, callback) {
+      new Promise(callback);
+    };
 
 
+  /* var waitForGlobal = function(param, callback) {
+     if (!window[param]) {
+       callback();
+     } else {
+       setTimeout(function() {
+         waitForGlobal(param, callback);
+       }, 100);
+     }
+   };*/
+
+
+  function monitorData(){
+
+    var addrList = document.getElementById("getAddr").value;
+    addrList = addrList.split(',');
+    addrList = Array.from(new Set(addrList));
+
+    var dispData = document.getElementById("dispData") ;
+    window["refreshwait"] = addrList.length;
+
+    addrList.forEach(function(addr){
+      if (!validateAddr(addr)){
+        alert(`Invalid address : ${addr}`);
+        window["refreshwait"] -= 1;
+        return;
+      }
+      var addrData = document.getElementById(addr);
+      if(addrData){
+        refreshdata(addrData);
+        window["refreshwait"] -= 1;
+        return;
+      }
+
+      waitForGlobal("loadwait", function() {
+        window["loadwait"] = true;
+        var idbtmp = indexedDB.open("FLO_webWallet");
+        idbtmp.onerror = function(event) {
+          console.log("Error in opening IndexedDB!");
+          window["loadwait"] = false;
+        };
+        idbtmp.onupgradeneeded = function(event) {
+            var objectStore = event.target.result.createObjectStore('Label');
+            //objectStore.createIndex("label", "label", { unique: false });
+          };
+        idbtmp.onsuccess = function(event) {
+          var db = event.target.result;
+
+          if(!db.objectStoreNames.contains(addr)){
+            var newaddr = true;
+            var version = db.version + 1;
+          }else{
+            var newaddr = false;
+            var version = db.version;
+          }
+          db.close();
+          var idb = indexedDB.open("FLO_webWallet",version);
+          idb.onerror = function(event) {
+            console.log("Error in opening IndexedDB!");
+          };
+          idb.onupgradeneeded = function(event) {
+            var objectStore = event.target.result.createObjectStore(addr, { keyPath: "tx", autoIncrement:true });
+            objectStore.createIndex("time", "time", { unique: false });
+            objectStore.createIndex("sender", "sender", { unique: false });
+            objectStore.createIndex("receiver", "receiver", { unique: false });
+            objectStore.createIndex("floData", "floData", { unique: false });
+            objectStore.createIndex("txid", "txid", { unique: true });
+          };
+          idb.onsuccess = function(event) {
+            //window["loadwait"] = false;
+            var db = event.target.result;
+            var obslabel = db.transaction('Label', "readwrite").objectStore('Label');
+            if(newaddr)
+              obslabel.add('',addr);
+
+            var dispDataAddr = document.createElement('section');
+            dispDataAddr.id = addr;
+            dispDataAddr.setAttribute("class","DataTable");
+            dispDataAddr.innerHTML = `<h4>${addr}</h4>
+                    <nav class="btn-bar nav-light">
+                      <span class="addrLabelContainer">
+                        <label for="inp" class="inp addrLabel">
+                          <input type="text" placeholder="&nbsp;" disabled>
+                          <span class="label">Label</span>
+                          <span class="border"></span>
+                        </label>
+                      </span>
+                      <button class="btn btn-glass btn-yellow" onclick="editLabel(this.parentNode.parentNode)" style="display:block;">edit label</button>
+                      <button class="btn btn-glass btn-green" onclick="saveLabel(this.parentNode.parentNode)" style="display:none;">save label</button>
+                      <button class="btn btn-glass btn-blue" onclick="refreshdata(this.parentNode.parentNode)">refresh data</button>
+                      <button class="btn btn-glass btn-red" onclick="removedata(this.parentNode.parentNode)">remove view</button>
+                    </nav>
+                      <div class="tbl-header">
+                        <table cellpadding="0" cellspacing="0" border="0">
+                          <thead>
+                            <tr>
+                              <th>Sender</th>
+                              <th>Receiver</th>
+                              <th>Time</th>
+                              <th>floData</th>
+                            </tr>
+                          </thead>
+                        </table>
+                      </div>`;
+
+
+            var labelRequest = obslabel.get(addr);
+            labelRequest.onsuccess = function(event){
+                dispDataAddr.getElementsByTagName('input')[0].value = labelRequest.result;
+            };
+            var tableContentDiv = document.createElement('div');
+            tableContentDiv.setAttribute("class","tbl-content");
+            var table = document.createElement('table');
+            table.setAttribute("cellpadding","0");
+            table.setAttribute("cellspacing","0");
+            table.setAttribute("border","0");
+            tableContentDiv.appendChild(table);
+            dispDataAddr.appendChild(tableContentDiv);
+            dispData.appendChild(dispDataAddr);
+
+            var obs = db.transaction(addr, "readwrite").objectStore(addr);
+            var objreq = obs.getAll();
+            objreq.onsuccess = function(event){
+              data = event.target.result;
+            //  console.log(data);
+              data.forEach(tx => {
+                var time = new Date(tx.time*1000);
+                var row = table.insertRow(0) ;
+                row.insertCell(0).innerHTML = tx.sender;
+                row.insertCell(1).innerHTML = tx.receiver;
+                row.insertCell(2).innerHTML = time;
+                row.insertCell(3).innerHTML = tx.floData;
+              })
+              refreshdata(dispDataAddr);
+
+            }
+            db.close();
+            window["refreshwait"] -= 1;
+          };
+        window["loadwait"] = false;
+        };
+
+      });
+    });
+
+  }
+  </script>
+  <script>
+  function refreshdata(param){
+
+    var addr = param.id;
+    var table = param.getElementsByTagName('table')[1];
+    var row = table.insertRow(0) ;
+    var cell = row.insertCell(0);
+    cell.innerHTML = "<center>Refreshing...</center>";
+    cell.colSpan = 4;
+
+    waitForGlobal("refreshwait", function() {
+      var idb = indexedDB.open("FLO_webWallet");
+      idb.onerror = function(event) {
+        console.log("Error in opening IndexedDB!");
+      };
+      idb.onsuccess = function(event) {
+        var db = event.target.result;
+        var obs = db.transaction(addr, "readwrite").objectStore(addr);
+        var countRequest = obs.count();
+        countRequest.onsuccess = function() {
+          console.log(countRequest.result);
+          var response = ajax("GET",`api/addrs/${addr}/txs`);
+          var nRequired = JSON.parse(response).totalItems - countRequest.result;
+          console.log(nRequired);
+
+          while(true && nRequired){
+            var response = ajax("GET",`api/addrs/${addr}/txs?from=0&to=${nRequired}`);
+            response = JSON.parse(response);
+            if (nRequired + countRequest.result != response.totalItems ){
+              nRequired = response.totalItems - countRequest.result;
+              continue;
+            }
+            response.items.reverse().forEach(function(tx){
+              if(tx.isCoinBase){
+                //console.log(tx.vin[0].coinbase)
+                obs.put({time : tx.time, txid : tx.txid, sender : '(mined) '+tx.vin[0].coinbase, receiver:addr,floData : tx.floData});
+                var time = new Date(tx.time*1000);
+                var row = table.insertRow(1) ;
+                row.insertCell(0).innerHTML = '(mined) '+tx.vin[0].coinbase;
+                row.insertCell(1).innerHTML = addr;
+                row.insertCell(2).innerHTML = time;
+                row.insertCell(3).innerHTML = tx.floData;
+              }else{
+                obs.put({time : tx.time, txid : tx.txid, sender : tx.vin[0].addr, receiver:tx.vout[0].scriptPubKey.addresses[0],floData : tx.floData});
+                var time = new Date(tx.time*1000);
+                var row = table.insertRow(1) ;
+                row.insertCell(0).innerHTML = tx.vin[0].addr;
+                row.insertCell(1).innerHTML = tx.vout[0].scriptPubKey.addresses[0];
+                row.insertCell(2).innerHTML = time;
+                row.insertCell(3).innerHTML = tx.floData;
+              }
+            });
+            break;
+          }
+          table.deleteRow(0);
+        };
+        db.close();
+      };
+    });
+  }
+
+  function removedata(param){
+    param.parentNode.removeChild(param);
+  }
+
+  function editLabel(param){
+      param.getElementsByTagName('input')[0].disabled = false;
+      param.getElementsByTagName('button')[0].style.display = "none";
+      param.getElementsByTagName('button')[1].style.display = "block";
+  }
+  function saveLabel(param){
+      label = param.getElementsByTagName('input')[0];
+      label.disabled = true;
+      label = label.value;
+      param.getElementsByTagName('button')[0].style.display = "block";
+      param.getElementsByTagName('button')[1].style.display = "none";
+      var idb = indexedDB.open("FLO_webWallet");
+      idb.onerror = function(event) {
+        console.log("Error in opening IndexedDB!");
+      };
+      idb.onsuccess = function(event) {
+        var db = event.target.result;
+        var obslabel = db.transaction('Label', "readwrite").objectStore('Label');
+        obslabel.put(label,param.id);
+        db.close();
+      }
+  }
+  </script>
 
   <script>
   /*!
@@ -3765,6 +4627,7 @@ function startup(){
                       var shType = sigHashType || 1;
                       for (var i = 0; i < this.inputs.length; i++) {
                           this.signinput(i, wif, shType);
+                          console.log(i);
                       }
                       return this.serialize();
                   }
@@ -4882,474 +5745,7 @@ function startup(){
           }
           return true;
       }
-  };
-</script>
-
-  <script>
-    function ajax(method, uri){
-      var request = new XMLHttpRequest();
-      var url = `${server}/${uri}`
-      console.log(url)
-      var result;
-      request.open(method,url , false);
-      request.onload = function () {
-        if (request.readyState == 4 && request.status == 200)
-          result = this.response;
-        else {
-          console.log('error');
-          result = false;
-        }
-      };
-      request.send();
-      console.log(result);
-      return result;
-    }
-
-    function validateAddr(inputtxt) {
-            try{
-        var addr = new Bitcoin.Address(inputtxt);
-        return true;
-
-      }catch{
-        return false;
-      }
-        }
-
-    function verifyWIF(wif,addr){
-      try {
-        var key = new Bitcoin.ECKey(wif);
-        if(key.priv == null){
-          return false;
-        }
-        key.setCompressed(true);
-        var bitcoinAddress = key.getBitcoinAddress();
-        if (addr == bitcoinAddress)
-          return true;
-        else
-          return false;
-      }
-      catch (e) {
-        // browser does not have sufficient JavaScript support to generate a bitcoin address
-        alert(e);
-        console.log("error");
-      }
-    }
-    </script>
-
-  <script>
-
-  function GenNewAddr(){
-  try {
-        var key = new Bitcoin.ECKey(false);
-        key.setCompressed(true);
-        var bitcoinAddress = key.getBitcoinAddress();
-        var privateKeyWif = key.getBitcoinWalletImportFormat();
-        console.log(bitcoinAddress);
-        console.log(privateKeyWif);
-        alert("FLO Address \t: "+bitcoinAddress+"\nSecret Key \t: "+privateKeyWif);
-        var table=document.getElementById("addrDisp");
-        var row = table.insertRow(1);
-        var cell1 = row.insertCell(0);
-        var cell2 = row.insertCell(1);
-        cell1.innerHTML = bitcoinAddress;
-        cell2.innerHTML = privateKeyWif;
-      }
-      catch (e) {
-        // browser does not have sufficient JavaScript support to generate a bitcoin address
-        alert(e);
-        console.log("error");
-      }
-  }
-
-  function RecoverAddr(){
-  try {
-        wif = prompt("Enter Secret (or) Private Key :");
-        if(wif.length<1){
-          alert("Private Key cannot be empty");
-          return;
-        }
-        var key = new Bitcoin.ECKey(wif);
-        if(key.priv == null){
-          alert("Invalid Private key");
-          return;
-        }
-        key.setCompressed(true);
-        var bitcoinAddress = key.getBitcoinAddress();
-        var privateKeyWif = key.getBitcoinWalletImportFormat();
-        console.log(bitcoinAddress);
-        console.log(privateKeyWif);
-        alert("FLO Address \t: "+bitcoinAddress+"\nSecret Key \t: "+privateKeyWif);
-        var table=document.getElementById("addrDisp");
-        var row = table.insertRow(1);
-        var cell1 = row.insertCell(0);
-        var cell2 = row.insertCell(1);
-        cell1.innerHTML = bitcoinAddress;
-        cell2.innerHTML = privateKeyWif;
-      }
-      catch (e) {
-        // browser does not have sufficient JavaScript support to generate a bitcoin address
-        console.log(e);
-      }
-  }
-  </script>
-
-  <script>
-        var getBal_btn = document.getElementById("getBal_btn");
-        getBal_btn.onclick = function () {
-
-            var addrs = document.getElementById("getBal_addr").value;
-            var dispBal = document.getElementById("dispBal");
-
-            if (addrs.length < 1) {
-                alert("Address field cannot be empty.");
-                return false;
-            }
-      let addrList = addrs.split(',');
-      addrList = Array.from(new Set(addrList));
-      var result = "";
-      var totBal = 0.0;
-      var flag = 0;
-      addrList.forEach(function(addr){
-        if (!validateAddr(addr)){
-          alert(`Invalid address : ${addr}`);
-          return;
-        }
-        var response = ajax("GET",`api/addr/${addr}/balance`);
-        if(response){
-          result += `<tr><td><input type="radio" name="sender" value=${addr} checked></td><td>${addr}</td><td>${response}</td></tr> \n`;
-          totBal+=parseFloat(response);
-          flag = 1;
-        }else{
-          console.log("error : connection failed!");
-          alert("error : connection failed!");
-        }
-
-      });
-      if(flag==0){
-        document.getElementById("sendBtn").disabled = true;
-        return ;
-      }
-      dispBal.innerHTML = `<table class="dispBalTable">${result}<tr><td colspan="2">Total Balance :</td><td>${totBal}</tr></table>`;
-      document.getElementById("sendBtn").disabled = false;
-        }
-
-
-   </script>
-   <script>
-  function sendTransaction(){
-
-    var radioButtons = document.getElementsByName("sender");
-    var sender;
-    for (var x = 0; x < radioButtons.length; x++)
-      if (radioButtons[x].checked)
-        sender=radioButtons[x].value;
-
-    var receiver = document.getElementById("sendReceiver").value;
-    if (!validateAddr(receiver)){
-      alert(`Invalid address : ${receiver}`);
-      return;
-    }
-
-    var trx = bitjs.transaction();
-    var sendAmt = parseFloat(document.getElementById("sendAmt").value);
-    var utxoAmt = 0.0;
-    var x = sendAmt+fee;
-    var response = ajax("GET",`api/addr/${sender}/utxo`);
-    var utxos = JSON.parse(response);
-    for(var x = utxos.length-1; x >= 0; x--){
-      if(utxoAmt < sendAmt+fee){
-        var txid = utxos[x].txid;
-        var index = utxos[x].vout;
-        var scriptPubKey = utxos[x].scriptPubKey;
-        var bal = utxos[x].amount;
-        trx.addinput(txid, index, scriptPubKey)
-        utxoAmt += bal;
-      }else
-        break;
-    }
-    if(utxoAmt < sendAmt+fee){
-      alert("Insufficient balance!");
-      return;
-    }
-
-
-
-    trx.addoutput(receiver, sendAmt);
-    console.log(receiver+":"+ sendAmt);
-
-    var change = utxoAmt-sendAmt-fee;
-    if(change>0)
-      trx.addoutput(sender, change);
-    console.log(sender+":"+ change);
-
-    var sendFloData = document.getElementById("flotextdata").value;
-    trx.addflodata(sendFloData);
-    var wif = prompt("Enter private key");
-    if (wif.length<1||!verifyWIF(wif,sender)){
-      alert("Invalid Private key!");
-      return;
-    }
-    var signedTxHash = trx.sign(wif, 1);
-    console.log(signedTxHash);
-    var result = broadcastTx(signedTxHash);
-    alert(result);
-  }
-  </script>
-    <script>
-        function broadcastTx(signedTxHash) {
-            var http = new XMLHttpRequest();
-            var url = `${server}/api/tx/send`;
-            if (signedTxHash.length < 1) {
-                alert("Empty Signature");
-                return false;
-            }
-
-            var params = `{"rawtx":"${signedTxHash}"}`;
-            var result;
-            http.open('POST', url, false);
-
-            //Send the proper header information along with the request
-            http.setRequestHeader('Content-type', 'application/json');
-
-            http.onreadystatechange = function () { //Call a function when the state changes.
-                if (http.readyState == 4 && http.status == 200) {
-          console.log(http.response);
-          var txid = JSON.parse(http.response).txid.result;
-          result = "Transaction successful! txid : " + txid;
-                } else {
-                    console.log(http.responseText);
-          result = http.response;
-
-                }
-            }
-            http.send(params);
-      return result;
-        }
-    </script>
-
-   <script>
-//Converting old blocking waitForGlobal into non-blocking code
-    var waitForGlobal = function(param, callback) {
-      new Promise(callback);
     };
-
-
-  /* var waitForGlobal = function(param, callback) {
-     if (!window[param]) {
-       callback();
-     } else {
-       setTimeout(function() {
-         waitForGlobal(param, callback);
-       }, 100);
-     }
-   };*/
-
-
-  function monitorData(){
-
-    var addrList = document.getElementById("getAddr").value;
-    addrList = addrList.split(',');
-    addrList = Array.from(new Set(addrList));
-
-    var dispMsg = document.getElementById("dispMsg") ;
-    window["refreshwait"] = addrList.length;
-
-    addrList.forEach(function(addr){
-      if (!validateAddr(addr)){
-        alert(`Invalid address : ${addr}`);
-        window["refreshwait"] -= 1;
-        return;
-      }
-      var addrData = document.getElementById(addr);
-      if(addrData){
-        refreshdata(addrData);
-        window["refreshwait"] -= 1;
-        return;
-      }
-
-      waitForGlobal("loadwait", function() {
-        window["loadwait"] = true;
-        var idbtmp = indexedDB.open("FLO_webWallet");
-        idbtmp.onerror = function(event) {
-          console.log("Error in opening IndexedDB!");
-          window["loadwait"] = false;
-        };
-        idbtmp.onupgradeneeded = function(event) {
-            var objectStore = event.target.result.createObjectStore('Label');
-            //objectStore.createIndex("label", "label", { unique: false });
-          };
-        idbtmp.onsuccess = function(event) {
-          var db = event.target.result;
-
-          if(!db.objectStoreNames.contains(addr)){
-            var newaddr = true;
-            var version = db.version + 1;
-          }
-
-          else {
-            var newaddr = false;
-            var version = db.version;
-          }
-          db.close();
-          var idb = indexedDB.open("FLO_webWallet",version);
-          idb.onerror = function(event) {
-            console.log("Error in opening IndexedDB!");
-          };
-          idb.onupgradeneeded = function(event) {
-            var objectStore = event.target.result.createObjectStore(addr, { keyPath: "tx", autoIncrement:true });
-            objectStore.createIndex("time", "time", { unique: false });
-            objectStore.createIndex("sender", "sender", { unique: false });
-            objectStore.createIndex("receiver", "receiver", { unique: false });
-            objectStore.createIndex("floData", "floData", { unique: false });
-            objectStore.createIndex("txid", "txid", { unique: true });
-          };
-          idb.onsuccess = function(event) {
-            //window["loadwait"] = false;
-            var db = event.target.result;
-            var obslabel = db.transaction('Label', "readwrite").objectStore('Label');
-            if(newaddr)
-              obslabel.add('',addr);
-
-            var dispMsgAddr = document.createElement('div');
-            dispMsgAddr.id = addr;
-            dispMsgAddr.innerHTML = `<hr><h4>${addr}</h4>Label : <input type="text" id="label" disabled><br>
-                      <button onclick="editLabel(this.parentNode)" style="display:block;">edit</button>
-                      <button onclick="saveLabel(this.parentNode)" style="display:none;">save</button>
-                      <br>
-                      <button onclick="refreshdata(this.parentNode)">refresh</button>
-                      <button onclick="removedata(this.parentNode)">remove</button><br>`;
-
-
-            var labelRequest = obslabel.get(addr);
-            labelRequest.onsuccess = function(event){
-                dispMsgAddr.getElementsByTagName('input')[0].value = labelRequest.result;
-            };
-
-            var table = document.createElement('table');
-            dispMsgAddr.appendChild(table);
-            dispMsg.appendChild(dispMsgAddr);
-
-            var row = table.insertRow(0) ;
-            row.insertCell(0).innerHTML = 'Sender';
-            row.insertCell(1).innerHTML = 'Receiver';
-            row.insertCell(2).innerHTML = 'Time';
-            row.insertCell(3).innerHTML = 'floData';
-
-            var obs = db.transaction(addr, "readwrite").objectStore(addr);
-            var objreq = obs.getAll();
-            objreq.onsuccess = function(event){
-              data = event.target.result;
-            //  console.log(data);
-              data.forEach(tx => {
-                var time = new Date(tx.time*1000);
-                var row = table.insertRow(1) ;
-                row.insertCell(0).innerHTML = tx.sender;
-                row.insertCell(1).innerHTML = tx.receiver;
-                row.insertCell(2).innerHTML = time;
-                row.insertCell(3).innerHTML = tx.floData;
-              })
-              refreshdata(dispMsgAddr);
-
-            }
-            db.close();
-            window["refreshwait"] -= 1;
-          };
-        window["loadwait"] = false;
-        };
-
-      });
-    });
-
-  }
   </script>
-  <script>
-  function refreshdata(param){
-
-    var addr = param.id;
-    var table = param.getElementsByTagName('table')[0];
-    var row = table.insertRow(1) ;
-    var cell = row.insertCell(0);
-    cell.innerHTML = "<center>Refreshing...</center>";
-    cell.colSpan = 4;
-
-    waitForGlobal("refreshwait", function() {
-      var idb = indexedDB.open("FLO_webWallet");
-      idb.onerror = function(event) {
-        console.log("Error in opening IndexedDB!");
-      };
-      idb.onsuccess = function(event) {
-        var db = event.target.result;
-        var obs = db.transaction(addr, "readwrite").objectStore(addr);
-        var countRequest = obs.count();
-        countRequest.onsuccess = function() {
-          console.log(countRequest.result);
-          var response = ajax("GET",`api/addrs/${addr}/txs`);
-          var nRequired = JSON.parse(response).totalItems - countRequest.result;
-          console.log(nRequired);
-
-          while(true && nRequired){
-            var response = ajax("GET",`api/addrs/${addr}/txs?from=0&to=${nRequired}`);
-            response = JSON.parse(response);
-            if (nRequired + countRequest.result != response.totalItems ){
-              nRequired = response.totalItems - countRequest.result;
-              continue;
-            }
-            response.items.reverse().forEach(function(tx){
-              if(tx.isCoinBase){
-                //console.log(tx.vin[0].coinbase)
-                obs.put({time : tx.time, txid : tx.txid, sender : '(mined) '+tx.vin[0].coinbase, receiver:addr,floData : tx.floData});
-                var time = new Date(tx.time*1000);
-                var row = table.insertRow(2) ;
-                row.insertCell(0).innerHTML = '(mined) '+tx.vin[0].coinbase;
-                row.insertCell(1).innerHTML = addr;
-                row.insertCell(2).innerHTML = time;
-                row.insertCell(3).innerHTML = tx.floData;
-              }else{
-                obs.put({time : tx.time, txid : tx.txid, sender : tx.vin[0].addr, receiver:tx.vout[0].scriptPubKey.addresses[0],floData : tx.floData});
-                var time = new Date(tx.time*1000);
-                var row = table.insertRow(2) ;
-                row.insertCell(0).innerHTML = tx.vin[0].addr;
-                row.insertCell(1).innerHTML = tx.vout[0].scriptPubKey.addresses[0];
-                row.insertCell(2).innerHTML = time;
-                row.insertCell(3).innerHTML = tx.floData;
-              }
-            });
-            break;
-          }
-          table.deleteRow(1);
-        };
-        db.close();
-      };
-    });
-  }
-
-  function removedata(param){
-    param.parentNode.removeChild(param);
-  }
-
-  function editLabel(param){
-      param.getElementsByTagName('input')[0].disabled = false;
-      param.getElementsByTagName('button')[0].style.display = "none";
-      param.getElementsByTagName('button')[1].style.display = "block";
-  }
-  function saveLabel(param){
-      label = param.getElementsByTagName('input')[0];
-      label.disabled = true;
-      label = label.value;
-      param.getElementsByTagName('button')[0].style.display = "block";
-      param.getElementsByTagName('button')[1].style.display = "none";
-      var idb = indexedDB.open("FLO_webWallet");
-      idb.onerror = function(event) {
-        console.log("Error in opening IndexedDB!");
-      };
-      idb.onsuccess = function(event) {
-        var db = event.target.result;
-        var obslabel = db.transaction('Label', "readwrite").objectStore('Label');
-        obslabel.put(label,param.id);
-        db.close();
-      }
-  }
-  </script>
-
-  </body>
-  </html>
+</body>
+</html>
