@@ -77,7 +77,7 @@ static void unicast_reply(const struct mg_str msg) {
   //Get receiver address from msg
   char receiverAddr[32];
   int index = (int)(strchr(msg.p, ' ') - msg.p) + 1;
-  snprintf(receiverAddr, sizeof(receiverAddr), "%.*s", index, msg.p);
+  snprintf(receiverAddr, sizeof(receiverAddr), "%.*s", index - 1, msg.p);
   printf("%s\tReply\t[%d]\n", receiverAddr, (int)msg.len - index);
   //send msg to receiver
   struct mg_connection *c;
