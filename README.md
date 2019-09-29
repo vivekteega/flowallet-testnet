@@ -33,21 +33,18 @@ This template contains standard operations that can be used for the following:
  `generateNewID`  generates a new flo ID and returns private-key, public-key and floID
 
 #### 	Calculate Public Key Hex
-	 floCrypto.getPubKeyHex(privateKey)
 `getPubKeyHex` returns public-key from given private-key
-Arguments : 
+	 floCrypto.getPubKeyHex(privateKey)
 1. privateKey - private key in WIF format (Hex) 
 
 #### 	Calculate FLO ID
 	 floCrypto.getFloIDfromPubkeyHex(publicKey)
 `getFloIDfromPubkeyHex` returns flo-ID from public-key
-Arguments : 
 1. publicKey - public key hex value 
 
 #### 	Verify Private Key
 	 floCrypto.verifyPrivKey(privateKey, pubKey_floID, *isfloID)
 `verifyPrivKey` verify the private-key for the given public-key or flo-ID
-Arguments : 
 1. privateKey - private key in WIF format (Hex) 
 2. pubKey_floID - public Key or flo ID
 3. isfloID - boolean value (true - compare as flo ID, false - compare as public key) (optional, default is true)
@@ -55,34 +52,29 @@ Arguments :
 #### 	Validate FLO ID
 	 floCrypto.validateAddr(floID)
 `validateAddr` check if the given Address is valid or not
-Arguments : 
 1. floID - flo ID to validate 
 
 #### 	Data Encryption
 	 floCrypto.encryptData(data, publicKey)
 `encryptData` encrypts the given data using public-key
-Arguments : 
 1. data - data to encrypt
 2. publicKey - public key of the recipient
 
 #### 	Data Decryption
 	 floCrypto.decryptData(data, privateKey)
 `decryptData` decrypts the given data using private-key
-Arguments : 
 1. data - encrypted data to decrypt (Object that was returned from encryptData)
 2. privateKey - private key of the recipient
 
 #### 	Sign Data
 	 floCrypto.signData(data, privateKey)
 `signData` signs the data using the private key
-Arguments : 
 1. data - data to sign
 2. privateKey - private key of the signer
 
 ####  Verify Signature
 	 floCrypto.decryptData(data, signature, publicKey)
 `decryptData` verifies signatue of the data using public-key
-Arguments : 
 1. data - data of the given signature
 2. signature - signature of the data
 3. publicKey - public key of the signer
