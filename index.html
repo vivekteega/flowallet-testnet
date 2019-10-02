@@ -82,9 +82,9 @@
   /* FLO Crypto Operators*/
   const floCrypto = {
 
-    //p: BigInteger("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F", 16),
+    p: BigInteger("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F", 16),
 
-    //ecparams: EllipticCurve.getSECCurveByName("secp256k1"),
+    ecparams: EllipticCurve.getSECCurveByName("secp256k1"),
 
     exponent1: function () {
       return this.p.add(BigInteger.ONE).divide(BigInteger("4"))
