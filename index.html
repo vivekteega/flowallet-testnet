@@ -5311,81 +5311,9 @@
           reject(error);
         });
       });
-    },
-
-    //Supernode initate (call this function only when client is authorized as supernode)
-    /*  DO NOT edit this function 
-        To edit the response or callback, edit the reactor eventListener given below
-    */
-    initSupernode: function (pwd, floID) {
-      return new Promise((resolve, reject) => {
-        try {
-          this.supernodeClientWS = new WebSocket("ws://" + floGlobals.supernodes[floID].uri + "/ws");
-          this.supernodeClientWS.onopen = (evt) => {
-            this.supernodeClientWS.send("$" + pwd);
-            reactor.dispatchEvent('supernode_open', evt);
-          };
-          this.supernodeClientWS.onclose = (evt) => {
-            reactor.dispatchEvent('supernode_close', evt);
-          };
-          this.supernodeClientWS.onmessage = (evt) => {
-            if (evt.data[0] == '$') {
-              reactor.dispatchEvent('supernode_admin', evt.data.substr(1));
-              if (evt.data == '$Access Granted!')
-                resolve("Access Granted! Initiated Supernode client");
-              else if (evt.data == '$Access Denied!')
-                reject("Access Denied! Failed to initiate Supernode client");
-            } else if (evt.data[0] == '?')
-              reactor.dispatchEvent('supernode_processRequest', evt.data.substr(1));
-            else
-              reactor.dispatchEvent('supernode_processData', evt.data);
-          };
-          this.supernodeClientWS.onerror = (evt) => {
-            reactor.dispatchEvent('supernode_error', evt);
-            reject(evt);
-          };
-        } catch (error) {
-          reject(error)
-        }
-      });
     }
   }
 
-  //Event fired when connected to supernode websocket
-  reactor.registerEvent('supernode_open');
-  reactor.addEventListener('supernode_open', function (event) {
-    console.log('Connected to supernode websocket!');
-  });
-  
-  //Event fired when disconnected from supernode websocket
-  reactor.registerEvent('supernode_close');
-  reactor.addEventListener('supernode_close', function (event) {
-    console.log('Disconnected from supernode websocket!');
-  });
-
-  //Event fired when connection error with supernode websocket
-  reactor.registerEvent('supernode_error');
-  reactor.addEventListener('supernode_error', function (event) {
-    console.log('Error! Unable to connect supernode websocket!');
-  });
-
-  //Event fired when received admin messages from WSS
-  reactor.registerEvent('supernode_admin');
-  reactor.addEventListener('supernode_admin', function (message) {
-    console.log('Admin Message :',message);
-  });
-
-  //Event fired during incoming request
-  reactor.registerEvent('supernode_processRequest');
-  reactor.addEventListener('supernode_processRequest', function (request) {
-    console.log('Request :',request);
-  });
-
-  //Event fired during incoming data
-  reactor.registerEvent('supernode_processData');
-  reactor.addEventListener('supernode_processData', function (data) {
-    console.log('Data :',data);
-  });
 </script>
 <script>
   /* Compact IndexedDB operations */
