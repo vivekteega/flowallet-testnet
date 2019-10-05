@@ -5117,7 +5117,7 @@
     /*Read flo Data from txs of given Address
     options can be used to filter data
     limit       : maximum number of filtered data (default = 1000, negative  = no limit)
-    ignoreOld    : ignore old txs (default = 0)
+    ignoreOld   : ignore old txs (default = 0)
     sentOnly    : filters only sent data
     pattern     : filters data that starts with a pattern
     contains    : filters data that contains a string
@@ -5145,7 +5145,7 @@
                     continue;
                 filteredData.push(response.items[i].floData);
               }
-              resolve(filteredData);
+              resolve({totalTxs:response.totalItems , data:filteredData});
           }).catch(error => {
             reject(error);
           });
