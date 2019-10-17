@@ -5309,8 +5309,8 @@
         }
         idb.onsuccess = (event) => {
           var db = event.target.result;
-          if (JSON.stringify(Object.values(db.objectStoreNames)) === JSON.stringify(Object.keys(
-              objectStores)))
+          if (JSON.stringify(Object.values(db.objectStoreNames).sort()) === JSON.stringify(Object.keys(
+              objectStores).sort()))
             resolve("Initiated IndexedDB");
           else
             reject("IndexedDB already exist with different ObjectStores!");
