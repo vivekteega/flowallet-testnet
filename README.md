@@ -86,8 +86,8 @@ This template contains standard operations that can be used for the following:
 	floBlockchainAPI.promisedAJAX(method, uri)
 `promisedAJAX` resolves a responce from server on success or rejects the responce on failure.
 1. method - GET/POST
-  a. GET - Requests data from a specified resource.
-  b. POST - Submits data to be processed to a specified resource.
+   - GET - Requests data from a specified resource.
+   - POST - Submits data to be processed to a specified resource.
 2. uri(Uniform Resource Identifier) - identifier for AJAX resource. It is used to create URL(Uniform Resource Locator) for further operations.
 
 #### getBalalnce
@@ -129,12 +129,12 @@ This template contains standard operations that can be used for the following:
 `readData` reads FLO data from transactions of specified address
 1. addr - FLO address for which the transactions data has to be read.
 2. options - Contains options for filter data from transactions.
-  a. limit       : maximum number of filtered data (default = 1000, negative  = no limit)
-  b. ignoreOld   : ignore old transactions (default = 0)
-  c. sentOnly    : filters only sent data
-  d. pattern     : filters data that starts with a pattern
-  e. contains    : filters data that contains a string
-  f. filter      : custom filter funtion for floData (eg . filter: d => {return d[0] == '$'})
+   - limit       : maximum number of filtered data (default = 1000, negative  = no limit)
+   - ignoreOld   : ignore old transactions (default = 0)
+   - sentOnly    : filters only sent data
+   - pattern     : filters data that starts with a pattern
+   - contains    : filters data that contains a string
+   - filter      : custom filter funtion for floData (eg . filter: d => {return d[0] == '$'})
 
 ## Compact IndexedDB operations
 `compactIDB` operations can be used to perform basic IndexedDB operations such as add, read/write, modify and remove.Contains following operations.
