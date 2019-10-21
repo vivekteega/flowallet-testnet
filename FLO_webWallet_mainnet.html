@@ -1,28 +1,2158 @@
 <!DOCTYPE html>
 <html>
-
 <head>
-  <title>FLO Operators</title>
-</head>
+<title>FLO web wallet</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<meta charset="UTF-8">
+<style>
+    @import url("https://fonts.googleapis.com/css?family=Roboto&display=swap");
+:root {
+  --sidenav-color: #f0f0f0;
+  --accent-color: #D40E1E;
+  --back-color: #ebebeb;
+  --body-color: #fff;
+  --sec-color: #ccc;
+  --bw: #000;
+}
 
-<script>
-  /* Constants for FLO blockchain operations !!Make sure to add this at begining!! */
-  const floGlobals = {
+* {
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+}
 
-    //Required for all
-    blockchain: "FLO",
+body {
+  font-family: 'Roboto', sans-serif;
+  background-color: var(--body-color);
+  font-size: 16px;
+  color: var(--bw);
+  margin: 0;
+  height: 100vh;
+}
 
-    //Required for blockchain API operators
-    apiURL: {
-      FLO: 'https://flosight.duckdns.org',
-      FLO_TEST: 'https://testnet-flosight.duckdns.org'
-    },
-    fee: 0.0005
+button, textarea {
+  -ms-flex-item-align: start;
+      align-self: flex-start;
+  display: flexbox;
+  width: 100%;
+  padding: 1em;
+  background: transparent;
+  border-radius: 0.25em;
+  border: 1px solid var(--sec-color);
+  margin: 1em 0;
+  color: var(--bw);
+  font-family: 'Roboto', sans-serif;
+}
+
+button {
+  width: 100%;
+  font-weight: bold;
+  color: var(--accent-color);
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+  cursor: pointer;
+  -webkit-transition: all 0.2s ease;
+  transition: all 0.2s ease;
+}
+
+button:hover {
+  background: var(--accent-color);
+  border: 1px var(--accent-color) solid;
+  color: #fff !important;
+}
+
+.primaryButton {
+  background: var(--accent-color) !important;
+  color: white !important;
+  border: 1px solid var(--accent-color);
+}
+
+.primaryButton:hover {
+  opacity: 0.8;
+}
+
+input:disabled,
+input[disabled] {
+  cursor: not-allowed;
+}
+
+input:disabled:hover,
+input[disabled]:hover {
+  background: transparent;
+}
+
+button:disabled,
+button[disabled] {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+button:disabled:hover,
+button[disabled]:hover {
+  background: transparent;
+  color: var(--accent-color) !important;
+}
+
+button:focus, input:focus, textarea:focus {
+  outline: none;
+}
+
+.icons:active,
+#addNewAddress:active {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.input {
+  width: 100%;
+  margin: 1em 0;
+  -ms-flex-item-align: start;
+      align-self: flex-start;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  position: relative;
+}
+
+.input label {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0.6;
+  padding: 1em 0;
+  margin-left: 0.8em;
+  -webkit-transition: all 0.2s ease;
+  transition: all 0.2s ease;
+  background: transparent;
+  z-index: 1;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+  color: var(--bw);
+}
+
+.input input {
+  width: 100%;
+  font-size: 1em;
+  display: flexbox;
+  background-color: transparent;
+  padding: 1em;
+  border-radius: 0;
+  margin: 0;
+  border: none;
+  color: var(--bw);
+}
+
+.input div {
+  position: absolute;
+  display: flexbox;
+  opacity: 0.6;
+  height: 100%;
+  pointer-events: none;
+  width: 100%;
+  bottom: 0;
+  border-radius: 0.25em;
+  border: 1px solid var(--sec-color);
+  -webkit-transition: all 0.2s ease;
+  transition: all 0.2s ease;
+}
+
+.input .label-active {
+  -webkit-transform: translateY(-0.6em) !important;
+          transform: translateY(-0.6em) !important;
+  font-size: 0.8em;
+  padding: 0 0.4em;
+  opacity: 1 !important;
+  background: var(--body-color);
+}
+
+.input input:focus ~ div {
+  opacity: 1 !important;
+  border: var(--accent-color) 2px solid;
+}
+
+.input input:focus ~ label {
+  color: var(--accent-color);
+}
+
+.input:hover div {
+  opacity: 1;
+}
+
+.text-area {
+  width: 100%;
+  margin: 1em 0;
+  -ms-flex-item-align: start;
+      align-self: flex-start;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  position: relative;
+}
+
+.text-area label {
+  position: absolute;
+  padding: 1em 0;
+  margin-left: 0.8em;
+  pointer-events: none;
+  opacity: 0.6;
+  -webkit-transition: all 0.2s ease;
+  transition: all 0.2s ease;
+  background: transparent;
+  z-index: 1;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+}
+
+.text-area textarea {
+  width: 100%;
+  font-size: 1em;
+  display: flexbox;
+  background-color: transparent;
+  padding: 1em;
+  border-radius: 0;
+  margin: 0;
+  border: none;
+  color: var(--bw);
+  font-family: 'Roboto', sans-serif;
+}
+
+.text-area div {
+  position: absolute;
+  display: flexbox;
+  opacity: 0.6;
+  height: 100%;
+  pointer-events: none;
+  width: 100%;
+  bottom: 0;
+  margin: 0;
+  border-radius: 0.25em;
+  border: 1px solid var(--sec-color);
+  -webkit-transition: all 0.2s ease;
+  transition: all 0.2s ease;
+}
+
+.text-area .label-active {
+  -webkit-transform: translateY(-0.6em) !important;
+          transform: translateY(-0.6em) !important;
+  font-size: 0.8em;
+  padding: 0 0.4em;
+  opacity: 1 !important;
+  background: var(--body-color);
+}
+
+.text-area textarea:focus ~ div {
+  opacity: 1 !important;
+  border: var(--accent-color) 2px solid;
+}
+
+.text-area textarea:focus ~ label {
+  color: var(--accent-color);
+}
+
+.text-area:hover div {
+  opacity: 1;
+}
+
+#overlay {
+  opacity: 0;
+  pointer-events: none;
+  position: fixed;
+  display: -ms-grid;
+  display: grid;
+  place-items: center;
+  z-index: 6;
+  background: rgba(0, 0, 0, 0.2);
+  height: 100vh;
+  width: 100vw;
+  -webkit-transition: opacity 0.2s ease;
+  transition: opacity 0.2s ease;
+}
+
+#overlay #popup {
+  -webkit-transform: translateY(64px);
+          transform: translateY(64px);
+  overflow: hidden;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  width: 80vw;
+  padding: 1em;
+  -ms-flex-wrap: wrap;
+      flex-wrap: wrap;
+  background: var(--body-color);
+  -webkit-box-shadow: 0 1em 2em rgba(0, 0, 0, 0.16);
+          box-shadow: 0 1em 2em rgba(0, 0, 0, 0.16);
+  border-radius: 0.25em;
+  -webkit-transition: all 0.2s ease;
+  transition: all 0.2s ease;
+}
+
+#overlay #popup .input {
+  width: 100% !important;
+  margin: 2em 1em !important;
+}
+
+#overlay #popup button {
+  width: 6em !important;
+  border: none;
+  margin: 0 1em !important;
+}
+
+.spacer {
+  display: flexbox;
+  -webkit-box-flex: 1 !important;
+      -ms-flex-positive: 1 !important;
+          flex-grow: 1 !important;
+  margin-left: auto;
+}
+
+#main-card header {
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+  font-weight: normal;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  position: absolute;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  height: 64px;
+  z-index: 3;
+  top: 0;
+  right: 0;
+  left: 0;
+}
+
+#main-card header #rLogo {
+  display: flexbox;
+  fill: var(--bw);
+  height: 32px;
+  margin-left: 1em;
+  opacity: 0.2;
+}
+
+#main-card header span {
+  opacity: 0.2;
+}
+
+#main-card header .flo-logo {
+  fill: var(--bw);
+}
+
+#main-card .right {
+  display: -ms-grid;
+  display: grid;
+  left: 0;
+  position: absolute;
+  top: 64px;
+  right: 0;
+  bottom: 54px;
+}
+
+#sendData .sdleft {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-line-pack: start;
+      align-content: flex-start;
+  width: 100%;
+  -ms-flex-wrap: wrap;
+      flex-wrap: wrap;
+  overflow: hidden;
+  -webkit-transition: width 0.2s ease;
+  transition: width 0.2s ease;
+}
+
+#sendData .sdleft button {
+  -ms-flex-item-align: start;
+      align-self: flex-start;
+}
+
+#sendData #dispBal {
+  height: 4em;
+  background: var(--back-color);
+  -ms-flex-item-align: start;
+      align-self: flex-start;
+  word-break: break-all;
+  text-align: center;
+  border-radius: 0.25em;
+  width: 100%;
+}
+
+#sendData #dispBal #dispBalInt {
+  font-size: 3em;
+  -ms-flex-item-align: center;
+      -ms-grid-row-align: center;
+      align-self: center;
+}
+
+#sendData #dispBal #dispBalFloat {
+  font-size: 1em;
+  -ms-flex-item-align: center;
+      -ms-grid-row-align: center;
+      align-self: center;
+}
+
+#bottom-nav {
+  position: fixed;
+  overflow: hidden;
+  height: 54px;
+  -ms-flex-line-pack: center;
+      align-content: center;
+  text-align: center;
+  left: 0;
+  right: 0;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  bottom: 0;
+  z-index: 4;
+  background: var(--body-color);
+  border-top: 1px solid var(--sec-color);
+}
+
+#bottom-nav #indicator {
+  position: absolute;
+  top: 0;
+  width: 2em;
+  height: 4px;
+  background: var(--accent-color);
+  border-radius: 0 0 4px 4px;
+  -webkit-transition: all 0.2s ease;
+  transition: all 0.2s ease;
+}
+
+#bottom-nav .icons {
+  position: relative;
+  width: 100%;
+  z-index: 2;
+  color: var(--bw);
+  -ms-flex-item-align: center;
+      -ms-grid-row-align: center;
+      align-self: center;
+  -ms-grid-column-align: center;
+      justify-self: center;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+  padding: 0.4em;
+  cursor: pointer;
+}
+
+#bottom-nav .icons svg {
+  fill: var(--bw);
+  height: 1.1em;
+  overflow: visible;
+  margin: 0 0 4px 0;
+  stroke: none;
+}
+
+#bottom-nav .icons h6 {
+  margin: 0;
+  font-weight: normal;
+}
+
+#bottom-nav .icons span {
+  display: none;
+}
+
+.activeButton {
+  opacity: 1 !important;
+  color: var(--accent-color) !important;
+}
+
+.activeButton svg {
+  fill: var(--accent-color) !important;
+}
+
+.theme path, .theme g, .theme line {
+  stroke: var(--bw);
+}
+
+.theme circle {
+  fill: var(--bw);
+}
+
+.reveal {
+  width: 16em !important;
+}
+
+.reveal span {
+  opacity: 1 !important;
+}
+
+#overlay2 {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.2);
+  z-index: 3;
+  -webkit-transition: all 0.2s ease;
+  transition: all 0.2s ease;
+}
+
+.show {
+  opacity: 1 !important;
+  pointer-events: all !important;
+}
+
+.hide {
+  opacity: 0;
+  pointer-events: none;
+}
+
+#menu {
+  display: none;
+}
+
+#addrGen card {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: wrap;
+      flex-wrap: wrap;
+  margin: 1em 0;
+  border: solid 1px var(--sec-color);
+  border-radius: 0.25em;
+}
+
+#addrGen card h6 {
+  margin: 0.5em 0;
+  font-weight: normal;
+  font-size: 0.8em;
+}
+
+#addrGen card div {
+  display: flexbox;
+  padding: 1em;
+  word-break: break-all;
+  width: 100%;
+}
+
+#addrGen card div:nth-of-type(1) {
+  border-bottom: 1px solid var(--sec-color);
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+          appearance: none;
+  margin: 0;
+}
+
+.innerPage {
+  position: fixed;
+  overflow-y: auto;
+  display: -ms-grid;
+  display: grid;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+  -ms-flex-line-pack: start;
+      align-content: flex-start;
+  z-index: 3;
+}
+
+#dispMsg trans-container {
+  position: absolute;
+  overflow-y: auto;
+  width: 100%;
+  right: 0;
+  left: 0;
+  padding: 0.5em 0;
+  top: 64px;
+  bottom: 0;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: wrap;
+      flex-wrap: wrap;
+  -ms-flex-line-pack: start;
+      align-content: flex-start;
+  background: var(--back-color);
+}
+
+#dispMsg trans-container transaction-card {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  position: relative;
+  width: 100%;
+  padding: 0 1em;
+  margin: 0.5em 1em;
+  -ms-flex-wrap: wrap;
+      flex-wrap: wrap;
+  border-radius: 0.25em;
+  background: var(--body-color);
+}
+
+#dispMsg trans-container transaction-card svg {
+  display: flexbox;
+  -ms-flex-item-align: center;
+      align-self: center;
+  margin-right: 0.5em;
+}
+
+#dispMsg trans-container transaction-card svg path {
+  fill: var(--accent-color);
+}
+
+#dispMsg trans-container transaction-card div {
+  display: flexbox;
+  -ms-flex-item-align: center;
+      align-self: center;
+  width: 100%;
+  line-height: 1.4em;
+  padding: 1em 0;
+}
+
+#dispMsg trans-container transaction-card div:nth-of-type(1) {
+  word-break: break-all;
+  opacity: 0.8;
+  font-size: 0.9em;
+  border-bottom: 1px solid var(--sec-color);
+}
+
+#dispMsg trans-container transaction-card div:nth-of-type(2) {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-all;
+}
+
+#dispMsg trans-container transaction-card div:nth-of-type(3) {
+  text-align: right;
+  font-size: 0.8em;
+  opacity: 0.8;
+}
+
+loading {
+  opacity: 0;
+  pointer-events: none;
+  position: fixed;
+  display: -ms-grid;
+  display: grid;
+  height: 100vh;
+  width: 100vw;
+  background: #00000020;
+  place-items: center;
+  z-index: 10;
+}
+
+loading svg {
+  position: relative;
+  height: 4em;
+  width: 4em;
+  -webkit-animation: spin 1s infinite ease;
+          animation: spin 1s infinite ease;
+}
+
+loading svg .st0 {
+  fill: var(--accent-color);
+}
+
+loading svg .st1 {
+  fill: var(--accent-color);
+  opacity: 0.4;
+}
+
+#addNewAddress {
+  position: fixed;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-line-pack: center;
+      align-content: center;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  cursor: pointer;
+  bottom: 54px;
+  width: 3.5em;
+  height: 3.5em;
+  right: 0;
+  margin: 1em;
+  border-radius: 50%;
+  background: var(--accent-color);
+  -webkit-box-shadow: 0.1em 0.2em 0.3em rgba(0, 0, 0, 0.4);
+          box-shadow: 0.1em 0.2em 0.3em rgba(0, 0, 0, 0.4);
+  -webkit-transition: all 0.2s ease;
+  transition: all 0.2s ease;
+  z-index: 2;
+}
+
+#addNewAddress svg {
+  display: flexbox;
+  -ms-flex-item-align: center;
+      align-self: center;
+  fill: #fff;
+  height: 1em;
+  width: 1em;
+  -webkit-transition: all 0.2s ease;
+  transition: all 0.2s ease;
+}
+
+#edit-container {
+  display: -ms-grid;
+  display: grid;
+  place-items: center;
+  position: fixed;
+  height: 100%;
+  width: 100%;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 4;
+  background: rgba(0, 0, 0, 0.2);
+  -webkit-transition: all 0.2s ease;
+  transition: all 0.2s ease;
+}
+
+#edit-container #edit {
+  position: relative;
+  width: 80vw;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: wrap;
+      flex-wrap: wrap;
+  -ms-flex-line-pack: center;
+      align-content: center;
+  -webkit-transform: translateY(2em);
+          transform: translateY(2em);
+  padding: 1em;
+  background: var(--body-color);
+  border-radius: 0.25em;
+  -webkit-transition: all 0.2s ease;
+  transition: all 0.2s ease;
+  -webkit-box-shadow: 0 1em 2em rgba(0, 0, 0, 0.16);
+          box-shadow: 0 1em 2em rgba(0, 0, 0, 0.16);
+}
+
+#edit-container #edit .input {
+  margin: 1em;
+  width: 100% !important;
+}
+
+#edit-container #edit button {
+  border: none;
+  width: auto;
+  margin: 0.5em 1em !important;
+}
+
+#edit-container #edit button:nth-of-type(2) {
+  margin-left: auto !important;
+}
+
+#edit-container #edit div:first-of-type {
+  padding: 1em;
+  word-break: break-all;
+  opacity: 0.6;
+}
+
+#edit-container #edit h3, #edit-container #edit h4, #edit-container #edit h5 {
+  display: flexbox;
+  width: 100%;
+}
+
+#edit-container #edit h4 {
+  padding: 1em;
+  margin: 0;
+  opacity: 0.8;
+}
+
+#add-container {
+  display: -ms-grid;
+  display: grid;
+  place-items: center;
+  position: fixed;
+  height: 100%;
+  width: 100%;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 4;
+  background: rgba(0, 0, 0, 0.2);
+  -webkit-transition: all 0.2s ease;
+  transition: all 0.2s ease;
+}
+
+#add-container #add {
+  position: relative;
+  width: 80vw;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: wrap;
+      flex-wrap: wrap;
+  -ms-flex-line-pack: center;
+      align-content: center;
+  -webkit-transform: translateY(2em);
+          transform: translateY(2em);
+  padding: 1em;
+  background: var(--body-color);
+  border-radius: 0.25em;
+  -webkit-transition: all 0.2s ease;
+  transition: all 0.2s ease;
+  -webkit-box-shadow: 0 1em 2em rgba(0, 0, 0, 0.16);
+          box-shadow: 0 1em 2em rgba(0, 0, 0, 0.16);
+}
+
+#add-container #add .input {
+  margin: 1em;
+  width: 100% !important;
+}
+
+#add-container #add button {
+  border: none;
+  width: auto;
+  margin: 0.5em 1em !important;
+}
+
+#add-container #add button:first-of-type {
+  margin-left: auto !important;
+}
+
+#add-container #add h4 {
+  padding: 1em;
+  margin: 0;
+  opacity: 0.8;
+}
+
+#monitor-list {
+  position: relative;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  width: 100%;
+  -ms-flex-wrap: wrap;
+      flex-wrap: wrap;
+  -ms-flex-line-pack: start;
+      align-content: flex-start;
+  padding-bottom: 4em;
+}
+
+#monitor-list monitor {
+  height: auto;
+  border-radius: 0.25em;
+  border: 1px solid var(--sec-color);
+  margin: 0.5em 0;
+  -ms-flex-item-align: start;
+      align-self: flex-start;
+  width: 100%;
+  position: relative;
+  color: var(--bw);
+  cursor: pointer;
+}
+
+#monitor-list monitor div {
+  padding: 1em;
+}
+
+#monitor-list monitor div:nth-of-type(1) {
+  padding: 1em 4em 1em 0.8em;
+  font-size: 1.2em;
+  font-weight: bold;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+
+#monitor-list monitor div:nth-of-type(2) {
+  padding-right: 4em;
+  font-size: 0.8em;
+  padding-top: 0;
+  opacity: 0.8;
+  word-break: break-all;
+}
+
+#monitor-list monitor div:nth-of-type(3) {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 100%;
+  z-index: 1;
+}
+
+#monitor-list monitor svg {
+  -ms-flex-item-align: center;
+      -ms-grid-row-align: center;
+      align-self: center;
+  opacity: 0.6;
+  fill: var(--bw);
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 2em;
+  width: 2em;
+  padding: 0.6em;
+  margin: 0.5em;
+  -webkit-transition: all 0.2s ease;
+  transition: all 0.2s ease;
+  overflow: visible;
+  z-index: 2;
+}
+
+.title-bar {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  width: 100%;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: auto;
+  position: fixed;
+  -ms-flex-line-pack: center;
+      align-content: center;
+  background: var(--body-color);
+}
+
+.title-bar svg {
+  display: flexbox;
+  width: 2em;
+  height: 1.2em;
+  fill: var(--bw) !important;
+  cursor: pointer;
+  margin: 0.5em;
+  -ms-flex-item-align: center;
+      align-self: center;
+}
+
+.title-bar span {
+  padding: 0.5em;
+  -ms-flex-item-align: center;
+      -ms-grid-row-align: center;
+      align-self: center;
+  -webkit-box-flex: 1;
+      -ms-flex: 1;
+          flex: 1;
+  text-overflow: ellipsis;
+  font-weight: bold;
+  line-height: 1.5em;
+}
+
+.title-bar h5 {
+  margin: 0;
+  font-weight: normal;
+}
+
+.title-bar h3 {
+  margin: 0;
+}
+
+#settings-page section {
+  width: 100%;
+  border-bottom: 1px solid var(--sec-color);
+}
+
+#settings-page h3, #settings-page h4 {
+  display: flexbox;
+  width: 100%;
+  margin-top: 0.5em;
+}
+
+#settings-page div {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  width: 100%;
+  padding: 1em 0;
+  -ms-flex-line-pack: center;
+      align-content: center;
+}
+
+#settings-page .row {
+  -webkit-box-flex: 1;
+      -ms-flex: 1;
+          flex: 1;
+}
+
+#settings-page .row span {
+  font-size: 0.8em;
+  opacity: 0.8;
+}
+
+.slide-up {
+  opacity: 1;
+  -webkit-transform: none !important;
+          transform: none !important;
+  pointer-events: all;
+}
+
+.switch {
+  display: flexbox;
+  width: 2em;
+  -ms-flex-line-pack: center;
+      align-content: center;
+  position: relative;
+  height: 1.5em;
+  z-index: 1;
+  margin-right: 1em;
+  -ms-flex-item-align: center;
+      align-self: center;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 3em;
+  background-color: #ccc;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  -ms-flex-item-align: center;
+      -ms-grid-row-align: center;
+      align-self: center;
+  content: "";
+  height: 1.6em;
+  width: 1.6em;
+  background-color: white;
+  -webkit-transform: translateY(-1px);
+          transform: translateY(-1px);
+  -webkit-transition: .4s;
+  transition: .4s;
+  -webkit-box-shadow: 0 2px 4px rgba(0, 0, 0, 0.24);
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.24);
+}
+
+input:checked + .slider {
+  background-color: var(--accent-color);
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translate(1.6em, -1px);
+          transform: translate(1.6em, -1px);
+}
+
+.slider.round {
+  border-radius: 2em;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+
+.page {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  position: absolute;
+  overflow-y: auto;
+  -ms-flex-wrap: wrap;
+      flex-wrap: wrap;
+  -ms-flex-line-pack: start;
+      align-content: flex-start;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 100%;
+  padding: 1em;
+}
+
+@-webkit-keyframes spin {
+  0% {
+    -webkit-transform: rotate(0deg);
+            transform: rotate(0deg);
   }
-</script>
+  100% {
+    -webkit-transform: rotate(359deg);
+            transform: rotate(359deg);
+  }
+}
 
-<body onload="onLoadStartUp()">
-  use console
+@keyframes spin {
+  0% {
+    -webkit-transform: rotate(0deg);
+            transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(359deg);
+            transform: rotate(359deg);
+  }
+}
+
+.highlight {
+  -webkit-animation: highlightElement 0.6s cubic-bezier(0.46, 0.12, 0.38, 0.99) forwards;
+          animation: highlightElement 0.6s cubic-bezier(0.46, 0.12, 0.38, 0.99) forwards;
+}
+
+@-webkit-keyframes highlightElement {
+  0% {
+    opacity: 0;
+    background: var(--accent-color);
+  }
+  100% {
+    opacity: 1;
+    background: transparent;
+  }
+}
+
+@keyframes highlightElement {
+  0% {
+    opacity: 0;
+    background: var(--accent-color);
+  }
+  100% {
+    opacity: 1;
+    background: transparent;
+  }
+}
+
+.fade {
+  -webkit-animation: fade 0.2s cubic-bezier(0.46, 0.12, 0.38, 0.99) forwards;
+          animation: fade 0.2s cubic-bezier(0.46, 0.12, 0.38, 0.99) forwards;
+}
+
+@-webkit-keyframes fade {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes fade {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.jitter {
+  -webkit-animation: jitter 0.2s cubic-bezier(0.46, 0.12, 0.38, 0.99);
+          animation: jitter 0.2s cubic-bezier(0.46, 0.12, 0.38, 0.99);
+}
+
+@-webkit-keyframes jitter {
+  0% {
+    -webkit-transform: translateX(-1em);
+            transform: translateX(-1em);
+  }
+  25% {
+    -webkit-transform: translateX(1em);
+            transform: translateX(1em);
+  }
+  50% {
+    -webkit-transform: translateX(-0.5em);
+            transform: translateX(-0.5em);
+  }
+  75% {
+    -webkit-transform: translateX(0.5em);
+            transform: translateX(0.5em);
+  }
+  100% {
+    -webkit-transform: translateX(0);
+            transform: translateX(0);
+  }
+}
+
+@keyframes jitter {
+  0% {
+    -webkit-transform: translateX(-1em);
+            transform: translateX(-1em);
+  }
+  25% {
+    -webkit-transform: translateX(1em);
+            transform: translateX(1em);
+  }
+  50% {
+    -webkit-transform: translateX(-0.5em);
+            transform: translateX(-0.5em);
+  }
+  75% {
+    -webkit-transform: translateX(0.5em);
+            transform: translateX(0.5em);
+  }
+  100% {
+    -webkit-transform: translateX(0);
+            transform: translateX(0);
+  }
+}
+
+@media screen and (min-width: 768px) {
+  .title-bar {
+    position: absolute;
+    background: transparent;
+  }
+  .title-bar svg:last-of-type {
+    margin-right: 1em;
+  }
+  .innerPage {
+    position: absolute;
+    overflow-y: auto;
+    padding: 0 1em;
+    top: 0;
+    bottom: 0;
+    width: 100%;
+  }
+  #dispMsg trans-container transaction-card div:nth-of-type(2) {
+    font-size: 1.1em !important;
+  }
+  #settings-page h4 {
+    text-align: left;
+  }
+  #settings-page div {
+    padding: 0.5em 0;
+    -ms-flex-line-pack: center;
+        align-content: center;
+  }
+  #monitor-list monitor {
+    -ms-flex-item-align: auto;
+        align-self: auto;
+    width: 16em;
+    display: flexbox;
+    margin: 1em;
+  }
+  #monitor-list monitor div:nth-of-type(2) {
+    word-break: break-all;
+  }
+  #monitor-list monitor svg {
+    opacity: 0;
+  }
+  #monitor-list monitor svg:hover {
+    opacity: 1 !important;
+  }
+  #monitor-list monitor:hover svg {
+    opacity: 0.6;
+  }
+  #add, #edit {
+    width: 360px !important;
+  }
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--sec-color);
+    opacity: 0.4;
+    border-radius: 1em;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
+  ::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+  .input:hover label, .text-area:hover label {
+    opacity: 0.8;
+  }
+  card {
+    margin: 1em !important;
+  }
+  body {
+    background-color: var(--back-color) !important;
+    display: -ms-grid;
+    display: grid;
+    place-items: center !important;
+  }
+  button, .input, .text-area {
+    margin: 1em !important;
+  }
+  #main-card {
+    margin: 0 !important;
+    position: relative;
+    width: 80vw !important;
+    height: 90vh !important;
+    border-radius: 0.25em;
+    overflow: hidden;
+    -webkit-box-shadow: 0 1em 2em rgba(0, 0, 0, 0.16);
+            box-shadow: 0 1em 2em rgba(0, 0, 0, 0.16);
+    background: var(--body-color);
+    -webkit-transition: all 0.2s ease;
+    transition: all 0.2s ease;
+  }
+  #main-card #bottom-nav {
+    display: -ms-grid;
+    display: grid;
+    border-top: none;
+    opacity: 1 !important;
+    pointer-events: all !important;
+    position: absolute !important;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+        -ms-flex-direction: column;
+            flex-direction: column;
+    -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+    top: 0;
+    width: 64px;
+    text-align: left !important;
+    height: 100%;
+    background: var(--sidenav-color);
+    -webkit-transition: all 0.2s ease;
+    transition: all 0.2s ease;
+  }
+  #main-card #bottom-nav #indicator {
+    left: 0;
+    width: 4px;
+    height: 2em;
+    background: var(--accent-color);
+    border-radius: 0 4px 4px 0;
+  }
+  #main-card #bottom-nav #menu {
+    position: absolute;
+    top: 0;
+    display: inline-block !important;
+    opacity: 0.8;
+  }
+  #main-card #bottom-nav #settingsBtn {
+    position: absolute;
+    bottom: 0;
+  }
+  #main-card #bottom-nav .icons {
+    opacity: 0.6;
+    padding: 1.2em;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-line-pack: center;
+        align-content: center;
+    -ms-flex-wrap: nowrap;
+        flex-wrap: nowrap;
+    white-space: nowrap;
+    -webkit-transition: all 0.2s ease;
+    transition: all 0.2s ease;
+  }
+  #main-card #bottom-nav .icons h6 {
+    display: none;
+  }
+  #main-card #bottom-nav .icons span {
+    opacity: 0;
+    display: inline-block;
+    -webkit-transition: opacity 0.2s cubic-bezier(0.46, 0.12, 0.38, 0.99);
+    transition: opacity 0.2s cubic-bezier(0.46, 0.12, 0.38, 0.99);
+    margin-left: 1em;
+    line-height: 1.2em;
+  }
+  #main-card #bottom-nav .icons svg {
+    height: 1.2em;
+    display: flexbox;
+    -ms-flex-item-align: center !important;
+        align-self: center !important;
+    margin: 0;
+  }
+  #main-card #bottom-nav .icons:hover {
+    opacity: 1;
+  }
+  #main-card .right {
+    left: 64px;
+    position: absolute;
+    top: 64px;
+    right: 0;
+    bottom: 0;
+  }
+  header {
+    opacity: 1 !important;
+    pointer-events: all !important;
+    z-index: 2;
+    width: calc(100% - 64px);
+    left: 64px !important;
+  }
+  #popup {
+    width: 360px !important;
+    position: relative !important;
+    bottom: auto !important;
+  }
+  .input, button {
+    width: auto !important;
+  }
+  #sendData .input, #sendData button {
+    width: 100% !important;
+  }
+  #sendData .sdleft {
+    width: 40%;
+  }
+  #sendData .sdright {
+    width: 60%;
+    display: flexbox;
+    -ms-flex-item-align: start;
+        align-self: flex-start;
+  }
+}
+
+@media screen and (min-width: 1280px) {
+  #main-card {
+    width: 60% !important;
+    height: 80vh !important;
+  }
+}
+
+@media screen and (min-width: 1600px) {
+  #main-card {
+    width: 50% !important;
+  }
+}
+
+@media screen and (max-width: 360px) {
+  transaction-card div {
+    word-break: break-all;
+  }
+  * {
+    font-size: 12px !important;
+  }
+}
+/*# sourceMappingURL=main.css.map */
+</style>
+</head>
+<body onload="onLoadStartUp()"> 
+    <script>
+        /* Constants for FLO blockchain operations !!Make sure to add this at begining!! */
+        const floGlobals = {
+      
+          //Required for all
+          blockchain: "FLO",
+      
+          //Required for blockchain API operators
+          apiURL: {
+            FLO: 'https://explorer.mediciland.com',
+            FLO_TEST: 'https://testnet-flosight.duckdns.org'
+          },
+          fee: 0.0005
+        }
+      </script>
+
+<div id="main-card">
+        <loading>
+                <svg x="0px" y="0px" width="56.7px"
+                    height="56.7px" viewBox="0 0 56.7 56.7" style="enable-background:new 0 0 56.7 56.7;" xml:space="preserve">
+                <path class="st0" d="M28.3,5.7c6.3,0,11.9,2.5,16,6.6l4-4C43.3,3.2,36.2,0,28.3,0s-14.9,3.2-20,8.3l4,4C16.4,8.2,22.1,5.7,28.3,5.7z"/>
+                <path class="st1" d="M48.4,8.3l-4,4c4.1,4.1,6.6,9.8,6.6,16C51,40.9,40.9,51,28.3,51C15.8,51,5.7,40.9,5.7,28.3c0-6.3,2.5-11.9,6.6-16l-4-4C3.2,13.4,0,20.5,0,28.3C0,44,12.7,56.7,28.3,56.7C44,56.7,56.7,44,56.7,28.3C56.7,20.5,53.5,13.4,48.4,8.3z"/>
+                </svg>
+              </loading>
+    <div id="overlay2"></div>   
+    <header id="header">
+            <svg id="rLogo" data-name="Layer 1" viewBox="0 0 90.54 106.33"><path d="M213.69,379.42c-2.44-8.24-9.85-14.47-27.39-23.05-7.05-3.45-11.76-6.25-14-8.28a19.9,19.9,0,0,1-4.17-5.55,13.71,13.71,0,0,1,0-7.52c1.25-3.6,2.64-5.22,12.92-15.1,6.18-5.94,9.31-10.31,11.1-15.52.74-2.13.84-7.62.19-9.39-2.29-6.17-7.09-11.4-15.13-16.5-3-1.88-4.3-2.13-4.33-.81a8.89,8.89,0,0,1-1,2.41l-1,1.82-2.8-1.94c-1.54-1.06-3.38-2.24-4.1-2.61-1.3-.67-2.41-.6-2.4.15a28.66,28.66,0,0,1-2,4.42c0,.08-.44-.12-.88-.43-6.08-4.37-8.74-5.55-8.74-3.89,0,.67-1.78,4.19-4,7.89-6.46,10.85-13.06,16.23-19.89,16.23-3,0-2.93-.07-2,3.36.72,2.83,1.1,3.07,3.62,2.3a17.45,17.45,0,0,0,5.81-2.87,3.8,3.8,0,0,1,1.65-.86,7.11,7.11,0,0,1,.72,2.09,4.18,4.18,0,0,0,.94,2.12c.8.31,5.1-1.34,7.52-2.88l2.28-1.45.46,1.83c.62,2.44,1,2.72,3.27,2.15,3.91-1,7.74-3.74,11.53-8.2l2-2.35-.22,2.11c-.57,5.41-4.3,11.36-11.26,18-1.83,1.74-4.75,4.52-6.48,6.18-10.67,10.19-10,18.58,2,26.54a152,152,0,0,0,15.28,8c.95.43,3.33,1.73,5.29,2.89,11,6.52,16.45,13,16.45,19.72a8.43,8.43,0,0,0,.24,2.57h0c.3.3.11.33,3-.47a9.12,9.12,0,0,0,2.76-1.08c.36-.59-.57-3.66-1.84-6.07s-5.62-7-8.91-9.43a117,117,0,0,0-17-9.67c-8.53-4.18-11.83-6.22-14.68-9.07-2.61-2.61-3.89-5.31-3.91-8.21,0-4.59,2.33-8.6,8.29-14.07,9.44-8.65,13-13,15.52-18.76a12,12,0,0,0,1.38-6.72c0-3.15-.11-3.8-1.06-6l-1.06-2.44,1-1.62c.54-.89,1.21-2.08,1.5-2.64l.52-1,1.45,2.14A15.25,15.25,0,0,1,174,303.69c-.17.39-.39,1-.5,1.33a35.75,35.75,0,0,1-2.21,3.67c-2,3-5.22,6.44-13.4,14.23-5.69,5.42-7.58,8.57-7.82,13.05-.19,3.74.68,5.91,3.69,9.16,3.16,3.41,6.89,5.77,17.45,11,12.1,6,17.33,9.61,21.29,14.55a15.81,15.81,0,0,1,3.95,9.3,11.65,11.65,0,0,0,.46,3,3.29,3.29,0,0,0,1.45-.16l2.75-.72,1.54-.4-.21-1.53c-.7-5.1-5.38-10.81-13.1-15.95-4.39-2.93-5.84-3.72-17.34-9.39-5.65-2.79-9.17-5.07-11.78-7.64-4.26-4.2-5.14-8.77-2.66-13.92,1.36-2.83,2.75-4.36,12.5-13.79,8-7.68,11.4-13.72,11.42-20.06,0-5.11-2.3-9.89-6.93-14.26a27.24,27.24,0,0,1-2.14-2.18c-.25-.39,1.45-3.89,1.88-3.89,1.22,0,7.84,6.33,9.67,9.24a13.73,13.73,0,0,1,2.55,8.93c0,3.94-.58,5.92-2.88,9.85s-4.19,6-14.19,15.53a31.4,31.4,0,0,0-6.89,8.66,12.7,12.7,0,0,0-.13,10c1.89,4,7.42,8.47,15.45,12.41,12.49,6.14,15.07,7.57,19.35,10.75,7.17,5.32,10.63,10.51,10.63,16a6.54,6.54,0,0,0,.29,2.54c.41.26,4.81-.79,5.53-1.32C214.2,381.29,214.2,381.13,213.69,379.42Zm-69.9-79.22h0a12.33,12.33,0,0,1-4.84,1.49l-2.13.15,2.25-2.78a81.13,81.13,0,0,0,10-16c.93-1.84,1.81-3.48,2-3.64.36-.4,2.56,1,5.08,3.36l2.1,1.91-1.88,2.8C151.72,294.36,148,298.1,143.79,300.2Zm19-5.92a32.32,32.32,0,0,1-8.56,6.46h0a17.93,17.93,0,0,1-3.88.93l-1.92.18,2.15-2.61a70.33,70.33,0,0,0,7-10.37c.73-1.36,1.39-2.53,1.45-2.61.34-.4,1.66,1.41,3,4.09l1.48,3Zm5.31-7.37a8.75,8.75,0,0,1-1.5,2.12,34,34,0,0,1-3-3l-2.78-3,.64-1.49c1.13-2.62,1.29-2.67,3.4-1a29.3,29.3,0,0,1,4.52,4.1A24.48,24.48,0,0,1,168.09,286.91Z" transform="translate(-123.52 -276.87)"/>
+            </svg><span>RanchiMall</span>
+                <span style="margin-left: auto;padding: 1em;">
+                    <svg x="0px" y="0px"
+                    width="100px" height="64px" viewBox="0 0 107.65 47.07" style="enable-background:new 0 0 107.65 47.07;"
+                    xml:space="preserve">
+                    <defs>
+                    </defs>
+                    <g>
+                    <path class="flo-logo" d="M34.2,32.4c0,0,3.75-0.18,7.41-3.86c2.96-2.98,3.65-6.66,3.99-8.52c-11.04-0.63-12.36,0.99-13.71,1.68
+                    c-1.19,0.61-5.33,4.55-5.33,4.55s3.06-3.13,3.2-9.94c0.09-4.54-1.02-7.39-2.72-10.64C25.29,2.33,22.79,0,22.79,0l0.01,4.97
+                    c0,0,4.35,2.84,4.35,11.84c0,6.52-4.35,11.02-4.35,11.02s-4.35-4.5-4.35-11.02c0-9.01,4.35-11.84,4.35-11.84L22.79,0
+                    c0,0-2.48,2.33-4.23,5.67c-1.7,3.25-2.81,6.1-2.72,10.64c0.13,6.81,3.2,9.94,3.2,9.94s-4.14-3.95-5.33-4.55
+                    c-1.35-0.69-2.67-2.31-13.71-1.68c0.34,1.86,1.03,5.54,3.99,8.52c3.66,3.68,7.41,3.86,7.41,3.86s-5.05-2.03-7.15-9.45
+                    c0,0,5.76-0.7,9.63,1.87c2.52,1.67,4.86,4.26,6.79,6.01c0,0-2.58-0.04-6.81,1.88c-2.54,1.15-3.92,2.84-4.44,4.38
+                    c-0.36,1.06-0.2,2.27-0.2,2.27s3.31,0.31,5.94,0c1.99-0.23,3.42-2.16,3.42-2.16s-2,0.78-3.95,0.78c-2.06,0-2.67-0.66-2.67-0.66
+                    c0.98-3.64,8.68-5.19,8.68-5.19s-1.34,2.6-1.42,6.5c-0.1,4.79,3.57,8.52,3.57,8.45c0,0.07,3.67-3.66,3.57-8.45
+                    c-0.08-3.9-1.42-6.5-1.42-6.5s7.71,1.55,8.68,5.19c0,0-0.61,0.66-2.67,0.66c-1.95,0-3.95-0.78-3.95-0.78s1.43,1.93,3.42,2.16
+                    c2.63,0.31,5.94,0,5.94,0s0.16-1.21-0.2-2.27c-0.52-1.54-1.9-3.23-4.44-4.38c-4.23-1.92-6.81-1.88-6.81-1.88
+                    c1.93-1.76,4.27-4.34,6.79-6.01c3.87-2.57,9.63-1.87,9.63-1.87C39.26,30.38,34.2,32.4,34.2,32.4z M22.8,43.06
+                    c-0.95-1.37-1.47-2.13-1.47-4.26c0-2.4,1.12-4.61,1.47-5.14c0.35,0.52,1.47,2.74,1.47,5.14C24.27,40.92,23.75,41.69,22.8,43.06z"/>
+                    <g>
+                    <polygon class="flo-logo" points="73.53,36.36 73.53,20.01 70.53,20.01 70.53,36.36 70.53,39.35 84,39.35 84,36.36 		"/>
+                    <g>
+                        <rect x="52.75" y="20.01" class="flo-logo" width="13.47" height="2.93"/>
+                        <polygon class="flo-logo" points="63.74,28.36 55.74,28.36 52.75,28.36 52.75,31.35 52.75,39.35 55.74,39.35 55.74,31.35 63.74,31.35 
+                                        "/>
+                    </g>
+                    <path class="flo-logo" d="M97.99,20.01c-5.34,0-9.67,4.33-9.67,9.67s4.33,9.67,9.67,9.67s9.67-4.33,9.67-9.67S103.33,20.01,97.99,20.01
+                        z M97.99,35.85c-3.41,0-6.17-2.76-6.17-6.17c0-3.41,2.76-6.17,6.17-6.17c3.41,0,6.17,2.76,6.17,6.17
+                        C104.15,33.09,101.39,35.85,97.99,35.85z"/>
+                    </g>
+                    </g>
+                    </svg>
+                </span>
+        </header>
+        <div id="bottom-nav">
+          <div id="indicator"></div>
+            <div class="icons" id="menu">
+                <svg role="img" viewBox="0 0 20 16">
+                    <title>Expand side navigation bar</title>
+                    <g>
+                        <path d="M19,2H1C0.4,2,0,1.6,0,1v0c0-0.6,0.4-1,1-1l18,0c0.6,0,1,0.4,1,1v0C20,1.6,19.6,2,19,2z"/>
+                        <path d="M12,10H1c-0.6,0-1-0.4-1-1v0c0-0.6,0.4-1,1-1h11c0.6,0,1,0.4,1,1v0C13,9.6,12.6,10,12,10z"/>
+                    </g>
+                </svg>
+                <span></span>
+            </div>                  
+                <div class="icons tabs activeButton" id="getDataBtn" onclick="showPage(this.id, 'getData')">
+                    <svg role="img" viewBox="0 0 20 16">
+                      <title>FLO monitoring page</title>
+                                            <path d="M18,0H2C0.9,0,0,0.9,0,2v14c0,1.1,0.9,2,2,2h16c1.1,0,2-0.9,2-2V2C20,0.9,19.1,0,18,0z M16.4,6.9l-4.2,4.2
+                                            c-0.4,0.4-1,0.4-1.4,0L8.6,9l-3.5,3.5c-0.4,0.4-1,0.4-1.4,0c-0.4-0.4-0.4-1,0-1.4l4.2-4.2c0.4-0.4,1-0.4,1.4,0L11.4,9l3.5-3.5
+                                            c0.4-0.4,1-0.4,1.4,0C16.8,5.9,16.8,6.5,16.4,6.9z"/>
+                                        </svg>
+                          <h6>Monitor</h6>
+                          <span>Monitor FLO data</span>
+                </div>
+                
+                <div class="icons tabs" id="sendDataBtn" onclick="showPage(this.id, 'sendData')">
+                  <svg role="img"  viewBox="0 0 20 16">
+                    <title>Send FLO data page</title>
+                        <g>
+                            <path d="M0.3,9.1l6.2,2.2c0.2,0.1,0.4,0,0.5-0.1L19.1,0L0.3,8.2C-0.1,8.4-0.1,9,0.3,9.1z"/>
+                            <path d="M10,18.8l-2.2-6.2c-0.1-0.2,0-0.4,0.1-0.5L19.1,0l-8.2,18.8C10.7,19.2,10.1,19.2,10,18.8z"/>
+                        </g>
+                        </svg>
+                  <h6>Send</h6>
+                  <span>Send FLO data</span>
+                </div>
+                <div class="icons tabs" id="addrGenBtn" onclick="showPage(this.id, 'addrGen')">
+                    <svg role="img" viewBox="0 0 20 16">
+                        <title>FLO address generator page</title>
+                        <g>
+                            <circle cx="9" cy="9" r="3"/>
+                            <path d="M12,14v1c0,0.6-0.4,1-1,1H3c-0.6,0-1-0.4-1-1V3c0-0.6,0.4-1,1-1h8c0.6,0,1,0.4,1,1v1c0,0.6,0.4,1,1,1h0c0.6,0,1-0.4,1-1V2
+                                c0-1.1-0.9-2-2-2H2C0.9,0,0,0.9,0,2v14c0,1.1,0.9,2,2,2h10c1.1,0,2-0.9,2-2v-2c0-0.6-0.4-1-1-1h0C12.4,13,12,13.4,12,14z"/>
+                            <circle cx="17" cy="9" r="3"/>
+                        </g>
+                    </svg>
+                  <h6>Generate</h6>
+                  <span>Generate address</span>
+                  </div>
+                <div class="icons tabs" id="settingsBtn" onclick="showPage(this.id, 'settings-page')">
+                    <svg role="img" x='0' y='0' viewBox="0 0 20 16">
+                        <title>Settings</title>
+                            <g>
+                            <circle cx="9.6" cy="8.7" r="4"/>
+                            <path d="M18.8,7.3l-3.4-5.9C14.9,0.5,14,0,13,0H6.2c-1,0-1.9,0.5-2.4,1.4L0.4,7.3c-0.5,0.9-0.5,1.9,0,2.8l3.4,5.9
+                            c0.5,0.9,1.4,1.4,2.4,1.4H13c1,0,1.9-0.5,2.4-1.4l3.4-5.9C19.3,9.2,19.3,8.1,18.8,7.3z M9.6,14.7c-3.3,0-6-2.7-6-6s2.7-6,6-6
+                            s6,2.7,6,6S12.9,14.7,9.6,14.7z"/>
+                            </g>
+                        </svg>
+                    <h6>Settings</h6>
+                    <span>Settings</span>
+                </div>             
+            </div>
+            <div class="right">
+                    <div id="getData" class="page">
+                        <div id="add-container" class="hide">
+                            <div id="add">
+                                <h4>Add new address to monitoring list</h4> 
+                                <div class="input">
+                                    <input  type="text" onfocus="animateInput(this.parentNode)" onblur="revertBack(this.parentNode)" id="floAddr" autocomplete="new-password"/>
+                                        <label>FLO Address</label>
+                                    <div></div>
+                                </div>
+                                <div class="input">
+                                    <input  type="text" onfocus="animateInput(this.parentNode)" onblur="revertBack(this.parentNode)" id="addrLabel"  autocomplete="new-password"/>
+                                        <label>Label</label>
+                                    <div></div>
+                                </div>
+                                <button onclick="closeAdd()">Cancel</button>
+                                <button id="addAddressToMonitor" onclick="addAddressToMonitoringList()">Add</button>
+                            </div>
+                        </div>
+                        <div id="edit-container" class="hide">
+                            <div id="edit">
+                                <h4 style="padding: 1em;margin: 0;opacity: 0.8;">Edit display card</h4>
+                                <div>
+                                    Flo address
+                                </div>
+                                <div class="input">
+                                    <input autocomplete="new-password"  type="text" onfocus="animateInput(this.parentNode)" onblur="revertBack(this.parentNode)" id="newAddrLabel"/>
+                                        <label>Label</label>
+                                    <div></div>
+                                </div>
+                                <button onclick="removedata()" id="removeAddr">Remove</button>
+                                <button onclick="closeEdit()">Cancel</button>
+                                <button id="editdata" onclick="editdata()">Save</button>
+                            </div>
+                        </div>
+                        <div id="monitor-list">
+                        </div>   
+                        <div id="addNewAddress">
+                            <svg id="close_btn" width="17" height="17" viewBox="0 0 17 17">
+                            <path id="Union_1" data-name="Union 1" d="M7.5-3701v-6.5H1a1,1,0,0,1-1-1,1,1,0,0,1,1-1H7.5v-6.5a1,1,0,0,1,1-1,1,1,0,0,1,1,1v6.5H16a1,1,0,0,1,1,1,1,1,0,0,1-1,1H9.5v6.5a1,1,0,0,1-1,1A1,1,0,0,1,7.5-3701Z" transform="translate(0 3717)"/>                                      </svg>
+                        </div>
+                    </div>
+                    <div id="dispMsg" class="hide innerPage">
+                        <div class='title-bar'>
+                            <svg style="padding: 0.4em; height: 2em; width: 2em" onclick="showPage('getDataBtn', 'getData')" viewBox="0 0 16 16">
+                                <path id="Union_2" data-name="Union 2" d="M7.778-3700.736l-7.071-7.071a1,1,0,0,1-.293-.707,1,1,0,0,1,.293-.707l7.071-7.071a1,1,0,0,1,1.414,0,1,1,0,0,1,0,1.414l-5.364,5.364H16.072a1,1,0,0,1,1,1,1,1,0,0,1-1,1H3.828l5.364,5.364a1,1,0,0,1,0,1.414,1,1,0,0,1-.707.293A1,1,0,0,1,7.778-3700.736Z" transform="translate(-0.414 3716.586)"/>
+                            </svg>
+                            <span><h3 id="addressLabel"></h3><h5 id="fullAddress"></h5></span>
+                            <svg onclick="refreshdata()" width="19.9px" height="21.5px" viewBox="0 0 19.9 21.5" style="enable-background:new 0 0 19.9 21.5;" xml:space="preserve">
+                                <path d="M17.9,12.8c-0.7,4.1-4.5,7.2-8.9,6.6c-3.6-0.4-6.5-3.4-6.9-7C1.5,7.6,5.3,3.5,10,3.5c2.3,0,4.3,1,5.8,2.5h-4.3c-0.6,0-1,0.4-1,1s0.4,1,1,1h6c0.6,0,1-0.4,1-1V1c0-0.6-0.4-1-1-1c-0.6,0-1,0.4-1,1v2.9c-2-1.8-4.8-2.7-7.7-2.3c-4.5,0.6-8.2,4.3-8.7,8.8c-0.6,6,4.1,11.1,9.9,11.1c5,0,9.1-3.6,9.8-8.3c0.1-0.6-0.4-1.2-1-1.2h0C18.4,12,18,12.3,17.9,12.8z"/>
+                            </svg>
+                        </div>
+                        <trans-container id="transactions-container">
+
+                        </trans-container>
+                    </div> 
+
+                    <div id="sendData" class="page hide">
+                        <div class="sdleft">
+                            <h3>To send FLO data check sender's balance first</h3>
+                                <div id="dispBal">
+                                        <span id="dispBalInt"></span>
+                                        <span id="dispBalFloat"></span>
+                                </div>
+                                <div class="input">
+                                        <input autocomplete="new-password"  type="text" onfocus="animateInput(this.parentNode)" onblur="revertBack(this.parentNode)" id="getBal_addr"/>
+                                        <label>Sender's address</label>
+                                    <div></div>
+                                </div>
+                                <button id="getBal_btn" onclick="getBal()">Get Sender Balance</button>
+                        </div>
+                        <div class="sdright innerPage">
+                                <div class="input">
+                                        <input autocomplete="new-password"  type="text" onfocus="animateInput(this.parentNode)" onblur="revertBack(this.parentNode)" id="receiver"/>
+                                        <label>Receiver's Address</label>
+                                    <div></div>
+                                </div>
+                                <div class="input">
+                                        <input autocomplete="new-password"  type="number" onfocus="animateInput(this.parentNode)" onblur="revertBack(this.parentNode)" id="amount"/>
+                                        <label>Amount</label>
+                                    <div></div>
+                                </div>
+                                <div class="text-area">
+                                    <textarea data-gramm_editor="false" onfocus="animateInput(this.parentNode)" onblur="revertBack(this.parentNode)" rows="8" id="flotextdata"></textarea>
+                                    <label>FLO Data</label>
+                                    <div></div>
+                                </div>
+                                <button id="sendBtn" onclick="sendMessage()">Send</button>
+                        </div>
+
+                    </div>
+                    <div id="addrGen" class="page hide">
+                        <button id="GenNewAddrBtn" class="primaryButton">Generate New Address</button>
+                        <button id="showRecoveryModal">Recover FLO Address</button><br/><br/>
+                        <div id="addrDisp"></div>  
+                    </div>   
+                    <div id="settings-page" class="page hide">
+                        <section>
+                          <h4>Dark mode settings</h4>
+                          <div>
+                            <span class="row">
+                              Automatic<br>
+                              <span>Dark mode active : 6pm - 6am</span>
+                            </span>
+                            <label class="switch">
+                              <input autocomplete="new-password"  type="checkbox" id="auto-mode" type="checkbox" onclick="autoMode()"/>
+                                <span class="slider round"></span>
+                            </label>
+                          </div>
+                          <div>
+                            <span class="row">Manual<br>
+                              <span>Dark mode</span>
+                            </span>
+                            <label class="switch">
+                              <input autocomplete="new-password"  type="checkbox" id="manual-mode" type="checkbox" onclick="theme()"/>
+                              <span class="slider round"></span>
+                            </label>
+                          </div>
+                        </section>
+                        <h5 style="text-align: center;opacity: 0.6;position: absolute;bottom: 0;left: 0;right: 0;">Version 2.5<br>Powered by FLO</h5>
+                      </div> 
+                    </div>
+    </div>
+    <div id="overlay">
+        <div id="popup">
+            <div class="input">
+                <input autocomplete="new-password"  type="text" onfocus="animateInput(this.parentNode)" onblur="revertBack(this.parentNode)" id="pop"/>
+                <label>Private key</label>
+                <div></div>
+            </div> 
+            <div class="spacer"></div>
+            <button onclick="fadeout()">Cancel</button>
+            <button id="ok" onclick="RecoverAddr()">Ok</button>
+        </div>
+    </div>
+    <script>
+        // repeatedly accessed DOM elements
+        let bottomNav = document.getElementById('bottom-nav'),
+            floAddr = document.getElementById('floAddr'),
+            addrLabel = document.getElementById('addrLabel'),
+            recentPage = 'getDataBtn',
+            mode,
+            activeAddress;
+        const html = document.querySelector('html');
+        localStorage.setItem('accentColor', '#D40E1E');
+        if(localStorage.dark === 'yes')
+        {
+            nightlight();
+            document.getElementById('manual-mode').checked = true;
+            clearInterval(mode);
+        } 
+        else if(localStorage.dark === 'auto'){
+            document.getElementById('auto-mode').checked = true;
+            document.getElementById('manual-mode').checked = false;
+            autoMode();
+            mode = setInterval(() => {
+                let d = new Date(),
+                    t = d.getHours();
+                    console.log(t);
+                if(t> 6 && t < 18){
+                    daylight();
+                }
+                else{
+                    nightlight();
+                }
+            }, 60000);
+        }
+        else
+        {
+            daylight();
+            document.getElementById('manual-mode').checked = false;
+            clearInterval(mode);
+        }
+        
+        function daylight(){
+            html.setAttribute("style", `--accent-color: ${localStorage.accentColor};--bw: #000;--back-color: #EBEBEB;--body-color: #fff;--sidenav-color:#f0f0f0;--sec-color: #ccc;`);
+            document.querySelector('.icons svg').classList.add('theme');
+        }
+        function nightlight(){
+            html.setAttribute("style", `--accent-color: ${localStorage.accentColor};--bw: #fff;--back-color: #222;--body-color: #2a2a2a;--sidenav-color:#313131;--sec-color: #555;`);
+            document.querySelector('.icons svg').classList.remove('theme');
+        }
+        function autoMode()
+        {
+            let x = document.getElementById('auto-mode');
+            if(x.checked){
+                localStorage.setItem('dark', 'auto');
+                document.getElementById('manual-mode').checked = false;
+                let d = new Date();
+                let t = d.getHours();
+                if(t> 6 && t < 18){
+                    daylight();
+                }
+                else{
+                    nightlight();
+                }
+            }
+            else{
+                localStorage.setItem('dark', 'no');
+            }
+        }   
+        function theme(){
+            let x = document.getElementById('manual-mode');
+            if(!x.checked){
+                daylight();
+                localStorage.setItem('dark' ,'no');
+            }
+            else{
+                nightlight();
+                localStorage.setItem('dark' ,'yes');
+                document.getElementById('auto-mode').checked = false;
+            }
+        }
+        document.getElementById('showRecoveryModal').onclick = function(){
+            document.getElementById('overlay').classList.add('show');
+            document.getElementById('popup').classList.add('slide-up');
+            document.getElementById('pop').focus();  
+            let y =document.addEventListener("click", function(event) {
+                if (event.target.closest('#popup') || event.target.closest('#showRecoveryModal')) return;
+                fadeout();
+                document.removeEventListener('click', y);
+            });
+        }
+        document.getElementById('pop').addEventListener('keypress',function(event){
+            if(event.keyCode==13)
+                RecoverAddr();
+            }); 
+
+        document.getElementById('getBal_addr').addEventListener('keypress',function(event){
+            if(event.keyCode==13)
+                getBal();
+            }); 
+
+        addrLabel.addEventListener('keypress',function(event){
+            if(event.keyCode==13)
+                addAddressToMonitoringList();
+            });
+        function closeSidePanel(){
+            if(window.innerWidth > 768)
+            {
+                bottomNav.classList.remove('reveal');
+                document.getElementById('overlay2').classList.remove('show');
+            }
+        }
+        function fadeout(){
+            document.getElementById('overlay').classList.remove('show');
+            document.getElementById('popup').classList.remove('slide-up');
+            document.getElementById('pop').value= '';
+        }
+        document.getElementById('menu').addEventListener('click',function(){
+            if(window.innerWidth > 768){
+                bottomNav.classList.toggle('reveal');
+            }
+            document.getElementById('overlay2').classList.toggle('show');
+            let y =document.addEventListener("click", function(event) {
+                if (event.target.closest('#menu') || event.target.closest('#bottom-nav')) return;
+                closeSidePanel();
+                document.removeEventListener('click', y);
+            });
+        });
+        function animateInput(thisInput){
+            thisInput.children[1].classList.add('label-active');
+        }
+        function revertBack(thisInput){
+            if(thisInput.children[0].value == '')
+                thisInput.children[1].classList.remove('label-active');
+        }
+        function clickedAddress(thisCard){
+                let x = thisCard.children[1].textContent,
+                    y = thisCard.children[0].textContent;
+                monitorData(x,y);
+                showInnerPage('dispMsg');
+            }
+        function showAdd(){
+            document.getElementById('add-container').classList.add('show');
+            document.getElementById('add').classList.add('slide-up');
+            floAddr.focus();
+        }
+        function closeAdd(){
+            document.getElementById('add-container').classList.remove('show');
+            document.getElementById('add').classList.remove('slide-up');
+            floAddr.value='';
+            addrLabel.value='';
+        }
+        document.getElementById('addNewAddress').onclick = function(){
+            showAdd();
+            let y =document.addEventListener("click", function(event) {
+                if (event.target.closest('#add') || event.target.closest('#addNewAddress')) return;
+                closeAdd();
+                document.removeEventListener('click', y);
+            });
+        }
+        function checkAddress(thisInput){
+            let x = document.getElementById('addAddressToMonitor');
+            if (floCrypto.validateAddr(thisInput.value))
+                x.disabled ='false';
+            else
+                x.disabled ='true';
+        }
+        function addAddressToMonitoringList(){
+            compactIDB.addData('labels', addrLabel.value, floAddr.value).then((resolve) => {
+                createAddressCards(floAddr.value, addrLabel.value);
+                floWebWallet.syncTransactions(floAddr.value);
+                closeAdd();
+            }).catch((error) => {
+                console.log(error);
+            })
+        }
+
+        //  new code
+
+        document.getElementById(recentPage).click();
+
+        function showPage(element, page){
+          let allPages = document.querySelectorAll('.page');
+          let allTabs = document.querySelectorAll('.tabs');
+          let allInnerPages = document.querySelectorAll('.innerPage');
+          let pageBtn = document.getElementById(element);
+          bottomNav.classList.remove('hide');
+          document.getElementById('header').classList.remove('hide');
+          allPages.forEach(function(pages){
+            pages.classList.add('hide');
+          });
+          allTabs.forEach(function(tab){
+            tab.classList.remove('activeButton');
+          });
+          allInnerPages.forEach(function(Ipage){
+            Ipage.classList.add('hide');
+          });
+          pageBtn.classList.add('activeButton');
+          if(window.innerWidth < 768){
+            let indiWidth = 16;
+            if(window.innerWidth < 360)
+              indiWidth = 12;
+            let leftDistance = pageBtn.offsetLeft - indiWidth,
+            width = pageBtn.getBoundingClientRect().width;
+            document.getElementById('indicator').setAttribute('style', 'transform: translateX('+(leftDistance+(width/2))+'px');
+          }
+          else{
+            let topDistance = pageBtn.offsetTop - 16,
+            height = pageBtn.getBoundingClientRect().height;
+            document.getElementById('indicator').setAttribute('style', 'transform: translateY('+(topDistance+(height/2))+'px');
+          }
+          let x = document.getElementById(page);
+          x.classList.remove('hide');
+          if(!(recentPage == element)){
+            x.classList.add('fade');
+            x.addEventListener('animationEnd', function(){
+              x.classList.remove('fade'); 
+            });
+            x.addEventListener('webkitAnimationEnd', function(){
+              x.classList.remove('fade'); 
+            });
+          }
+          recentPage = element;
+        }
+
+        let resizeComplete;
+        window.addEventListener('resize', () => {
+          clearTimeout(resizeComplete);
+          resizeComplete = setTimeout(() => {
+            document.getElementById(recentPage).click();
+            setElements();
+          }, 200);
+        });
+
+        function setElements(){
+            if(window.innerWidth < 768){
+                bottomNav.classList.remove('reveal');
+                document.getElementById('overlay2').classList.remove('show');
+                document.getElementById('addNewAddress').setAttribute('style' ,`bottom: 54px; right: 0`);
+            }
+            else{
+                let mainCard = document.getElementById('main-card').getBoundingClientRect(),
+                    bottom = ((window.innerHeight - mainCard.height)/2) + 16,
+                    right = ((window.innerWidth - mainCard.width)/2) + 16;
+                    document.getElementById('addNewAddress').setAttribute('style' ,`bottom: ${bottom}px; right: ${right}px`);
+            }
+        }
+
+        function showInnerPage(page){
+          let allMainPages = document.querySelectorAll('.page'),
+              allInnerPages = document.querySelectorAll('.innerPage');
+          allMainPages.forEach(function(pages){
+            pages.classList.add('hide');
+          });
+          allInnerPages.forEach(function(Ipage){
+            Ipage.classList.add('hide');
+          });
+          bottomNav.classList.add('hide');
+          document.getElementById('header').classList.add('hide');
+          let x = document.getElementById(page);
+          x.classList.remove('hide');
+          x.classList.add('fade');
+            x.addEventListener('animationEnd', function(){
+              x.classList.remove('fade'); 
+            });
+            x.addEventListener('webkitAnimationEnd', function(){
+              x.classList.remove('fade'); 
+            });
+        }
+
+        function getBal(){
+            let x= document.getElementById("getBal_addr");
+            if (x.value.length < 1 || !floCrypto.validateAddr(x.value)) {
+                x.classList.add('jitter');
+                x.addEventListener('animationEnd', function(){
+                    x.classList.remove('jitter'); 
+                });
+                x.addEventListener('webkitAnimationEnd', function(){
+                    x.classList.remove('jitter'); 
+                });
+                return;
+            }
+            floBlockchainAPI.getBalance(x.value).then((retrievedBal) => {
+                let parts = retrievedBal.split("."),
+                    floatPart = parts.pop(),
+                    intPart = parts.pop();
+                console.log(floatPart, intPart);
+                if(intPart === undefined){
+                    document.getElementById('dispBalInt').textContent= '0';
+                }
+                else{
+                    document.getElementById('dispBalInt').textContent= intPart;
+                    document.getElementById('dispBalFloat').innerHTML= `.${floatPart} FLOs`;
+                }
+            }).catch((error) => {
+                console.log(error);
+            })
+        }
+
+        document.getElementById('GenNewAddrBtn').addEventListener('click', () => {
+            let x = floCrypto.generateNewID(),
+                par = document.getElementById('addrDisp'),
+                card = document.createElement('card');
+            card.classList.add('highlight');
+            card.innerHTML= `<div><h6>New  FLO Address</h6>${x.floID}</div><div><h6>Private Key</h6>${x.privKey}</div>`;
+            par.insertBefore(card, par.firstChild);
+            card.addEventListener('animationEnd', function(){
+                card.classList.remove('highlight'); 
+            });
+            card.addEventListener('webkitAnimationEnd', function(){
+                card.classList.remove('highlight'); 
+            });
+        });
+
+        function RecoverAddr(){
+                let x= document.getElementById('popup').children[0],
+                    wif = document.getElementById('pop').value;
+                    if(wif === ''){
+                        x.classList.add('jitter');
+                            x.addEventListener('animationEnd', function(){
+                                x.classList.remove('jitter'); 
+                            });
+                            x.addEventListener('webkitAnimationEnd', function(){
+                                x.classList.remove('jitter'); 
+                            });
+                    return;
+                    }
+                    floWebWallet.recoverAddr(wif).then((recoverAddr) => {
+                        let par = document.getElementById('addrDisp');
+                        let card = document.createElement('card');
+                        card.innerHTML=`<div><h6>Recovered FLO Address</h6>${recoverAddr.floID}</div><div><h6>Private Key</h6>${recoverAddr.privKey}</div>`;
+                        par.insertBefore(card, par.firstChild);
+                        fadeout();
+                    }).catch((error) => {
+                        console.log(error);
+                    })  
+                }
+        function monitorData(address, label){
+            let dispMsg = document.getElementById("dispMsg"),
+                dbLabels = floWebWallet.getLabels(),
+                tCont = document.getElementById('transactions-container'); 
+                tCont.innerHTML= ``; 
+            document.getElementById('addressLabel').textContent = label;
+            document.getElementById('fullAddress').textContent = address;                             
+            floWebWallet.syncTransactions(address);
+            floWebWallet.readTransactions(address).then((receivedData) => {
+                if(receivedData.length == 0){
+                    tCont.innerHTML = `<div style='display:flex; align-content: center;width: 100%;height:100%'><h3 style='display:flexbox;align-self:center;text-align: center;width:100%'>There are no transactions to show.</h3></div>`;
+                }
+                else{
+                    receivedData.forEach(tx => {
+                    let date = new Date(tx.time*1000).toLocaleDateString();
+                    let time = new Date(tx.time*1000).toLocaleTimeString();
+                    var tCard = document.createElement('transaction-card');
+                    if(tx.sender === address){
+                        dbLabels.then((labelAddr) => {
+                            Object.keys(labelAddr).forEach((dbAddress) => {
+                                if(tx.receiver === dbAddress)
+                                tCard.innerHTML=`<div><svg width="12.607" height="12.607" viewBox="0 0 12.607 12.607"><path id="Union_1" data-name="Union 1" d="M11.818-3704H2a1,1,0,0,1-1-1,1,1,0,0,1,1-1H9.586l-8.879-8.879a1,1,0,0,1,0-1.414,1,1,0,0,1,1.414,0L11-3707.414V-3715a1,1,0,0,1,1-1,1,1,0,0,1,1,1v9.818a1,1,0,0,1-.272.909.994.994,0,0,1-.707.293A1.013,1.013,0,0,1,11.818-3704Z" transform="translate(3716.586 13.021) rotate(-90)"/></svg>${labelAddr[dbAddress]}</div><div> ${tx.floData}</div><div>  ${time} ${date}</div>`;
+                                return;
+                            })
+                        }).catch((error) => {
+                            console.log(error);
+                        })
+                        tCard.innerHTML=`<div><svg width="12.607" height="12.607" viewBox="0 0 12.607 12.607"><path id="Union_1" data-name="Union 1" d="M11.818-3704H2a1,1,0,0,1-1-1,1,1,0,0,1,1-1H9.586l-8.879-8.879a1,1,0,0,1,0-1.414,1,1,0,0,1,1.414,0L11-3707.414V-3715a1,1,0,0,1,1-1,1,1,0,0,1,1,1v9.818a1,1,0,0,1-.272.909.994.994,0,0,1-.707.293A1.013,1.013,0,0,1,11.818-3704Z" transform="translate(3716.586 13.021) rotate(-90)"/></svg>${tx.receiver}</div><div> ${tx.floData}</div><div>  ${time} ${date}</div>`;
+                    }
+                    else{
+                        dbLabels.then((labelAddr) => {
+                            Object.keys(labelAddr).forEach((dbAddress) => {
+                                if(tx.sender === dbAddress)
+                                    tCard.innerHTML=`<div><svg width="12.607" height="12.607" viewBox="0 0 12.607 12.607"><path id="Union_1" data-name="Union 1" d="M11.818-3704H2a1,1,0,0,1-1-1,1,1,0,0,1,1-1H9.586l-8.879-8.879a1,1,0,0,1,0-1.414,1,1,0,0,1,1.414,0L11-3707.414V-3715a1,1,0,0,1,1-1,1,1,0,0,1,1,1v9.818a1,1,0,0,1-.272.909.994.994,0,0,1-.707.293A1.013,1.013,0,0,1,11.818-3704Z" transform="translate(-0.414 3716.586)"/></svg>${labelAddr[dbAddress]}</div><div> ${tx.floData}</div><div>  ${time} ${date}</div>`;            
+                                return;                     
+                            })
+                        }).catch((error) => {
+                            console.log(error);
+                        })
+                        tCard.innerHTML=`<div><svg width="12.607" height="12.607" viewBox="0 0 12.607 12.607"><path id="Union_1" data-name="Union 1" d="M11.818-3704H2a1,1,0,0,1-1-1,1,1,0,0,1,1-1H9.586l-8.879-8.879a1,1,0,0,1,0-1.414,1,1,0,0,1,1.414,0L11-3707.414V-3715a1,1,0,0,1,1-1,1,1,0,0,1,1,1v9.818a1,1,0,0,1-.272.909.994.994,0,0,1-.707.293A1.013,1.013,0,0,1,11.818-3704Z" transform="translate(-0.414 3716.586)"/></svg>${tx.sender}</div><div> ${tx.floData}</div><div>  ${time} ${date}</div>`;
+                    }
+                    tCont.insertBefore(tCard,tCont.firstChild);
+                    })
+                }
+            })
+        }
+        function refreshdata(address, label){
+            monitorData(address, label);
+        }
+
+        function createAddressCards(address, label){
+                    let parentConatainer = document.getElementById('monitor-list'),
+                        monitorCard = document.createElement('monitor');
+                        if(label == '')
+                            label = 'Unknown'
+                        monitorCard.innerHTML= `<div>${label}</div>
+                                            <div>${address}</div>
+                                            <div onclick="clickedAddress(this.parentNode)"></div>
+                                            <svg class='edit-options' onclick="showEdit(this.parentNode)" viewBox="0 0 4 16" style="enable-background:new 0 0 4 16;" xml:space="preserve">
+                                                <g>
+                                                    <circle cx="2" cy="2" r="2"/>
+                                                    <circle cx="2" cy="14" r="2"/>
+                                                    <circle cx="2" cy="8" r="2"/>
+                                                </g>
+                                            </svg>`;
+                    parentConatainer.appendChild(monitorCard);
+        }
+
+        function showEdit(parent){
+            activeAddress = parent;
+            document.getElementById('edit-container').classList.add('show');
+            let x = document.getElementById('edit');
+            x.classList.add('slide-up');
+            x.children[2].children[0].focus();
+            x.children[1].textContent = parent.children[1].textContent;
+            x.children[2].children[0].value =  parent.children[0].textContent;
+            x.children[2].children[0].addEventListener('keypress' ,(event) => {
+                if(event.keyCode == 13){
+                    editdata();
+                }
+            })
+            let y =document.addEventListener("click", function(event) {
+                if (event.target.closest('#edit') || event.target.closest('.edit-options')) return;
+                closeEdit();
+                document.removeEventListener('click', y);
+            });
+        }
+
+        function editdata(){
+            let x = document.getElementById('edit'),
+                label = x.children[2].children[0].value;
+                if(label == '')
+                    label = 'Unknown';
+                compactIDB.writeData('labels', label, x.children[1].textContent).then((resolve) => {
+                }).catch((error) => {
+                    console.log(error);
+                })
+                activeAddress.children[0].textContent = label;
+                closeEdit()
+        }
+
+        function removedata(){
+            activeAddress.parentNode.removeChild(activeAddress);
+            compactIDB.removeData('labels', activeAddress.children[1].textContent);
+            closeEdit();
+        }
+
+        function closeEdit(){
+            document.getElementById('edit-container').classList.remove('show');
+            document.getElementById('edit').classList.remove('slide-up');
+            document.getElementById('newAddrLabel').value='';
+        }
+
+        function createAllCards(){
+            floWebWallet.getLabels().then((labelAddr) => {
+                    Object.keys(labelAddr).forEach((address) => {
+                        createAddressCards(address, labelAddr[address]);                                            
+                    })
+            }).catch((error) => {
+                console.log(error);
+            })
+        }
+
+        function sendMessage(){
+            console.log(document.getElementById('getBal_addr').value,
+            document.getElementById('amount').value,
+            document.getElementById('receiver').value,
+            document.getElementById('flotextdata').value);
+            document.getElementById('receiver').value;
+            //floWebWallet.sendTransaction();
+        }
+    </script>
 
 <script>
     /*!
@@ -4688,380 +6818,380 @@
 </script>
 
 <script>
-  /* FLO Crypto Operators*/
-  const floCrypto = {
-
-    //Generates a new flo ID and returns private-key, public-key and floID
-    generateNewID: function () {
-      try {
-        var key = new Bitcoin.ECKey(false);
-        key.setCompressed(true);
-        return {
-          floID: key.getBitcoinAddress(),
-          pubKey: key.getPubKeyHex(),
-          privKey: key.getBitcoinWalletImportFormat()
+    /* FLO Crypto Operators*/
+    const floCrypto = {
+  
+      //Generates a new flo ID and returns private-key, public-key and floID
+      generateNewID: function () {
+        try {
+          var key = new Bitcoin.ECKey(false);
+          key.setCompressed(true);
+          return {
+            floID: key.getBitcoinAddress(),
+            pubKey: key.getPubKeyHex(),
+            privKey: key.getBitcoinWalletImportFormat()
+          }
+        } catch (e) {
+          console.log(e);
         }
-      } catch (e) {
-        console.log(e);
-      }
-    },
-
-    //Returns public-key from private-key
-    getPubKeyHex: function (privateKeyHex) {
-      var key = new Bitcoin.ECKey(privateKeyHex);
-      if (key.priv == null) 
-        return;
-      key.setCompressed(true);
-      var pubkeyHex = key.getPubKeyHex();
-      return pubkeyHex;
-    },
-
-    //Returns flo-ID from public-key
-    getFloIDfromPubkeyHex: function (pubkeyHex) {
-      var key = new Bitcoin.ECKey().setPub(pubkeyHex);
-      var floID = key.getBitcoinAddress();
-      return floID;
-    },
-
-    //Verify the private-key for the given public-key or flo-ID
-    verifyPrivKey: function (privateKeyHex, pubKey_floID, isfloID = true) {
-      try {
+      },
+  
+      //Returns public-key from private-key
+      getPubKeyHex: function (privateKeyHex) {
         var key = new Bitcoin.ECKey(privateKeyHex);
-        if (key.priv == null)
-          return false;
+        if (key.priv == null) 
+          return;
         key.setCompressed(true);
-        if (isfloID && pubKey_floID == key.getBitcoinAddress())
+        var pubkeyHex = key.getPubKeyHex();
+        return pubkeyHex;
+      },
+  
+      //Returns flo-ID from public-key
+      getFloIDfromPubkeyHex: function (pubkeyHex) {
+        var key = new Bitcoin.ECKey().setPub(pubkeyHex);
+        var floID = key.getBitcoinAddress();
+        return floID;
+      },
+  
+      //Verify the private-key for the given public-key or flo-ID
+      verifyPrivKey: function (privateKeyHex, pubKey_floID, isfloID = true) {
+        try {
+          var key = new Bitcoin.ECKey(privateKeyHex);
+          if (key.priv == null)
+            return false;
+          key.setCompressed(true);
+          if (isfloID && pubKey_floID == key.getBitcoinAddress())
+            return true;
+          else if (!isfloID && pubKey_floID == key.getPubKeyHex())
+            return true;
+          else
+            return false;
+        } catch (e) {
+          console.log(e);
+        }
+      },
+  
+      //Check if the given Address is valid or not
+      validateAddr: function (inpAddr) {
+        try {
+          var addr = new Bitcoin.Address(inpAddr);
           return true;
-        else if (!isfloID && pubKey_floID == key.getPubKeyHex())
-          return true;
-        else
+        } catch {
           return false;
-      } catch (e) {
-        console.log(e);
-      }
-    },
-
-    //Check if the given Address is valid or not
-    validateAddr: function (inpAddr) {
-      try {
-        var addr = new Bitcoin.Address(inpAddr);
-        return true;
-      } catch {
-        return false;
+        }
       }
     }
-  }
-</script>
-<script>
-  /* FLO Blockchain Operator to send/receive data from blockchain using API calls*/
-  const floBlockchainAPI = {
-
-    //Promised AJAX function to get data from API
-    promisedAJAX: function (method, uri) {
-      return new Promise((resolve, reject) => {
-        var request = new XMLHttpRequest();
-        var url = `${floGlobals.apiURL[floGlobals.blockchain]}/${uri}`;
-        console.log(url)
-        request.open(method, url, true);
-        request.onload = (evt) => {
-          if (request.readyState == 4 && request.status == 200)
-            resolve(request.response);
-          else
-            reject(request.response);
-        };
-        request.send();
-      });
-    },
-
-    //Get balance for the given Address
-    getBalance: function (addr) {
-      return new Promise((resolve, reject) => {
-        this.promisedAJAX("GET", `api/addr/${addr}/balance`).then(balance => {
-          resolve(parseFloat(balance));
-        }).catch(error => {
-          reject(error);
-        });
-      });
-    },
-
-    //Send Tx to blockchain 
-    sendTx: function (senderAddr, receiverAddr, sendAmt, PrivKey, floData = '') {
-      return new Promise((resolve, reject) => {
-        if (!floCrypto.validateAddr(senderAddr))
-          reject(`Invalid address : ${senderAddr}`);
-        else if (!floCrypto.validateAddr(receiverAddr))
-          reject(`Invalid address : ${receiverAddr}`);
-        if (PrivKey.length < 1 || !floCrypto.verifyPrivKey(PrivKey, senderAddr))
-          reject("Invalid Private key!");
-        else if (typeof sendAmt !== 'number' || sendAmt <= 0)
-          reject(`Invalid sendAmt : ${sendAmt}`);
-        else {
-          var trx = bitjs.transaction();
-          var utxoAmt = 0.0;
-          var fee = floGlobals.fee;
-          this.promisedAJAX("GET", `api/addr/${senderAddr}/utxo`).then(response => {
-            var utxos = JSON.parse(response);
-            for (var i = utxos.length - 1;
-              (i >= 0) && (utxoAmt < sendAmt + fee); i--) {
-              if (utxos[i].confirmations) {
-                trx.addinput(utxos[i].txid, utxos[i].vout, utxos[i].scriptPubKey)
-                utxoAmt += utxos[i].amount;
-              } else break;
-            }
-            if (utxoAmt < sendAmt + fee)
-              reject("Insufficient balance!");
-            else {
-              trx.addoutput(receiverAddr, sendAmt);
-              var change = utxoAmt - sendAmt - fee;
-              if (change > 0)
-                trx.addoutput(senderAddr, change);
-              trx.addflodata(floData);
-              var signedTxHash = trx.sign(PrivKey, 1);
-              this.broadcastTx(signedTxHash).then(txid => {
-                resolve(txid)
-              }).catch(error => {
-                reject(error);
-              });
-            }
-          }).catch(error => {
-            reject(error);
-          });
-        }
-      });
-    },
-
-    //Broadcast signed Tx in blockchain using API
-    broadcastTx: function (signedTxHash) {
-      return new Promise((resolve, reject) => {
-        var request = new XMLHttpRequest();
-        var url = `${floGlobals.apiURL[floGlobals.blockchain]}/api/tx/send`;
-        if (signedTxHash.length < 1)
-          reject("Empty Signature");
-        else {
-          var params = `{"rawtx":"${signedTxHash}"}`;
-          var result;
-          request.open('POST', url, false);
-          //Send the proper header information along with the request
-          request.setRequestHeader('Content-type', 'application/json');
-          request.onload = function () {
-            if (request.readyState == 4 && request.status == 200) {
-              console.log(request.response);
-              resolve(JSON.parse(request.response).txid.result);
-            } else
-              reject(request.responseText);
-          }
-          request.send(params);
-        }
-      })
-    },
-
-    //Get new Tx in blockchain since last sync using API
-    getNewTxs: function(addr, ignoreOld){
+  </script>
+  <script>
+    /* FLO Blockchain Operator to send/receive data from blockchain using API calls*/
+    const floBlockchainAPI = {
+  
+      //Promised AJAX function to get data from API
+      promisedAJAX: function (method, uri) {
         return new Promise((resolve, reject) => {
-        this.promisedAJAX("GET", `api/addrs/${addr}/txs?from=0&to=1`).then(response => {
-          var newItems = JSON.parse(response).totalItems - ignoreOld;
-          this.promisedAJAX("GET", `api/addrs/${addr}/txs?from=0&to=${newItems*2}`).then(response => {
-              response = JSON.parse(response)
-              var filteredData = [];
-              for (i = response.totalItems - ignoreOld - 1; i >=0 ; i--){
-                  if(response.items[i].isCoinBase){
-                      var item = {
-                        time : response.items[i].time,
-                        txid : response.items[i].txid,
-                        sender : '(mined)'+response.items[i].vin[0].coinbase,
-                        receiver : addr,
-                        floData : response.items[i].floData
-                      }
-                  }else{
-                    var item = {
-                        time : response.items[i].time,
-                        txid : response.items[i].txid,
-                        sender : response.items[i].vin[0].addr,
-                        receiver : response.items[i].vout[0].scriptPubKey.addresses[0],
-                        floData : response.items[i].floData
-                      }
-                  }
-                filteredData.push(item);
-              }
-              resolve({totalItems:response.totalItems , items:filteredData});
+          var request = new XMLHttpRequest();
+          var url = `${floGlobals.apiURL[floGlobals.blockchain]}/${uri}`;
+          console.log(url)
+          request.open(method, url, true);
+          request.onload = (evt) => {
+            if (request.readyState == 4 && request.status == 200)
+              resolve(request.response);
+            else
+              reject(request.response);
+          };
+          request.send();
+        });
+      },
+  
+      //Get balance for the given Address
+      getBalance: function (addr) {
+        return new Promise((resolve, reject) => {
+          this.promisedAJAX("GET", `api/addr/${addr}/balance`).then(balance => {
+            resolve(balance);
           }).catch(error => {
             reject(error);
           });
-        }).catch(error => {
-          reject(error);
         });
-      });
+      },
+  
+      //Send Tx to blockchain 
+      sendTx: function (senderAddr, receiverAddr, sendAmt, PrivKey, floData = '') {
+        return new Promise((resolve, reject) => {
+          if (!floCrypto.validateAddr(senderAddr))
+            reject(`Invalid address : ${senderAddr}`);
+          else if (!floCrypto.validateAddr(receiverAddr))
+            reject(`Invalid address : ${receiverAddr}`);
+          if (PrivKey.length < 1 || !floCrypto.verifyPrivKey(PrivKey, senderAddr))
+            reject("Invalid Private key!");
+          else if (typeof sendAmt !== 'number' || sendAmt <= 0)
+            reject(`Invalid sendAmt : ${sendAmt}`);
+          else {
+            var trx = bitjs.transaction();
+            var utxoAmt = 0.0;
+            var fee = floGlobals.fee;
+            this.promisedAJAX("GET", `api/addr/${senderAddr}/utxo`).then(response => {
+              var utxos = JSON.parse(response);
+              for (var i = utxos.length - 1;
+                (i >= 0) && (utxoAmt < sendAmt + fee); i--) {
+                if (utxos[i].confirmations) {
+                  trx.addinput(utxos[i].txid, utxos[i].vout, utxos[i].scriptPubKey)
+                  utxoAmt += utxos[i].amount;
+                } else break;
+              }
+              if (utxoAmt < sendAmt + fee)
+                reject("Insufficient balance!");
+              else {
+                trx.addoutput(receiverAddr, sendAmt);
+                var change = utxoAmt - sendAmt - fee;
+                if (change > 0)
+                  trx.addoutput(senderAddr, change);
+                trx.addflodata(floData);
+                var signedTxHash = trx.sign(PrivKey, 1);
+                this.broadcastTx(signedTxHash).then(txid => {
+                  resolve(txid)
+                }).catch(error => {
+                  reject(error);
+                });
+              }
+            }).catch(error => {
+              reject(error);
+            });
+          }
+        });
+      },
+  
+      //Broadcast signed Tx in blockchain using API
+      broadcastTx: function (signedTxHash) {
+        return new Promise((resolve, reject) => {
+          var request = new XMLHttpRequest();
+          var url = `${floGlobals.apiURL[floGlobals.blockchain]}/api/tx/send`;
+          if (signedTxHash.length < 1)
+            reject("Empty Signature");
+          else {
+            var params = `{"rawtx":"${signedTxHash}"}`;
+            var result;
+            request.open('POST', url, false);
+            //Send the proper header information along with the request
+            request.setRequestHeader('Content-type', 'application/json');
+            request.onload = function () {
+              if (request.readyState == 4 && request.status == 200) {
+                console.log(request.response);
+                resolve(JSON.parse(request.response).txid.result);
+              } else
+                reject(request.responseText);
+            }
+            request.send(params);
+          }
+        })
+      },
+  
+      //Get new Tx in blockchain since last sync using API
+      getNewTxs: function(addr, ignoreOld){
+          return new Promise((resolve, reject) => {
+          this.promisedAJAX("GET", `api/addrs/${addr}/txs?from=0&to=1`).then(response => {
+            var newItems = JSON.parse(response).totalItems - ignoreOld;
+            this.promisedAJAX("GET", `api/addrs/${addr}/txs?from=0&to=${newItems*2}`).then(response => {
+                response = JSON.parse(response)
+                var filteredData = [];
+                for (i = response.totalItems - ignoreOld - 1; i >=0 ; i--){
+                    if(response.items[i].isCoinBase){
+                        var item = {
+                          time : response.items[i].time,
+                          txid : response.items[i].txid,
+                          sender : '(mined)'+response.items[i].vin[0].coinbase,
+                          receiver : addr,
+                          floData : response.items[i].floData
+                        }
+                    }else{
+                      var item = {
+                          time : response.items[i].time,
+                          txid : response.items[i].txid,
+                          sender : response.items[i].vin[0].addr,
+                          receiver : response.items[i].vout[0].scriptPubKey.addresses[0],
+                          floData : response.items[i].floData
+                        }
+                    }
+                  filteredData.push(item);
+                }
+                resolve({totalItems:response.totalItems , items:filteredData});
+            }).catch(error => {
+              reject(error);
+            });
+          }).catch(error => {
+            reject(error);
+          });
+        });
+      }
     }
-  }
-</script>
-<script>
-  /* Compact IndexedDB operations */
-
-  window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
-  window.IDBTransaction = window.IDBTransaction || window.webkitIDBTransaction || window.msIDBTransaction;
-  window.IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange || window.msIDBKeyRange;
-
-  if (!window.indexedDB)
-    window.alert("Your browser doesn't support a stable version of IndexedDB.")
-
-  const compactIDB = {
-
-    setDefaultDB: function (dbName) {
-      this.dbName = dbName;
-    },
-
-    initDB: function (dbName, objectStores = {}) {
-      return new Promise((resolve, reject) => {
-        this.dbName = this.dbName || dbName;
-        var idb = indexedDB.open(dbName);
-        idb.onerror = (event) => {
-          reject("Error in opening IndexedDB!");
-        };
-        idb.onupgradeneeded = (event) => {
-          var db = event.target.result;
-          for (obs in objectStores) {
-            var objectStore = db.createObjectStore(obs, objectStores[obs].options || {});
-            if (objectStores[obs].indexes && typeof objectStores[obs].indexes === 'object')
-              for (i in objectStores[obs].indexes)
-                objectStore.createIndex(i, i, objectStores[obs].indexes[i] || {});
+  </script>
+  <script>
+    /* Compact IndexedDB operations */
+  
+    window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
+    window.IDBTransaction = window.IDBTransaction || window.webkitIDBTransaction || window.msIDBTransaction;
+    window.IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange || window.msIDBKeyRange;
+  
+    if (!window.indexedDB)
+      window.alert("Your browser doesn't support a stable version of IndexedDB.")
+  
+    const compactIDB = {
+  
+      setDefaultDB: function (dbName) {
+        this.dbName = dbName;
+      },
+  
+      initDB: function (dbName, objectStores = {}) {
+        return new Promise((resolve, reject) => {
+          this.dbName = this.dbName || dbName;
+          var idb = indexedDB.open(dbName);
+          idb.onerror = (event) => {
+            reject("Error in opening IndexedDB!");
+          };
+          idb.onupgradeneeded = (event) => {
+            var db = event.target.result;
+            for (obs in objectStores) {
+              var objectStore = db.createObjectStore(obs, objectStores[obs].options || {});
+              if (objectStores[obs].indexes && typeof objectStores[obs].indexes === 'object')
+                for (i in objectStores[obs].indexes)
+                  objectStore.createIndex(i, i, objectStores[obs].indexes[i] || {});
+            }
           }
-        }
-        idb.onsuccess = (event) => {
-          var db = event.target.result;
-          if (JSON.stringify(Object.values(db.objectStoreNames).sort()) === JSON.stringify(Object.keys(objectStores).sort()))
-            resolve("Initiated IndexedDB");
-          else
-            reject("IndexedDB already exist with different ObjectStores!");
-          db.close();
-        }
-      });
-    },
-
-    openDB: function (dbName = this.dbName) {
-      return new Promise((resolve, reject) => {
-        var idb = indexedDB.open(dbName);
-        idb.onerror = (event) => reject("Error in opening IndexedDB!");
-        idb.onsuccess = (event) => resolve(event.target.result);
-      });
-    },
-
-    deleteDB: function (dbName = this.dbName) {
-      return new Promise((resolve, reject) => {
-        var deleteReq = indexedDB.deleteDatabase(dbName);;
-        deleteReq.onerror = (event) => reject("Error deleting database!");
-        deleteReq.onsuccess = (event) => resolve("Database deleted successfully");
-      });
-    },
-
-    writeData: function (obsName, data, key = false, dbName = this.dbName) {
-      return new Promise((resolve, reject) => {
-        this.openDB(dbName).then(db => {
-          var obs = db.transaction(obsName, "readwrite").objectStore(obsName);
-          let writeReq = (key ? obs.put(data, key) : obs.put(data));
-          writeReq.onsuccess = (evt) => resolve(`Write data Successful`);
-          writeReq.onerror = (evt) => reject(
-            `Write data unsuccessful [${evt.target.error.name}] ${evt.target.error.message}`);
-          db.close();
-        }).catch(error => reject(error));
-      });
-    },
-
-    addData: function (obsName, data, key = false, dbName = this.dbName) {
-      return new Promise((resolve, reject) => {
-        this.openDB(dbName).then(db => {
-          var obs = db.transaction(obsName, "readwrite").objectStore(obsName);
-          let addReq = (key ? obs.add(data, key) : obs.add(data));
-          addReq.onsuccess = (evt) => resolve(`Add data successful`);
-          addReq.onerror = (evt) => reject(
-            `Add data unsuccessful [${evt.target.error.name}] ${evt.target.error.message}`);
-          db.close();
-        }).catch(error => reject(error));
-      });
-    },
-
-    removeData: function (obsName, key, dbName = this.dbName) {
-      return new Promise((resolve, reject) => {
-        this.openDB(dbName).then(db => {
-          var obs = db.transaction(obsName, "readwrite").objectStore(obsName);
-          let delReq = obs.delete(key);
-          delReq.onsuccess = (evt) => resolve(`Removed Data ${key}`);
-          delReq.onerror = (evt) => reject(
-            `Remove data unsuccessful [${evt.target.error.name}] ${evt.target.error.message}`);
-          db.close();
-        }).catch(error => reject(error));
-      });
-    },
-
-    readData: function (obsName, key, dbName = this.dbName) {
-      return new Promise((resolve, reject) => {
-        this.openDB(dbName).then(db => {
-          var obs = db.transaction(obsName, "readonly").objectStore(obsName);
-          let getReq = obs.get(key);
-          getReq.onsuccess = (evt) => resolve(evt.target.result);
-          getReq.onerror = (evt) => reject(
-            `Read data unsuccessful [${evt.target.error.name}] ${evt.target.error.message}`);
-          db.close();
-        }).catch(error => reject(error));
-      });
-    },
-
-    readAllData: function (obsName, dbName = this.dbName) {
-      return new Promise((resolve, reject) => {
-        this.openDB(dbName).then(db => {
-          var obs = db.transaction(obsName, "readonly").objectStore(obsName);
-          var tmpResult = {}
-          let curReq = obs.openCursor();
-          curReq.onsuccess = (evt) => {
-            var cursor = evt.target.result;
-            if (cursor) {
-              tmpResult[cursor.primaryKey] = cursor.value;
-              cursor.continue();
-            } else
-              resolve(tmpResult);
+          idb.onsuccess = (event) => {
+            var db = event.target.result;
+            if (JSON.stringify(Object.values(db.objectStoreNames).sort()) === JSON.stringify(Object.keys(objectStores).sort()))
+              resolve("Initiated IndexedDB");
+            else
+              reject("IndexedDB already exist with different ObjectStores!");
+            db.close();
           }
-          curReq.onerror = (evt) => reject(
-            `Read-All data unsuccessful [${evt.target.error.name}] ${evt.target.error.message}`);
-          db.close();
-        }).catch(error => reject(error));
-      });
-    },
-    
-    getAllData: function (obsName, dbName = this.dbName) {
-      return new Promise((resolve, reject) => {
-        this.openDB(dbName).then(db => {
-          var obs = db.transaction(obsName, "readonly").objectStore(obsName);
-          let getReq = obs.getAll();
-          getReq.onsuccess = (evt) => resolve(evt.target.result);
-          getReq.onerror = (evt) => reject(
-            `Read data unsuccessful [${evt.target.error.name}] ${evt.target.error.message}`);
-          db.close();
-        }).catch(error => reject(error));
-      });
-    },
-
-    searchData: function (obsName, patternEval, dbName = this.dbName) {
-      return new Promise((resolve, reject) => {
-        this.openDB(dbName).then(db => {
-          var obs = db.transaction(obsName, "readonly").objectStore(obsName);
-          var filteredResult = {}
-          let curReq = obs.openCursor();
-          curReq.onsuccess = (evt) => {
-            var cursor = evt.target.result;
-            if (cursor) {
-              if (patternEval(cursor.primaryKey, cursor.value))
-                filteredResult[cursor.primaryKey] = cursor.value;
-              cursor.continue();
-            } else
-              resolve(filteredResult);
-          }
-          curReq.onerror = (evt) => reject(
-            `Search unsuccessful [${evt.target.error.name}] ${evt.target.error.message}`);
-          db.close();
-        }).catch(error => reject(error));
-      });
+        });
+      },
+  
+      openDB: function (dbName = this.dbName) {
+        return new Promise((resolve, reject) => {
+          var idb = indexedDB.open(dbName);
+          idb.onerror = (event) => reject("Error in opening IndexedDB!");
+          idb.onsuccess = (event) => resolve(event.target.result);
+        });
+      },
+  
+      deleteDB: function (dbName = this.dbName) {
+        return new Promise((resolve, reject) => {
+          var deleteReq = indexedDB.deleteDatabase(dbName);;
+          deleteReq.onerror = (event) => reject("Error deleting database!");
+          deleteReq.onsuccess = (event) => resolve("Database deleted successfully");
+        });
+      },
+  
+      writeData: function (obsName, data, key = false, dbName = this.dbName) {
+        return new Promise((resolve, reject) => {
+          this.openDB(dbName).then(db => {
+            var obs = db.transaction(obsName, "readwrite").objectStore(obsName);
+            let writeReq = (key ? obs.put(data, key) : obs.put(data));
+            writeReq.onsuccess = (evt) => resolve(`Write data Successful`);
+            writeReq.onerror = (evt) => reject(
+              `Write data unsuccessful [${evt.target.error.name}] ${evt.target.error.message}`);
+            db.close();
+          }).catch(error => reject(error));
+        });
+      },
+  
+      addData: function (obsName, data, key = false, dbName = this.dbName) {
+        return new Promise((resolve, reject) => {
+          this.openDB(dbName).then(db => {
+            var obs = db.transaction(obsName, "readwrite").objectStore(obsName);
+            let addReq = (key ? obs.add(data, key) : obs.add(data));
+            addReq.onsuccess = (evt) => resolve(`Add data successful`);
+            addReq.onerror = (evt) => reject(
+              `Add data unsuccessful [${evt.target.error.name}] ${evt.target.error.message}`);
+            db.close();
+          }).catch(error => reject(error));
+        });
+      },
+  
+      removeData: function (obsName, key, dbName = this.dbName) {
+        return new Promise((resolve, reject) => {
+          this.openDB(dbName).then(db => {
+            var obs = db.transaction(obsName, "readwrite").objectStore(obsName);
+            let delReq = obs.delete(key);
+            delReq.onsuccess = (evt) => resolve(`Removed Data ${key}`);
+            delReq.onerror = (evt) => reject(
+              `Remove data unsuccessful [${evt.target.error.name}] ${evt.target.error.message}`);
+            db.close();
+          }).catch(error => reject(error));
+        });
+      },
+  
+      readData: function (obsName, key, dbName = this.dbName) {
+        return new Promise((resolve, reject) => {
+          this.openDB(dbName).then(db => {
+            var obs = db.transaction(obsName, "readonly").objectStore(obsName);
+            let getReq = obs.get(key);
+            getReq.onsuccess = (evt) => resolve(evt.target.result);
+            getReq.onerror = (evt) => reject(
+              `Read data unsuccessful [${evt.target.error.name}] ${evt.target.error.message}`);
+            db.close();
+          }).catch(error => reject(error));
+        });
+      },
+  
+      readAllData: function (obsName, dbName = this.dbName) {
+        return new Promise((resolve, reject) => {
+          this.openDB(dbName).then(db => {
+            var obs = db.transaction(obsName, "readonly").objectStore(obsName);
+            var tmpResult = {}
+            let curReq = obs.openCursor();
+            curReq.onsuccess = (evt) => {
+              var cursor = evt.target.result;
+              if (cursor) {
+                tmpResult[cursor.primaryKey] = cursor.value;
+                cursor.continue();
+              } else
+                resolve(tmpResult);
+            }
+            curReq.onerror = (evt) => reject(
+              `Read-All data unsuccessful [${evt.target.error.name}] ${evt.target.error.message}`);
+            db.close();
+          }).catch(error => reject(error));
+        });
+      },
+      
+      getAllData: function (obsName, dbName = this.dbName) {
+        return new Promise((resolve, reject) => {
+          this.openDB(dbName).then(db => {
+            var obs = db.transaction(obsName, "readonly").objectStore(obsName);
+            let getReq = obs.getAll();
+            getReq.onsuccess = (evt) => resolve(evt.target.result);
+            getReq.onerror = (evt) => reject(
+              `Read data unsuccessful [${evt.target.error.name}] ${evt.target.error.message}`);
+            db.close();
+          }).catch(error => reject(error));
+        });
+      },
+  
+      searchData: function (obsName, patternEval, dbName = this.dbName) {
+        return new Promise((resolve, reject) => {
+          this.openDB(dbName).then(db => {
+            var obs = db.transaction(obsName, "readonly").objectStore(obsName);
+            var filteredResult = {}
+            let curReq = obs.openCursor();
+            curReq.onsuccess = (evt) => {
+              var cursor = evt.target.result;
+              if (cursor) {
+                if (patternEval(cursor.primaryKey, cursor.value))
+                  filteredResult[cursor.primaryKey] = cursor.value;
+                cursor.continue();
+              } else
+                resolve(filteredResult);
+            }
+            curReq.onerror = (evt) => reject(
+              `Search unsuccessful [${evt.target.error.name}] ${evt.target.error.message}`);
+            db.close();
+          }).catch(error => reject(error));
+        });
+      }
     }
-  }
-</script>
+  </script>
 
 <script>
     floWebWallet = {
@@ -5149,6 +7279,9 @@
         compactIDB.initDB("FLO_webWallet",IDBObjects)
             .then(result => console.log(result))
             .catch(error => console.log(error))
+
+        createAllCards();
+        setElements();
     }
 </script>
 
