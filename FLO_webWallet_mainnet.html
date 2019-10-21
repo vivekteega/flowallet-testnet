@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 <meta charset="UTF-8">
 <style>
-    @import url("https://fonts.googleapis.com/css?family=Roboto&display=swap");
+@import url("https://fonts.googleapis.com/css?family=Roboto&display=swap");
 :root {
   --sidenav-color: #f0f0f0;
   --accent-color: #D40E1E;
@@ -299,6 +299,12 @@ button:focus, input:focus, textarea:focus {
   width: 6em !important;
   border: none;
   margin: 0 1em !important;
+}
+
+#overlay #popup h4 {
+  padding: 1em;
+  margin: 0;
+  opacity: 0.8;
 }
 
 .spacer {
@@ -893,15 +899,21 @@ loading svg .st1 {
   fill: var(--bw);
   position: absolute;
   top: 0;
+  bottom: auto;
   right: 0;
   height: 2em;
   width: 2em;
-  padding: 0.6em;
+  padding: 0.5em;
   margin: 0.5em;
   -webkit-transition: all 0.2s ease;
   transition: all 0.2s ease;
   overflow: visible;
   z-index: 2;
+  border-radius: 2em;
+}
+
+#monitor-list monitor svg:hover {
+  background: var(--sec-color);
 }
 
 .title-bar {
@@ -1234,10 +1246,15 @@ input:checked + .slider:before {
     display: flexbox;
     margin: 1em;
   }
+  #monitor-list monitor div:first-of-type {
+    height: 4em;
+  }
   #monitor-list monitor div:nth-of-type(2) {
     word-break: break-all;
   }
   #monitor-list monitor svg {
+    top: auto;
+    bottom: 0;
     opacity: 0;
   }
   #monitor-list monitor svg:hover {
@@ -1558,7 +1575,7 @@ input:checked + .slider:before {
                             <div id="add">
                                 <h4>Add new address to monitoring list</h4> 
                                 <div class="input">
-                                    <input  type="text" onfocus="animateInput(this.parentNode)" onblur="revertBack(this.parentNode)" id="floAddr" autocomplete="new-password"/>
+                                    <input  type="text" oninput="checkAddress(this)" onfocus="animateInput(this.parentNode)" onblur="revertBack(this.parentNode)" id="floAddr" autocomplete="new-password"/>
                                         <label>FLO Address</label>
                                     <div></div>
                                 </div>
@@ -1568,7 +1585,7 @@ input:checked + .slider:before {
                                     <div></div>
                                 </div>
                                 <button onclick="closeAdd()">Cancel</button>
-                                <button id="addAddressToMonitor" onclick="addAddressToMonitoringList()">Add</button>
+                                <button id="addAddressToMonitor" onclick="addAddressToMonitoringList()" disabled>Add</button>
                             </div>
                         </div>
                         <div id="edit-container" class="hide">
@@ -1677,6 +1694,7 @@ input:checked + .slider:before {
     </div>
     <div id="overlay">
         <div id="popup">
+            <h4>Recover FLO address</h4>
             <div class="input">
                 <input autocomplete="new-password"  type="text" onfocus="animateInput(this.parentNode)" onblur="revertBack(this.parentNode)" id="pop"/>
                 <label>Private key</label>
@@ -1787,8 +1805,12 @@ input:checked + .slider:before {
 
         addrLabel.addEventListener('keypress',function(event){
             if(event.keyCode==13)
-                addAddressToMonitoringList();
-            });
+                document.getElementById('addAddressToMonitor').click();
+        });
+        floAddr.addEventListener('keypress',function(event){
+            if(event.keyCode==13)
+                document.getElementById('addAddressToMonitor').click();
+        });
         function closeSidePanel(){
             if(window.innerWidth > 768)
             {
@@ -1835,6 +1857,7 @@ input:checked + .slider:before {
             document.getElementById('add').classList.remove('slide-up');
             floAddr.value='';
             addrLabel.value='';
+            document.getElementById('addAddressToMonitor').disabled = true;
         }
         document.getElementById('addNewAddress').onclick = function(){
             showAdd();
@@ -1847,16 +1870,21 @@ input:checked + .slider:before {
         function checkAddress(thisInput){
             let x = document.getElementById('addAddressToMonitor');
             if (floCrypto.validateAddr(thisInput.value))
-                x.disabled ='false';
-            else
-                x.disabled ='true';
+                x.disabled = false;
+            else{
+                x.disabled = true;
+            }
         }
         function addAddressToMonitoringList(){
-            compactIDB.addData('labels', addrLabel.value, floAddr.value).then((resolve) => {
-                createAddressCards(floAddr.value, addrLabel.value);
+            let label = addrLabel.value;
+            if(label == '')
+                label = 'Unknown'
+            compactIDB.addData('labels', label, floAddr.value).then((resolve) => {
+                createAddressCards(floAddr.value, label);
                 floWebWallet.syncTransactions(floAddr.value);
                 closeAdd();
             }).catch((error) => {
+                alert('you are already monitoring this address');
                 console.log(error);
             })
         }
@@ -1999,16 +2027,16 @@ input:checked + .slider:before {
         });
 
         function RecoverAddr(){
-                let x= document.getElementById('popup').children[0],
+                let x= document.getElementById('popup').children[1],
                     wif = document.getElementById('pop').value;
                     if(wif === ''){
                         x.classList.add('jitter');
-                            x.addEventListener('animationEnd', function(){
-                                x.classList.remove('jitter'); 
-                            });
-                            x.addEventListener('webkitAnimationEnd', function(){
-                                x.classList.remove('jitter'); 
-                            });
+                        x.addEventListener('animationEnd', function(){
+                            x.classList.remove('jitter'); 
+                        });
+                        x.addEventListener('webkitAnimationEnd', function(){
+                            x.classList.remove('jitter'); 
+                        });
                     return;
                     }
                     floWebWallet.recoverAddr(wif).then((recoverAddr) => {
@@ -2018,6 +2046,13 @@ input:checked + .slider:before {
                         par.insertBefore(card, par.firstChild);
                         fadeout();
                     }).catch((error) => {
+                        x.classList.add('jitter');
+                        x.addEventListener('animationEnd', function(){
+                            x.classList.remove('jitter'); 
+                        });
+                        x.addEventListener('webkitAnimationEnd', function(){
+                            x.classList.remove('jitter'); 
+                        });
                         console.log(error);
                     })  
                 }
@@ -2039,27 +2074,9 @@ input:checked + .slider:before {
                     let time = new Date(tx.time*1000).toLocaleTimeString();
                     var tCard = document.createElement('transaction-card');
                     if(tx.sender === address){
-                        dbLabels.then((labelAddr) => {
-                            Object.keys(labelAddr).forEach((dbAddress) => {
-                                if(tx.receiver === dbAddress)
-                                tCard.innerHTML=`<div><svg width="12.607" height="12.607" viewBox="0 0 12.607 12.607"><path id="Union_1" data-name="Union 1" d="M11.818-3704H2a1,1,0,0,1-1-1,1,1,0,0,1,1-1H9.586l-8.879-8.879a1,1,0,0,1,0-1.414,1,1,0,0,1,1.414,0L11-3707.414V-3715a1,1,0,0,1,1-1,1,1,0,0,1,1,1v9.818a1,1,0,0,1-.272.909.994.994,0,0,1-.707.293A1.013,1.013,0,0,1,11.818-3704Z" transform="translate(3716.586 13.021) rotate(-90)"/></svg>${labelAddr[dbAddress]}</div><div> ${tx.floData}</div><div>  ${time} ${date}</div>`;
-                                return;
-                            })
-                        }).catch((error) => {
-                            console.log(error);
-                        })
                         tCard.innerHTML=`<div><svg width="12.607" height="12.607" viewBox="0 0 12.607 12.607"><path id="Union_1" data-name="Union 1" d="M11.818-3704H2a1,1,0,0,1-1-1,1,1,0,0,1,1-1H9.586l-8.879-8.879a1,1,0,0,1,0-1.414,1,1,0,0,1,1.414,0L11-3707.414V-3715a1,1,0,0,1,1-1,1,1,0,0,1,1,1v9.818a1,1,0,0,1-.272.909.994.994,0,0,1-.707.293A1.013,1.013,0,0,1,11.818-3704Z" transform="translate(3716.586 13.021) rotate(-90)"/></svg>${tx.receiver}</div><div> ${tx.floData}</div><div>  ${time} ${date}</div>`;
                     }
                     else{
-                        dbLabels.then((labelAddr) => {
-                            Object.keys(labelAddr).forEach((dbAddress) => {
-                                if(tx.sender === dbAddress)
-                                    tCard.innerHTML=`<div><svg width="12.607" height="12.607" viewBox="0 0 12.607 12.607"><path id="Union_1" data-name="Union 1" d="M11.818-3704H2a1,1,0,0,1-1-1,1,1,0,0,1,1-1H9.586l-8.879-8.879a1,1,0,0,1,0-1.414,1,1,0,0,1,1.414,0L11-3707.414V-3715a1,1,0,0,1,1-1,1,1,0,0,1,1,1v9.818a1,1,0,0,1-.272.909.994.994,0,0,1-.707.293A1.013,1.013,0,0,1,11.818-3704Z" transform="translate(-0.414 3716.586)"/></svg>${labelAddr[dbAddress]}</div><div> ${tx.floData}</div><div>  ${time} ${date}</div>`;            
-                                return;                     
-                            })
-                        }).catch((error) => {
-                            console.log(error);
-                        })
                         tCard.innerHTML=`<div><svg width="12.607" height="12.607" viewBox="0 0 12.607 12.607"><path id="Union_1" data-name="Union 1" d="M11.818-3704H2a1,1,0,0,1-1-1,1,1,0,0,1,1-1H9.586l-8.879-8.879a1,1,0,0,1,0-1.414,1,1,0,0,1,1.414,0L11-3707.414V-3715a1,1,0,0,1,1-1,1,1,0,0,1,1,1v9.818a1,1,0,0,1-.272.909.994.994,0,0,1-.707.293A1.013,1.013,0,0,1,11.818-3704Z" transform="translate(-0.414 3716.586)"/></svg>${tx.sender}</div><div> ${tx.floData}</div><div>  ${time} ${date}</div>`;
                     }
                     tCont.insertBefore(tCard,tCont.firstChild);
@@ -2074,8 +2091,6 @@ input:checked + .slider:before {
         function createAddressCards(address, label){
                     let parentConatainer = document.getElementById('monitor-list'),
                         monitorCard = document.createElement('monitor');
-                        if(label == '')
-                            label = 'Unknown'
                         monitorCard.innerHTML= `<div>${label}</div>
                                             <div>${address}</div>
                                             <div onclick="clickedAddress(this.parentNode)"></div>
@@ -2136,6 +2151,9 @@ input:checked + .slider:before {
 
         function createAllCards(){
             floWebWallet.getLabels().then((labelAddr) => {
+                if(Object.entries(labelAddr).length === 0)
+                    document.getElementById('monitor-list').innerHTML=`<h3 style="text-align: center;width: 100%;">Add a FLO address to start monitoring</h3>`;
+                else
                     Object.keys(labelAddr).forEach((address) => {
                         createAddressCards(address, labelAddr[address]);                                            
                     })
