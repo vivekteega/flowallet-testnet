@@ -189,6 +189,7 @@ color: #fff;
 font-weight: 300;
 text-align: center;
 margin-bottom: 0px;
+margin-top: 0px;
 background-color: rgba(255,255,255,0.3);
 }
 .DataTable table{
@@ -424,11 +425,14 @@ h1 {
   font-size: 5vw;
   color: rgba(255,255,255,0.3);
 }
+h1 sub{
+  font-size: 2vw;
+}
 .btn{
   cursor: pointer
 }
 .nav-light .btn:disabled{
-  cursor:no-drop;
+  cursor:not-allowed;
 }
 .nav-dark .btn:disabled{
   cursor: auto;
@@ -535,9 +539,6 @@ h1 {
           <button id="clearLocalData" class="btn btn-glass btn-red" onclick="clearLocalData()">Clear Local Data</button>
         </nav>
       </div>
-    </div>
-
-    <h3>Received FLO Data : </h3>
     <div id="dispData"></div>
   </article>
 
