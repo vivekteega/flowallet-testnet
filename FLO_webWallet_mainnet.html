@@ -7,12 +7,13 @@
 <style>
 @import url("https://fonts.googleapis.com/css?family=Roboto&display=swap");
 :root {
-  --sidenav-color: #f0f0f0;
-  --accent-color: #D40E1E;
-  --back-color: #ebebeb;
-  --body-color: #fff;
-  --sec-color: #ccc;
-  --bw: #000;
+  --sidenav-color: rgb(240, 240, 240);
+  --accent-color: rgb(210, 13, 29);
+  --back-color: rgb(235, 235, 235);
+  --body-color: rgb(255, 255, 255);
+  --sec-color: rgb(204, 204, 204);
+  --bw: rgb(0, 0, 0);
+  --opac-accent-color: rgb(210, 13, 29, 0.1);
 }
 
 * {
@@ -72,9 +73,8 @@ button {
 }
 
 button:hover {
-  background: var(--accent-color);
+  background-color: var(--opac-accent-color);
   border: 1px var(--accent-color) solid;
-  color: #fff !important;
 }
 
 .primaryButton {
@@ -100,18 +100,21 @@ input[disabled]:hover {
 button:disabled,
 button[disabled] {
   cursor: not-allowed;
-  opacity: 0.6;
+  color: var(--sec-color);
 }
 
 button:disabled:hover,
 button[disabled]:hover {
   background: transparent;
-  color: var(--accent-color) !important;
   border: 1px solid var(--sec-color);
 }
 
 button:focus, input:focus, textarea:focus {
   outline: none;
+}
+
+::-moz-focus-inner {
+  border: none;
 }
 
 .icons:active,
@@ -134,13 +137,13 @@ button:focus, input:focus, textarea:focus {
   position: absolute;
   pointer-events: none;
   opacity: 0.6;
-  padding: 1em 0;
-  margin-left: 0.8em;
+  padding: 0 0.4em;
+  margin: 1em 1em 1em 0.8em;
   -webkit-transition: color 0.2s ease, padding 0.2s ease, opacity 0.2s ease, -webkit-transform 0.2s ease;
   transition: color 0.2s ease, padding 0.2s ease, opacity 0.2s ease, -webkit-transform 0.2s ease;
   transition: transform 0.2s ease, color 0.2s ease, padding 0.2s ease, opacity 0.2s ease;
   transition: transform 0.2s ease, color 0.2s ease, padding 0.2s ease, opacity 0.2s ease, -webkit-transform 0.2s ease;
-  background: transparent;
+  background: var(--body-color);
   z-index: 1;
   -webkit-user-select: none;
      -moz-user-select: none;
@@ -153,11 +156,9 @@ button:focus, input:focus, textarea:focus {
 }
 
 .input .label-active, .text-area .label-active {
-  -webkit-transform: translateY(-0.6em) scale(0.8);
-          transform: translateY(-0.6em) scale(0.8);
+  -webkit-transform: translateY(-1.6em) scale(0.8);
+          transform: translateY(-1.6em) scale(0.8);
   opacity: 1 !important;
-  background: var(--body-color);
-  padding: 0 0.4em;
 }
 
 .input input:focus {
@@ -276,8 +277,6 @@ textarea, input {
   top: 0;
   right: 0;
   left: 0;
-  -webkit-box-shadow: 0 0.1em 0.2em rgba(0, 0, 0, 0.1);
-          box-shadow: 0 0.1em 0.2em rgba(0, 0, 0, 0.1);
 }
 
 #main-card #header span {
@@ -345,11 +344,6 @@ textarea, input {
   width: 9em;
 }
 
-#sendData .sdleft .input button:hover {
-  background: transparent;
-  color: var(--accent-color) !important;
-}
-
 #sendData .sdleft .input:focus-within {
   border: 1px solid var(--accent-color);
 }
@@ -408,16 +402,7 @@ textarea, input {
 }
 
 #bottom-nav #indicator {
-  position: absolute;
-  top: 0;
-  width: 2em;
-  height: 4px;
-  background: var(--accent-color);
-  border-radius: 0 0 4px 4px;
-  -webkit-transition: -webkit-transform 0.2s ease;
-  transition: -webkit-transform 0.2s ease;
-  transition: transform 0.2s ease;
-  transition: transform 0.2s ease, -webkit-transform 0.2s ease;
+  display: none;
 }
 
 #bottom-nav .icons {
@@ -461,14 +446,6 @@ textarea, input {
 
 .activeButton svg {
   fill: var(--accent-color) !important;
-}
-
-.theme path, .theme g, .theme line {
-  stroke: var(--bw);
-}
-
-.theme circle {
-  fill: var(--bw);
 }
 
 .reveal {
@@ -542,6 +519,10 @@ input[type=number]::-webkit-outer-spin-button {
   margin: 0;
 }
 
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
 .innerPage {
   position: fixed;
   overflow-y: auto;
@@ -557,7 +538,7 @@ input[type=number]::-webkit-outer-spin-button {
 }
 
 #dispMsg #title-bar {
-  bottom: 0;
+  top: 0;
   position: absolute;
   display: -webkit-box;
   display: -ms-flexbox;
@@ -567,8 +548,7 @@ input[type=number]::-webkit-outer-spin-button {
   -ms-flex-line-pack: center;
       align-content: center;
   background: var(--body-color);
-  border-top: 1px solid var(--sec-color);
-  border-bottom: none;
+  border-bottom: 1px solid var(--sec-color);
 }
 
 #dispMsg #title-bar svg {
@@ -610,8 +590,8 @@ input[type=number]::-webkit-outer-spin-button {
   overflow-y: auto;
   width: 100%;
   padding: 0.5em 0;
-  top: 0;
-  bottom: 65px;
+  bottom: 0;
+  top: 65px;
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -678,13 +658,14 @@ input[type=number]::-webkit-outer-spin-button {
 }
 
 loading {
-  opacity: 0;
   pointer-events: none;
   position: fixed;
   display: -ms-grid;
   display: grid;
-  height: 100vh;
-  width: 100vw;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
   background: #00000020;
   place-items: center;
   z-index: 10;
@@ -838,25 +819,28 @@ loading svg .st1 {
   position: relative;
   color: var(--bw);
   cursor: pointer;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
 }
 
 #monitor-list monitor div {
   padding: 1em;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
 }
 
 #monitor-list monitor div:nth-of-type(1) {
   padding: 1em 4em 1em 0.8em;
   font-size: 1.2em;
   font-weight: bold;
-  overflow-wrap: break-word;
-  word-wrap: break-word;
 }
 
 #monitor-list monitor div:nth-of-type(2) {
   font-size: 0.8em;
   padding-top: 0;
   opacity: 0.8;
-  word-break: break-all;
 }
 
 #monitor-list monitor div:nth-of-type(3) {
@@ -1087,8 +1071,8 @@ input:checked + .slider:before {
 }
 
 .highlight {
-  -webkit-animation: highlightElement 0.6s cubic-bezier(0.46, 0.12, 0.38, 0.99) forwards;
-          animation: highlightElement 0.6s cubic-bezier(0.46, 0.12, 0.38, 0.99) forwards;
+  -webkit-animation: highlightElement 0.6s ease forwards;
+          animation: highlightElement 0.6s ease forwards;
 }
 
 @-webkit-keyframes highlightElement {
@@ -1114,8 +1098,8 @@ input:checked + .slider:before {
 }
 
 .fade {
-  -webkit-animation: fade 0.2s cubic-bezier(0.46, 0.12, 0.38, 0.99) forwards;
-          animation: fade 0.2s cubic-bezier(0.46, 0.12, 0.38, 0.99) forwards;
+  -webkit-animation: fade 0.2s ease forwards;
+          animation: fade 0.2s ease forwards;
 }
 
 @-webkit-keyframes fade {
@@ -1136,57 +1120,6 @@ input:checked + .slider:before {
   }
 }
 
-.jitter {
-  -webkit-animation: jitter 0.2s cubic-bezier(0.46, 0.12, 0.38, 0.99);
-          animation: jitter 0.2s cubic-bezier(0.46, 0.12, 0.38, 0.99);
-}
-
-@-webkit-keyframes jitter {
-  0% {
-    -webkit-transform: translateX(-1em);
-            transform: translateX(-1em);
-  }
-  25% {
-    -webkit-transform: translateX(1em);
-            transform: translateX(1em);
-  }
-  50% {
-    -webkit-transform: translateX(-0.5em);
-            transform: translateX(-0.5em);
-  }
-  75% {
-    -webkit-transform: translateX(0.5em);
-            transform: translateX(0.5em);
-  }
-  100% {
-    -webkit-transform: translateX(0);
-            transform: translateX(0);
-  }
-}
-
-@keyframes jitter {
-  0% {
-    -webkit-transform: translateX(-1em);
-            transform: translateX(-1em);
-  }
-  25% {
-    -webkit-transform: translateX(1em);
-            transform: translateX(1em);
-  }
-  50% {
-    -webkit-transform: translateX(-0.5em);
-            transform: translateX(-0.5em);
-  }
-  75% {
-    -webkit-transform: translateX(0.5em);
-            transform: translateX(0.5em);
-  }
-  100% {
-    -webkit-transform: translateX(0);
-            transform: translateX(0);
-  }
-}
-
 @media screen and (min-width: 768px) {
   .innerPage {
     position: absolute;
@@ -1196,18 +1129,8 @@ input:checked + .slider:before {
     bottom: 0;
     width: 100%;
   }
-  #dispMsg trans-container {
-    top: 65px;
-    bottom: 0;
-  }
   #dispMsg trans-container transaction-card div:nth-of-type(2) {
     font-size: 1.1em !important;
-  }
-  #dispMsg #title-bar {
-    top: 0;
-    bottom: auto;
-    border-bottom: 1px solid var(--sec-color);
-    border-top: none;
   }
   #settings-page h4 {
     text-align: left;
@@ -1226,14 +1149,22 @@ input:checked + .slider:before {
     -ms-flex-item-align: auto;
         align-self: auto;
     width: 16em;
-    display: flexbox;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
     margin: 1em;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+        -ms-flex-direction: column;
+            flex-direction: column;
   }
   #monitor-list monitor div:first-of-type {
     padding: 1.5em 2em 1.5em 0.8em;
+    -webkit-box-flex: 1;
+        -ms-flex: 1;
+            flex: 1;
   }
   #monitor-list monitor div:nth-of-type(2) {
-    word-break: break-all;
     padding: 1em 4em 1em 1em;
   }
   #monitor-list monitor svg {
@@ -1320,11 +1251,17 @@ input:checked + .slider:before {
     transition: width 0.2s ease;
   }
   #main-card #bottom-nav #indicator {
+    position: absolute;
+    display: inline-block;
     left: 0;
     width: 4px;
     height: 2em;
     background: var(--accent-color);
     border-radius: 0 4px 4px 0;
+    -webkit-transition: -webkit-transform 0.2s ease;
+    transition: -webkit-transform 0.2s ease;
+    transition: transform 0.2s ease;
+    transition: transform 0.2s ease, -webkit-transform 0.2s ease;
   }
   #main-card #bottom-nav #menu {
     position: absolute;
@@ -1356,8 +1293,8 @@ input:checked + .slider:before {
   #main-card #bottom-nav .icons span {
     opacity: 0;
     display: inline-block;
-    -webkit-transition: opacity 0.2s cubic-bezier(0.46, 0.12, 0.38, 0.99);
-    transition: opacity 0.2s cubic-bezier(0.46, 0.12, 0.38, 0.99);
+    -webkit-transition: opacity 0.2s ease;
+    transition: opacity 0.2s ease;
     margin-left: 1em;
     line-height: 1.2em;
   }
@@ -1384,8 +1321,6 @@ input:checked + .slider:before {
     width: calc(100% - 64px);
     left: 64px !important;
     height: 64px !important;
-    -webkit-box-shadow: none !important;
-            box-shadow: none !important;
   }
   #header svg {
     margin: 1em 0.5em 1em auto !important;
@@ -1465,7 +1400,7 @@ input:checked + .slider:before {
     height: 48px;
   }
   trans-container {
-    bottom: 48px !important;
+    top: 48px !important;
   }
   #header {
     height: 4em;
@@ -1495,13 +1430,6 @@ input:checked + .slider:before {
       </script>
 
 <div id="main-card">
-        <loading>
-                <svg x="0px" y="0px" width="56.7px"
-                    height="56.7px" viewBox="0 0 56.7 56.7" style="enable-background:new 0 0 56.7 56.7;" xml:space="preserve">
-                <path class="st0" d="M28.3,5.7c6.3,0,11.9,2.5,16,6.6l4-4C43.3,3.2,36.2,0,28.3,0s-14.9,3.2-20,8.3l4,4C16.4,8.2,22.1,5.7,28.3,5.7z"/>
-                <path class="st1" d="M48.4,8.3l-4,4c4.1,4.1,6.6,9.8,6.6,16C51,40.9,40.9,51,28.3,51C15.8,51,5.7,40.9,5.7,28.3c0-6.3,2.5-11.9,6.6-16l-4-4C3.2,13.4,0,20.5,0,28.3C0,44,12.7,56.7,28.3,56.7C44,56.7,56.7,44,56.7,28.3C56.7,20.5,53.5,13.4,48.4,8.3z"/>
-                </svg>
-              </loading>
     <div id="overlay2"></div>   
     <header id="header">
         <svg viewBox="0 0 18 18" style="enable-background:new 0 0 18 18;" xml:space="preserve">
@@ -1788,14 +1716,13 @@ input:checked + .slider:before {
     <div id="overlay">
         <div id="popup">
             <h4>Recover FLO address</h4><br/>
-            <p><h5>Please enter your private key.</h5></p>
+            <h5>Please enter your private key.</h5>
             <div class="input">
-                <input autocomplete="new-password"  type="text" onfocus="animateInput(this.parentNode)" onblur="revertBack(this.parentNode)" id="pop"/>
+                <input autocomplete="new-password"  type="text" onfocus="animateInput(this.parentNode)" onblur="revertBack(this.parentNode)" id="pop" oninput="checkPrivateKey(this)"/>
                 <label>Private key</label>
-                <div></div>
             </div> 
             <button onclick="fadeout()">Cancel</button>
-            <button id="ok" onclick="RecoverAddr()">Ok</button>
+            <button id="ok" onclick="RecoverAddr()" disabled>Ok</button>
         </div>
     </div>
     <script>
@@ -1804,11 +1731,10 @@ input:checked + .slider:before {
             floAddr = document.getElementById('floAddr'),
             addrLabel = document.getElementById('addrLabel'),
             newAddrLabel = document.getElementById('newAddrLabel'),
-            recentPage = 'getDataBtn',
+            recentPage = 'sendDataBtn',
             mode,
             activeAddress;
         const html = document.querySelector('html');
-        localStorage.setItem('accentColor', '#D40E1E');
         if(localStorage.dark === 'yes')
         {
             nightlight();
@@ -1839,12 +1765,10 @@ input:checked + .slider:before {
         }
         
         function daylight(){
-            html.setAttribute("style", `--accent-color: ${localStorage.accentColor};--bw: #000;--back-color: #EBEBEB;--body-color: #fff;--sidenav-color:#f0f0f0;--sec-color: #ccc;`);
-            document.querySelector('.icons svg').classList.add('theme');
+            html.setAttribute("style", `--bw: rgb(0, 0, 0);--back-color: rgb(235, 235, 235);--body-color: rgb(255, 255, 255);--sidenav-color: rgb(240, 240, 240);--sec-color:rgb(204, 204, 204);--opac-accent-color: rgb(210, 13, 29, 0.1);`);
         }
         function nightlight(){
-            html.setAttribute("style", `--accent-color: ${localStorage.accentColor};--bw: #fff;--back-color: #222;--body-color: #2a2a2a;--sidenav-color:#313131;--sec-color: #555;`);
-            document.querySelector('.icons svg').classList.remove('theme');
+            html.setAttribute("style", `--bw: rgb(255, 255, 255);--back-color: rgb(34, 34, 34);--body-color: rgb(42, 42, 42);--sidenav-color: rgb(49, 49, 49);--sec-color: rgb(85, 85, 85);--opac-accent-color: rgb(210, 13, 29, 0.2);`);
         }
         function autoMode()
         {
@@ -1891,7 +1815,7 @@ input:checked + .slider:before {
         }
         document.getElementById('pop').addEventListener('keypress',function(event){
             if(event.keyCode==13)
-                RecoverAddr();
+                document.getElementById('ok').click();
             }); 
 
         document.getElementById('getBal_addr').addEventListener('keypress',function(event){
@@ -2007,15 +1931,7 @@ input:checked + .slider:before {
           });
           let pageBtn = document.getElementById(element);
           pageBtn.classList.add('activeButton');
-          if(window.innerWidth < 768){
-            let indiWidth = 16;
-            if(window.innerWidth < 361)
-              indiWidth = 12;
-            let leftDistance = pageBtn.offsetLeft - indiWidth,
-            width = pageBtn.getBoundingClientRect().width;
-            document.getElementById('indicator').setAttribute('style', 'transform: translateX('+(leftDistance+(width/2))+'px');
-          }
-          else{
+          if(window.innerWidth > 768){
             let topDistance = pageBtn.offsetTop - 16,
             height = pageBtn.getBoundingClientRect().height;
             document.getElementById('indicator').setAttribute('style', 'transform: translateY('+(topDistance+(height/2))+'px');
@@ -2050,12 +1966,6 @@ input:checked + .slider:before {
                 bottomNav.classList.remove('reveal');
                 document.getElementById('overlay2').classList.remove('show');
                 addNewAddress.setAttribute('style' ,`bottom: 54px; right: 0`);
-                let indiWidth = 16;
-                if(window.innerWidth < 361)
-                    indiWidth = 12;
-                let leftDistance = pageBtn.offsetLeft - indiWidth,
-                width = pageBtn.getBoundingClientRect().width;
-                indicator.setAttribute('style', 'transform: translateX('+(leftDistance+(width/2))+'px');
             }
             else{
                 let mainCard = document.getElementById('main-card').getBoundingClientRect(),
@@ -2133,33 +2043,25 @@ input:checked + .slider:before {
             });
         });
 
+        function checkPrivateKey(thisInput){
+            if(thisInput.value === '' || thisInput.value.length < 52)
+                document.getElementById('ok').disabled = true;
+            else{
+                document.getElementById('ok').disabled = false;
+            }
+        }
+
         function RecoverAddr(){
-                let x= document.getElementById('popup').children[1],
-                    wif = document.getElementById('pop').value;
-                    if(wif === ''){
-                        x.classList.add('jitter');
-                        x.addEventListener('animationEnd', function(){
-                            x.classList.remove('jitter'); 
-                        });
-                        x.addEventListener('webkitAnimationEnd', function(){
-                            x.classList.remove('jitter'); 
-                        });
-                    return;
-                    }
-                    floWebWallet.recoverAddr(wif).then((recoverAddr) => {
-                        let par = document.getElementById('addrDisp');
-                        let card = document.createElement('card');
+                    let wif = document.getElementById('pop');
+                    floWebWallet.recoverAddr(wif.value).then((recoverAddr) => {
+                        let par = document.getElementById('addrDisp'),
+                            card = document.createElement('card');
+                            card.classList.add('highlight');
                         card.innerHTML=`<div><h6>Recovered FLO Address</h6>${recoverAddr.floID}</div><div><h6>Private Key</h6>${recoverAddr.privKey}</div>`;
                         par.insertBefore(card, par.firstChild);
                         fadeout();
                     }).catch((error) => {
-                        x.classList.add('jitter');
-                        x.addEventListener('animationEnd', function(){
-                            x.classList.remove('jitter'); 
-                        });
-                        x.addEventListener('webkitAnimationEnd', function(){
-                            x.classList.remove('jitter'); 
-                        });
+                        alert('invalid private key');
                         console.log(error);
                     })  
                 }
@@ -2167,7 +2069,13 @@ input:checked + .slider:before {
             let dispMsg = document.getElementById("dispMsg"),
                 dbLabels = floWebWallet.getLabels(),
                 tCont = document.getElementById('transactions-container'); 
-                tCont.innerHTML= ``; 
+                tCont.innerHTML= `<loading>
+                <svg x="0px" y="0px" width="56.7px"
+                    height="56.7px" viewBox="0 0 56.7 56.7" style="enable-background:new 0 0 56.7 56.7;" xml:space="preserve">
+                <path class="st0" d="M28.3,5.7c6.3,0,11.9,2.5,16,6.6l4-4C43.3,3.2,36.2,0,28.3,0s-14.9,3.2-20,8.3l4,4C16.4,8.2,22.1,5.7,28.3,5.7z"/>
+                <path class="st1" d="M48.4,8.3l-4,4c4.1,4.1,6.6,9.8,6.6,16C51,40.9,40.9,51,28.3,51C15.8,51,5.7,40.9,5.7,28.3c0-6.3,2.5-11.9,6.6-16l-4-4C3.2,13.4,0,20.5,0,28.3C0,44,12.7,56.7,28.3,56.7C44,56.7,56.7,44,56.7,28.3C56.7,20.5,53.5,13.4,48.4,8.3z"/>
+                </svg>
+              </loading>`; 
             document.getElementById('addressLabel').textContent = label;
             document.getElementById('fullAddress').textContent = address;                             
             floWebWallet.syncTransactions(address);
@@ -2176,10 +2084,10 @@ input:checked + .slider:before {
                     tCont.innerHTML = `<div style='display:flex; align-content: center;width: 100%;height:100%'><h3 style='display:flexbox;align-self:center;text-align: center;width:100%'>There are no transactions to show.</h3></div>`;
                 }
                 else{
+                    tCont.innerHTML = '';
                     receivedData.forEach(tx => {
                     let date = new Date(tx.time*1000).toLocaleDateString(),
-                        time = new Date(tx.time*1000).toLocaleTimeString(),
-                        i;
+                        time = new Date(tx.time*1000).toLocaleTimeString();
                     var tCard = document.createElement('transaction-card');
                     if(tx.sender === address){
                         tCard.innerHTML=`<div><svg width="12.607" height="12.607" viewBox="0 0 12.607 12.607"><path id="Union_1" data-name="Union 1" d="M11.818-3704H2a1,1,0,0,1-1-1,1,1,0,0,1,1-1H9.586l-8.879-8.879a1,1,0,0,1,0-1.414,1,1,0,0,1,1.414,0L11-3707.414V-3715a1,1,0,0,1,1-1,1,1,0,0,1,1,1v9.818a1,1,0,0,1-.272.909.994.994,0,0,1-.707.293A1.013,1.013,0,0,1,11.818-3704Z" transform="translate(3716.586 13.021) rotate(-90)"/></svg>${tx.receiver}</div><div> ${tx.floData}</div><div>  ${time} ${date}</div>`;
@@ -2192,8 +2100,8 @@ input:checked + .slider:before {
                 }
             })
         }
-        function refreshdata(address, label){
-            monitorData(address, label);
+        function refreshdata(){
+            monitorData(document.getElementById('fullAddress').textContent, document.getElementById('addressLabel').textContent);
         }
 
         function createAddressCards(address, label){
@@ -2274,7 +2182,11 @@ input:checked + .slider:before {
             document.getElementById('receiver').value,
             document.getElementById('flotextdata').value);
             document.getElementById('receiver').value;
-            //floWebWallet.sendTransaction();
+            floWebWallet.sendTransaction().then((transactionid) => {
+                console.log(transactionid)
+            }).catch((error) => {
+                alert(error)
+            })
         }
 
         function deleteDB(){
