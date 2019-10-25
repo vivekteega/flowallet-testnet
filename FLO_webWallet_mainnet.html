@@ -78,7 +78,7 @@ button {
 
 button:hover {
   background-color: var(--opac-accent-color);
-  border: 1px var(--accent-color) solid;
+  border: 1px transparent solid;
 }
 
 .primaryButton {
@@ -91,26 +91,10 @@ button:hover {
   opacity: 0.8;
 }
 
-input:disabled,
-input[disabled] {
-  cursor: not-allowed;
-}
-
-input:disabled:hover,
-input[disabled]:hover {
-  background: transparent;
-}
-
 button:disabled,
 button[disabled] {
-  cursor: not-allowed;
   color: var(--sec-color);
-}
-
-button:disabled:hover,
-button[disabled]:hover {
-  background: transparent;
-  border: 1px solid var(--sec-color);
+  pointer-events: none;
 }
 
 button:focus, input:focus, textarea:focus {
@@ -364,6 +348,25 @@ textarea, input {
   border: 1px solid var(--accent-color);
 }
 
+#sendData .sdleft #loadBalance {
+  opacity: 0;
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 2em;
+  height: 2em;
+  padding: 0.3em;
+  margin: 2em 1em;
+}
+
+#sendData .sdleft #loadBalance #p1 {
+  fill: none;
+}
+
+#sendData .sdleft #loadBalance #p2 {
+  fill: var(--accent-color);
+}
+
 #sendData #sdright {
   opacity: 0.6;
   -ms-flex-wrap: wrap;
@@ -380,6 +383,7 @@ textarea, input {
 }
 
 #sendData #dispBal {
+  position: relative;
   width: 100%;
   border: 1px solid var(--sec-color);
   padding: 1em 2em;
@@ -545,7 +549,7 @@ textarea, input {
   padding: 0.6em;
   height: 2.5em;
   width: 2.5em;
-  margin: 1em;
+  margin: 0.8em;
   fill: var(--bw);
   opacity: 0.5;
   border-radius: 2em;
@@ -703,29 +707,27 @@ input[type=number] {
 }
 
 loading {
-  pointer-events: none;
   position: absolute;
   display: -ms-grid;
   display: grid;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  height: calc(100% - 1.6em);
+  width: calc(100% - 1.1em);
   place-items: center;
   z-index: 10;
 }
 
 loading svg {
   position: relative;
-  height: 4em;
-  width: 4em;
-  -webkit-animation: spin 1s infinite ease;
-          animation: spin 1s infinite ease;
-  fill: var(--accent-color);
+  height: 2.5em;
+  width: 2.5em;
 }
 
-loading svg .st1 {
-  opacity: 0.4;
+loading #p1 {
+  fill: none;
+}
+
+loading #p2 {
+  fill: var(--accent-color);
 }
 
 #addNewAddress {
@@ -806,7 +808,7 @@ loading svg .st1 {
 }
 
 #edit-container #edit div:first-of-type {
-  overflow-wrap: break-word;
+  word-break: break-all;
   opacity: 0.6;
   margin: 1em 0;
 }
@@ -1056,6 +1058,11 @@ input:checked + .slider:before {
   width: 100%;
   height: 100%;
   padding: 0 1em;
+}
+
+.spin {
+  -webkit-animation: spin 1s infinite ease;
+          animation: spin 1s infinite ease;
 }
 
 @-webkit-keyframes spin {
@@ -1620,6 +1627,15 @@ input:checked + .slider:before {
                     <div id="sendData" class="page hide">
                         <div class="sdleft">
                                 <div id="dispBal">
+                                        <svg id="loadBalance" viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve">
+                                                <g>
+                                                    <path id='p1' d="M8,0C3.6,0,0,3.6,0,8s3.6,8,8,8s8-3.6,8-8S12.4,0,8,0z M8,14c-3.3,0-6-2.7-6-6s2.7-6,6-6s6,2.7,6,6
+                                                        S11.3,14,8,14z"/>
+                                                    <path id='p2' d="M6.5,13.8c-2.2-0.5-3.9-2.3-4.4-4.5c-0.7-3.6,1.7-6.8,5-7.2C7.6,2,8,1.6,8,1.1v0c0-0.6-0.5-1.1-1.1-1
+                                                        C2.5,0.7-0.8,4.9,0.2,9.6c0.6,3.1,2.9,5.5,6,6.2c4.8,1.1,9.1-2.2,9.8-6.7C16,8.5,15.5,8,14.9,8h0c-0.5,0-0.9,0.4-1,0.9
+                                                        C13.5,12.2,10.2,14.7,6.5,13.8z"/>
+                                                </g>
+                                                </svg>
                                     <h5>Available balance</h5>
                                     <span id="dispBalInt">0</span>
                                     <span id="dispBalFloat"></span>
@@ -1649,8 +1665,8 @@ input:checked + .slider:before {
 
                     </div>
                     <div id="addrGen" class="page hide">
-                        <button id="GenNewAddrBtn" class="primaryButton">Generate New Address</button>
-                        <button id="showRecoveryModal">Recover FLO Address</button><br/><br/>
+                        <button id="GenNewAddrBtn" class="primaryButton">Generate new address</button>
+                        <button id="showRecoveryModal">Recover FLO address</button><br/><br/>
                         <div id="addrDisp">
                         </div>  
                     </div>   
@@ -1738,7 +1754,7 @@ input:checked + .slider:before {
             floAddr = document.getElementById('floAddr'),
             addrLabel = document.getElementById('addrLabel'),
             newAddrLabel = document.getElementById('newAddrLabel'),
-            recentPage = 'sendDataBtn',
+            recentPage = 'getDataBtn',
             mode,
             activeAddress;
         const html = document.querySelector('html');
@@ -2016,7 +2032,9 @@ input:checked + .slider:before {
         }
 
         function getBal(){
-            let x= document.getElementById("getBal_addr");
+            let x= document.getElementById("getBal_addr"),
+                loading = document.getElementById('loadBalance');
+            loading.classList.add('show', 'spin');
             floBlockchainAPI.getBalance(x.value).then((retrievedBal) => {
                 let parts = retrievedBal.split("."),
                     floatPart = parts.pop(),
@@ -2030,8 +2048,10 @@ input:checked + .slider:before {
                     document.getElementById('sdright').setAttribute('style', 'pointer-events: all; opacity: 1')
                     document.getElementById('sendBtn').disabled = false;
                 }
+                loading.classList.remove('show', 'spin');
             }).catch((error) => {
                 console.log(error);
+                loading.classList.remove('show', 'spin');
             })
         }
 
@@ -2114,12 +2134,17 @@ input:checked + .slider:before {
                 dbLabels = floWebWallet.getLabels(),
                 tCont = document.getElementById('transactions-container'); 
                 tCont.innerHTML= `<loading>
-                <svg x="0px" y="0px" width="56.7px"
-                    height="56.7px" viewBox="0 0 56.7 56.7" style="enable-background:new 0 0 56.7 56.7;" xml:space="preserve">
-                <path class="st0" d="M28.3,5.7c6.3,0,11.9,2.5,16,6.6l4-4C43.3,3.2,36.2,0,28.3,0s-14.9,3.2-20,8.3l4,4C16.4,8.2,22.1,5.7,28.3,5.7z"/>
-                <path class="st1" d="M48.4,8.3l-4,4c4.1,4.1,6.6,9.8,6.6,16C51,40.9,40.9,51,28.3,51C15.8,51,5.7,40.9,5.7,28.3c0-6.3,2.5-11.9,6.6-16l-4-4C3.2,13.4,0,20.5,0,28.3C0,44,12.7,56.7,28.3,56.7C44,56.7,56.7,44,56.7,28.3C56.7,20.5,53.5,13.4,48.4,8.3z"/>
-                </svg>
-              </loading>`; 
+                                        <svg viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve">
+                                        <g>
+                                            <path id='p1' d="M8,0C3.6,0,0,3.6,0,8s3.6,8,8,8s8-3.6,8-8S12.4,0,8,0z M8,14c-3.3,0-6-2.7-6-6s2.7-6,6-6s6,2.7,6,6
+                                                S11.3,14,8,14z"/>
+                                            <path id='p2' d="M6.5,13.8c-2.2-0.5-3.9-2.3-4.4-4.5c-0.7-3.6,1.7-6.8,5-7.2C7.6,2,8,1.6,8,1.1v0c0-0.6-0.5-1.1-1.1-1
+                                                C2.5,0.7-0.8,4.9,0.2,9.6c0.6,3.1,2.9,5.5,6,6.2c4.8,1.1,9.1-2.2,9.8-6.7C16,8.5,15.5,8,14.9,8h0c-0.5,0-0.9,0.4-1,0.9
+                                                C13.5,12.2,10.2,14.7,6.5,13.8z"/>
+                                        </g>
+                                        </svg>
+                                    </loading>`; 
+            document.querySelector('loading').children[0].classList.add('spin');
             document.getElementById('addressLabel').textContent = label;
             document.getElementById('fullAddress').textContent = address;                             
             floWebWallet.syncTransactions(address);
@@ -2128,6 +2153,7 @@ input:checked + .slider:before {
                     tCont.innerHTML = `<div style='display:flex; align-content: center;width: 100%;height:100%'><h3 style='display:flexbox;align-self:center;text-align: center;width:100%'>There are no transactions to show.</h3></div>`;
                 }
                 else{
+                    document.querySelector('loading').children[0].classList.remove('spin');
                     tCont.innerHTML = '';
                     receivedData.forEach(tx => {
                     let date = new Date(tx.time*1000).toLocaleDateString(),
