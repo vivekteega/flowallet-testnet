@@ -64,7 +64,7 @@ This section allows user to set color scheme (light/dark) with two options, eith
 
 #### CLear all local data
 
-This option clears all the data stored in IndexedDB databases from browser. This is same as clearing browser data and cache.After deleting data, it may take more time to load transactions as they are now fetched again from blockchain. Also you have to add addresses to start monitoring again.Although this does not affect your dark mode settings.
+This option clears all the data stored in IndexedDB databases from browser. This is same as clearing browser data and cache.After deleting data, it may take more time to load transactions as they are now fetched again from blockchain. Also you have to add addresses to start monitoring again.
 
 #### About 
 This section contains information about version and underlying technologies.
