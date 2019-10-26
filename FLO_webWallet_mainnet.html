@@ -106,7 +106,10 @@ button:focus, input:focus, textarea:focus {
 }
 
 .icons:active,
-#addNewAddress:active {
+#addNewAddress:active,
+monitor:active,
+button:active,
+svg:active {
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -144,8 +147,8 @@ button:focus, input:focus, textarea:focus {
 }
 
 .input .label-active, .text-area .label-active {
-  -webkit-transform: translateY(-1.8em) scale(0.8);
-          transform: translateY(-1.8em) scale(0.8);
+  -webkit-transform: translateY(-1.7em) scale(0.8);
+          transform: translateY(-1.7em) scale(0.8);
   opacity: 1 !important;
 }
 
@@ -184,9 +187,6 @@ textarea, input {
   opacity: 0;
   pointer-events: none;
   position: fixed;
-  display: -ms-grid;
-  display: grid;
-  place-items: center;
   z-index: 6;
   background: rgba(0, 0, 0, 0.2);
   height: 100vh;
@@ -199,7 +199,9 @@ textarea, input {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
-  width: 80vw;
+  bottom: 0;
+  position: absolute;
+  width: 100vw;
   padding: 1em 2em;
   -ms-flex-wrap: wrap;
       flex-wrap: wrap;
@@ -211,6 +213,8 @@ textarea, input {
   transition: -webkit-transform 0.2s ease;
   transition: transform 0.2s ease;
   transition: transform 0.2s ease, -webkit-transform 0.2s ease;
+  -webkit-transform: translateY(1em);
+          transform: translateY(1em);
 }
 
 #overlay #popup .input {
@@ -240,8 +244,9 @@ textarea, input {
 }
 
 #textCopied {
+  font-weight: normal;
   padding: 1em;
-  border-radius: 0.25em;
+  border-radius: 2em;
   background: var(--sec-color);
   position: absolute;
   bottom: 0;
@@ -253,6 +258,7 @@ textarea, input {
   -webkit-transition: 0.2s opacity ease;
   transition: 0.2s opacity ease;
   opacity: 0;
+  z-index: 10;
 }
 
 #main-card #header {
@@ -304,7 +310,7 @@ textarea, input {
   bottom: 54px;
 }
 
-#sendData .sdleft {
+#sendData #sdleft {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -318,7 +324,7 @@ textarea, input {
   transition: width 0.2s ease;
 }
 
-#sendData .sdleft .input {
+#sendData #sdleft .input {
   -webkit-transition: border 0.2s ease;
   transition: border 0.2s ease;
   border: 1px solid var(--sec-color);
@@ -327,7 +333,7 @@ textarea, input {
   width: 100% !important;
 }
 
-#sendData .sdleft .input input {
+#sendData #sdleft .input input {
   height: auto;
   border: none;
   padding: 1em 0 1em 1em;
@@ -337,18 +343,18 @@ textarea, input {
   min-width: 0;
 }
 
-#sendData .sdleft .input button {
+#sendData #sdleft .input button {
   margin: 0.5em 0.5em 0.5em 0 !important;
   height: auto;
   border: none;
   width: 9em;
 }
 
-#sendData .sdleft .input:focus-within {
+#sendData #sdleft .input:focus-within {
   border: 1px solid var(--accent-color);
 }
 
-#sendData .sdleft #loadBalance {
+#sendData #sdleft #loadBalance {
   opacity: 0;
   position: absolute;
   top: 0;
@@ -359,11 +365,11 @@ textarea, input {
   margin: 2em 1em;
 }
 
-#sendData .sdleft #loadBalance #p1 {
+#sendData #sdleft #loadBalance #p1 {
   fill: none;
 }
 
-#sendData .sdleft #loadBalance #p2 {
+#sendData #sdleft #loadBalance #p2 {
   fill: var(--accent-color);
 }
 
@@ -638,7 +644,6 @@ input[type=number] {
   position: absolute;
   overflow-y: auto;
   width: 100%;
-  padding: 0.5em 0;
   bottom: 0;
   top: 65px;
   display: -webkit-box;
@@ -669,34 +674,32 @@ input[type=number] {
   -ms-flex-item-align: center;
       align-self: center;
   margin-right: 0.5em;
-}
-
-#dispMsg trans-container transaction-card svg path {
+  height: 1em;
+  width: 1em;
   fill: var(--accent-color);
 }
 
 #dispMsg trans-container transaction-card div {
   display: flexbox;
-  -ms-flex-item-align: center;
-      align-self: center;
   width: 100%;
   line-height: 1.4em;
   padding: 1em;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
 }
 
 #dispMsg trans-container transaction-card div:nth-of-type(1) {
-  overflow-wrap: break-word;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-line-pack: center;
+      align-content: center;
   opacity: 0.8;
   font-size: 0.9em;
   padding-bottom: 0.5em;
 }
 
 #dispMsg trans-container transaction-card div:nth-of-type(2) {
-  overflow-wrap: break-word;
-  word-wrap: break-word;
-  -webkit-hyphens: auto;
-      -ms-hyphens: auto;
-          hyphens: auto;
   padding-top: 0.5em;
 }
 
@@ -750,9 +753,6 @@ loading #p2 {
 }
 
 #edit-container, #add-container {
-  display: -ms-grid;
-  display: grid;
-  place-items: center;
   position: fixed;
   top: 0;
   left: 0;
@@ -765,13 +765,17 @@ loading #p2 {
 }
 
 #add, #edit {
-  position: relative;
-  width: 80vw;
+  position: absolute;
+  bottom: 0;
+  width: 100vw;
+  height: auto;
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
   -ms-flex-wrap: wrap;
       flex-wrap: wrap;
+  -webkit-transform: translateY(1em);
+          transform: translateY(1em);
   padding: 1em 2em;
   background: var(--body-color);
   border-radius: 0.25em;
@@ -885,8 +889,6 @@ loading #p2 {
   opacity: 0.6;
   fill: var(--bw);
   position: absolute;
-  top: 0;
-  bottom: auto;
   right: 0;
   height: 2em;
   width: 2em;
@@ -900,6 +902,16 @@ loading #p2 {
 
 #monitor-list monitor svg:hover {
   background: var(--sec-color);
+}
+
+#monitor-list monitor svg:first-of-type {
+  top: 0;
+  bottom: auto;
+}
+
+#monitor-list monitor svg:last-of-type {
+  top: auto;
+  bottom: 0;
 }
 
 #settings-page section {
@@ -1060,6 +1072,32 @@ input:checked + .slider:before {
   padding: 0 1em;
 }
 
+#transaction-complete {
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  text-align: center;
+  -ms-flex-line-pack: center;
+      align-content: center;
+}
+
+#transaction-complete h3 {
+  text-align: center;
+  width: 100%;
+}
+
+#transaction-complete svg {
+  -ms-grid-column-align: center;
+      justify-self: center;
+  fill: green;
+  width: 20vw;
+}
+
+#transaction-complete button {
+  position: absolute;
+  bottom: 0;
+}
+
 .spin {
   -webkit-animation: spin 1s infinite ease;
           animation: spin 1s infinite ease;
@@ -1138,6 +1176,13 @@ input:checked + .slider:before {
 }
 
 @media screen and (min-width: 768px) {
+  #transaction-complete svg {
+    width: 8em;
+  }
+  #transaction-complete button {
+    position: relative;
+    bottom: auto;
+  }
   .innerPage {
     position: absolute;
     overflow-y: auto;
@@ -1188,8 +1233,6 @@ input:checked + .slider:before {
     padding: 1em 4em 1em 1em;
   }
   #monitor-list monitor svg {
-    top: auto;
-    bottom: 0;
     opacity: 0;
   }
   #monitor-list monitor svg:hover {
@@ -1198,9 +1241,13 @@ input:checked + .slider:before {
   #monitor-list monitor:hover svg {
     opacity: 0.6;
   }
+  #add-container, #edit-container {
+    display: -ms-grid;
+    display: grid;
+    place-content: center;
+  }
   #add, #edit {
-    -webkit-transform: translateY(2em);
-            transform: translateY(2em);
+    position: relative;
     width: 400px !important;
   }
   ::-webkit-scrollbar {
@@ -1342,17 +1389,19 @@ input:checked + .slider:before {
     left: 64px !important;
     height: 64px !important;
   }
-  #popup {
-    -webkit-transform: translateY(64px);
-            transform: translateY(64px);
-    width: 360px !important;
-    position: relative !important;
-    bottom: auto !important;
+  #overlay {
+    display: -ms-grid;
+    display: grid;
+    place-content: center;
+  }
+  #overlay #popup {
+    width: 400px !important;
+    position: relative;
   }
   .input, button {
     width: auto !important;
   }
-  #sendData .sdleft {
+  #sendData #sdleft {
     width: 40%;
     padding: 0 0.5em;
   }
@@ -1474,31 +1523,11 @@ input:checked + .slider:before {
                     </svg>
                     <span>RanchiMall</span>
         <svg viewBox="0 0 18 18" style="enable-background:new 0 0 18 18;" xml:space="preserve">
-        <style type="text/css">
-            .st0{fill:url(#SVGID_1_);}
-            .st1{fill:url(#SVGID_2_);}
-            .st2{fill:url(#SVGID_3_);}
-            .st3{fill:url(#SVGID_4_);}
-            .st4{fill:url(#SVGID_5_);}
-            .st5{fill:url(#SVGID_6_);}
-        </style>
         <g>
-            <linearGradient id="SVGID_1_" gradientUnits="userSpaceOnUse" x1="2.7149" y1="5.1593" x2="15.2672" y2="15.3855">
-                <stop  offset="0" style="stop-color:#D40E1E"/>
-                <stop  offset="1" style="stop-color:#9E0B38"/>
-            </linearGradient>
-            <path class="st0" d="M18,4v12c0,1.1-0.9,2-2,2H1c-0.6,0-1-0.4-1-1V3c0-0.6,0.4-1,1-1h15C17.1,2,18,2.9,18,4z M16,10
+            <path d="M18,4v12c0,1.1-0.9,2-2,2H1c-0.6,0-1-0.4-1-1V3c0-0.6,0.4-1,1-1h15C17.1,2,18,2.9,18,4z M16,10
                 c0-1.4-1.1-2.5-2.5-2.5S11,8.6,11,10s1.1,2.5,2.5,2.5S16,11.4,16,10z"/>
-            <linearGradient id="SVGID_2_" gradientUnits="userSpaceOnUse" x1="6.5546" y1="2.6697" x2="13.0149" y2="0.4457">
-                <stop  offset="0" style="stop-color:#9E0B38"/>
-                <stop  offset="0.9603" style="stop-color:#D40E1E"/>
-            </linearGradient>
-            <path class="st1" d="M16,2H1l13-2C15.1,0,16,0.9,16,2z"/>
-            <linearGradient id="SVGID_3_" gradientUnits="userSpaceOnUse" x1="12.6314" y1="8.8842" x2="14.4752" y2="11.2528">
-                <stop  offset="0" style="stop-color:#D40E1E"/>
-                <stop  offset="1" style="stop-color:#9E0B38"/>
-            </linearGradient>
-            <circle class="st2" cx="13.5" cy="10" r="1.5"/>
+            <path d="M16,2H1l13-2C15.1,0,16,0.9,16,2z"/>
+            <circle cx="13.5" cy="10" r="1.5"/>
         </g>
         </svg>
         <span>FLO web wallet</span>
@@ -1561,9 +1590,9 @@ input:checked + .slider:before {
                 </div>             
             </div>
             <div class="right">
-                <div id="textCopied">
-                    Text copied
-                </div>
+                <h5 id="textCopied">
+                    Copied
+                </h5>
                     <div id="getData" class="page">
                         <div id="add-container" class="hide">
                             <div id="add">
@@ -1625,7 +1654,7 @@ input:checked + .slider:before {
                     </div> 
 
                     <div id="sendData" class="page hide">
-                        <div class="sdleft">
+                        <div id="sdleft">
                                 <div id="dispBal">
                                         <svg id="loadBalance" viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve">
                                                 <g>
@@ -1661,6 +1690,19 @@ input:checked + .slider:before {
                                     <label>FLO data</label>
                                 </div>
                                 <button id="sendBtn" onclick="sendMessage()" disabled>Send</button>
+                        </div>
+                        <div id="transaction-complete" class="innerPage">
+                            <svg viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve">
+                            <g>
+                            <path d="M14.3,2.4L7.9,8.7L5.8,6.6c-0.4-0.4-1-0.4-1.4,0S4,7.6,4.4,8l2.8,2.8c0.4,0.4,1,0.4,1.4,0l7.1-7.1
+                            c0.4-0.4,0.4-1,0-1.4C15.3,2,14.7,2,14.3,2.4z"/>
+                            <path d="M13.9,7C14,7.3,14,7.7,14,8c0,3.3-2.7,6-6,6s-6-2.7-6-6s2.7-6,6-6c1.5,0,2.8,0.5,3.9,1.4L13.3,2
+                            C11.9,0.8,10,0,8,0C3.6,0,0,3.6,0,8s3.6,8,8,8s8-3.6,8-8c0-0.9-0.2-1.8-0.4-2.6L13.9,7z"/>
+                            </g>
+                            </svg>
+                            <h3>Transaction successful</h3>
+                            <h4 id="transactionId"></h4>
+                            <button onclick="showPage('sendDataBtn', 'sendData')">Done</button>
                         </div>
 
                     </div>
@@ -1700,7 +1742,7 @@ input:checked + .slider:before {
                         </section>
                         <section>
                             <h4>About</h4>
-                            <h5>Version 2.5</h5>
+                            <h5>Version 2.6</h5>
                                     <a class="border-card" href="https://flo.cash/" target="_blank" rel="noopener noreferrer">
                                             <h5>Powered by</h5>
                                             <svg viewBox="0 0 108 48" style="enable-background:new 0 0 107.65 47.07;"
@@ -1738,7 +1780,7 @@ input:checked + .slider:before {
     </div>
     <div id="overlay">
         <div id="popup">
-            <h4>Recover FLO address</h4><br/>
+            <h4>Recover FLO address</h4>
             <h5>Please enter your private key.</h5>
             <div class="input">
                 <input autocomplete="new-password"  type="text" onfocus="animateInput(this.parentNode)" onblur="revertBack(this.parentNode)" id="pop" oninput="checkPrivateKey(this)"/>
@@ -1756,7 +1798,8 @@ input:checked + .slider:before {
             newAddrLabel = document.getElementById('newAddrLabel'),
             recentPage = 'getDataBtn',
             mode,
-            activeAddress;
+            activeAddress,
+            lastClickedAddress;
         const html = document.querySelector('html');
         if(localStorage.dark === 'yes')
         {
@@ -1888,10 +1931,12 @@ input:checked + .slider:before {
                 thisInput.children[1].classList.remove('label-active');
         }
         function clickedAddress(thisCard){
-                let x = thisCard.children[1].textContent,
-                    y = thisCard.children[0].textContent;
-                monitorData(x,y);
+                let address = thisCard.children[1].textContent,
+                    label = thisCard.children[0].textContent;
+                    if(lastClickedAddress !== address)
+                        monitorData(address, label);
                 showInnerPage('dispMsg');
+                lastClickedAddress = address;
             }
         function showAdd(){
             document.getElementById('add-container').classList.add('show');
@@ -2147,9 +2192,8 @@ input:checked + .slider:before {
             document.querySelector('loading').children[0].classList.add('spin');
             document.getElementById('addressLabel').textContent = label;
             document.getElementById('fullAddress').textContent = address;                             
-            floWebWallet.syncTransactions(address);
             floWebWallet.readTransactions(address).then((receivedData) => {
-                if(receivedData.length == 0){
+                if(receivedData.length === 0){
                     tCont.innerHTML = `<div style='display:flex; align-content: center;width: 100%;height:100%'><h3 style='display:flexbox;align-self:center;text-align: center;width:100%'>There are no transactions to show.</h3></div>`;
                 }
                 else{
@@ -2160,10 +2204,20 @@ input:checked + .slider:before {
                         time = new Date(tx.time*1000).toLocaleTimeString();
                     var tCard = document.createElement('transaction-card');
                     if(tx.sender === address){
-                        tCard.innerHTML=`<div><svg width="12.607" height="12.607" viewBox="0 0 12.607 12.607"><path id="Union_1" data-name="Union 1" d="M11.818-3704H2a1,1,0,0,1-1-1,1,1,0,0,1,1-1H9.586l-8.879-8.879a1,1,0,0,1,0-1.414,1,1,0,0,1,1.414,0L11-3707.414V-3715a1,1,0,0,1,1-1,1,1,0,0,1,1,1v9.818a1,1,0,0,1-.272.909.994.994,0,0,1-.707.293A1.013,1.013,0,0,1,11.818-3704Z" transform="translate(3716.586 13.021) rotate(-90)"/></svg>${tx.receiver}</div><div> ${tx.floData}</div><div>  ${time} ${date}</div>`;
+                        tCard.innerHTML=`<div>
+                                            <svg viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve">
+                                            <path class="st0" d="M14.7,0H3.9C3.2,0,2.6,0.6,2.6,1.3s0.6,1.3,1.3,1.3h7.5l-11,11c-0.5,0.5-0.5,1.4,0,1.9c0.5,0.5,1.4,0.5,1.9,0
+                                                l11-11v7.5c0,0.7,0.6,1.3,1.3,1.3s1.3-0.6,1.3-1.3V1.3C16,0.6,15.4,0,14.7,0z"/>
+                                            </svg>
+                                            ${tx.receiver}</div><div> ${tx.floData}</div><div>${time} ${date}</div>`;
                     }
                     else{
-                        tCard.innerHTML=`<div><svg width="12.607" height="12.607" viewBox="0 0 12.607 12.607"><path id="Union_1" data-name="Union 1" d="M11.818-3704H2a1,1,0,0,1-1-1,1,1,0,0,1,1-1H9.586l-8.879-8.879a1,1,0,0,1,0-1.414,1,1,0,0,1,1.414,0L11-3707.414V-3715a1,1,0,0,1,1-1,1,1,0,0,1,1,1v9.818a1,1,0,0,1-.272.909.994.994,0,0,1-.707.293A1.013,1.013,0,0,1,11.818-3704Z" transform="translate(-0.414 3716.586)"/></svg>${tx.sender}</div><div> ${tx.floData}</div><div>  ${time} ${date}</div>`;
+                        tCard.innerHTML=`<div>
+                                        <svg viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve">
+                                            <path class="st0" d="M16,14.7V3.9c0-0.7-0.6-1.3-1.3-1.3s-1.3,0.6-1.3,1.3v7.5l-11-11c-0.5-0.5-1.4-0.5-1.9,0
+                                            c-0.5,0.5-0.5,1.4,0,1.9l11,11H3.9c-0.7,0-1.3,0.6-1.3,1.3S3.2,16,3.9,16h10.7C15.4,16,16,15.4,16,14.7z"/>
+                                        </svg>
+                                        ${tx.sender}</div><div> ${tx.floData}</div><div>  ${time} ${date}</div>`;
                     }
                     tCont.insertBefore(tCard,tCont.firstChild);
                     })
@@ -2171,6 +2225,7 @@ input:checked + .slider:before {
             })
         }
         function refreshdata(){
+            floWebWallet.syncTransactions(document.getElementById('fullAddress').textContent);
             monitorData(document.getElementById('fullAddress').textContent, document.getElementById('addressLabel').textContent);
         }
 
@@ -2189,6 +2244,12 @@ input:checked + .slider:before {
                                                         <circle cx="2" cy="14" r="2"/>
                                                         <circle cx="2" cy="8" r="2"/>
                                                     </g>
+                                                </svg>
+                                                <svg onclick='copyToClipboard(this.parentNode)' viewBox="0 0 13 16" style="enable-background:new 0 0 13 16;" xml:space="preserve">
+                                                    <title>Copy FLO address</title>
+                                                    <path d="M12,0H4C3.4,0,3,0.4,3,1v3H1C0.4,4,0,4.4,0,5v10c0,0.6,0.4,1,1,1h8c0.6,0,1-0.4,1-1v-3h2c0.6,0,1-0.4,1-1V1
+                                                    C13,0.4,12.6,0,12,0z M8,13c0,0.6-0.4,1-1,1H3c-0.6,0-1-0.4-1-1V7c0-0.6,0.4-1,1-1h4c0.6,0,1,0.4,1,1V13z M11,9c0,0.6-0.4,1-1,1V5
+                                                    c0-0.6-0.4-1-1-1H5V3c0-0.6,0.4-1,1-1h4c0.6,0,1,0.4,1,1V9z"/>
                                                 </svg>`;
                             parentConatainer.appendChild(monitorCard);
         }
@@ -2240,7 +2301,8 @@ input:checked + .slider:before {
                     document.getElementById('monitor-list').innerHTML=`<h3 style="text-align: center;width: 100%;">Add a FLO address to start monitoring</h3>`;
                 else
                     Object.keys(labelAddr).forEach((address) => {
-                        createAddressCards(address, labelAddr[address]);                                            
+                        createAddressCards(address, labelAddr[address]);   
+                        floWebWallet.syncTransactions(address)                                         
                     })
             }).catch((error) => {
                 console.log(error);
@@ -2254,9 +2316,8 @@ input:checked + .slider:before {
                 floData = document.getElementById('flotextdata').value;
                 privKey = prompt('Enter your private key')
             floWebWallet.sendTransaction(sender, receiver, amount, floData, privKey).then((transactionid) => {
-                console.log(transactionid)
-                alert('sent')
-                getBal()
+                document.getElementById('transactionId').textContent= `transaction ID : ${transactionid}`;
+                showInnerPage('transaction-complete');
             }).catch((error) => {
                 alert(error)
             })
@@ -2272,15 +2333,18 @@ input:checked + .slider:before {
         }
 
         function copyToClipboard(parent) {
-            let range = document.createRange();
-            range.selectNode(parent.children[1]);
-            window.getSelection().removeAllRanges();
-            window.getSelection().addRange(range);
-            document.execCommand("copy");
-            window.getSelection().removeAllRanges();
-            document.getElementById('textCopied').classList.add('show');
+            let input = document.createElement('textarea'),
+                toast = document.getElementById('textCopied');
+            input.setAttribute('readonly', '');
+            input.setAttribute('style', 'position: absolute; left: -9999px');
+            document.body.appendChild(input);
+            input.value = parent.children[1].textContent;
+            input.select();
+            document.execCommand('copy');
+            document.body.removeChild(input);
+            toast.classList.add('show');
             setTimeout(() => {
-                document.getElementById('textCopied').classList.remove('show');
+                toast.classList.remove('show');
             }, 1000)
         }
     </script>
