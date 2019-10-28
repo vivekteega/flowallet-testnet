@@ -6,7 +6,7 @@
 <meta charset="UTF-8">
 <meta name="description" content="This webapp allows monitoring FLO addresses and performing transactions based on blockchain.">
 <style>
-@font-face {
+    @font-face {
   font-family: 'Roboto', sans-serif;
   src: url("https://fonts.googleapis.com/css?family=Roboto&display=swap");
 }
@@ -93,8 +93,10 @@ button:hover {
 
 button:disabled,
 button[disabled] {
-  color: var(--sec-color);
+  color: var(--sec-color) !important;
   pointer-events: none;
+  background: transparent !important;
+  border: 1px solid transparent !important;
 }
 
 button:focus, input:focus, textarea:focus {
@@ -410,6 +412,11 @@ textarea, input {
       align-self: center;
 }
 
+#sendData #dispBal h5:last-of-type {
+  opacity: 0.8;
+  font-weight: normal;
+}
+
 #bottom-nav {
   overflow: hidden;
   position: fixed;
@@ -586,10 +593,11 @@ input[type=number] {
   right: 0;
   -ms-flex-line-pack: start;
       align-content: flex-start;
-  z-index: 2;
+  z-index: 4;
+  background: var(--body-color);
 }
 
-#dispMsg #title-bar {
+.title-bar {
   top: 0;
   position: absolute;
   display: -webkit-box;
@@ -603,7 +611,7 @@ input[type=number] {
   border-bottom: 1px solid var(--sec-color);
 }
 
-#dispMsg #title-bar svg {
+.title-bar svg {
   display: flexbox;
   height: 3em;
   width: 3em;
@@ -614,7 +622,7 @@ input[type=number] {
       align-self: center;
 }
 
-#dispMsg #title-bar span {
+.title-bar span {
   padding: 0.5em;
   -ms-flex-item-align: center;
       -ms-grid-row-align: center;
@@ -627,12 +635,12 @@ input[type=number] {
   line-height: 1.5em;
 }
 
-#dispMsg #title-bar h5 {
+.title-bar h5 {
   margin: 0;
   font-weight: normal;
 }
 
-#dispMsg #title-bar h3 {
+.title-bar h3 {
   margin: 0;
 }
 
@@ -642,6 +650,7 @@ input[type=number] {
   width: 100%;
   bottom: 0;
   top: 65px;
+  padding: 0.5em 0;
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -660,7 +669,7 @@ input[type=number] {
   width: calc(100% - 1em);
   -ms-flex-wrap: wrap;
       flex-wrap: wrap;
-  margin: 0.25em 0.5em;
+  margin: 0.5em 1em;
   border-radius: 0.25em;
   background: var(--body-color);
 }
@@ -1138,6 +1147,39 @@ input:checked + .slider:before {
   bottom: 0;
 }
 
+#enterPrivKey {
+  width: 100%;
+  position: absolute;
+  overflow-y: auto;
+  display: -ms-grid;
+  display: grid;
+  -ms-flex-wrap: wrap;
+      flex-wrap: wrap;
+  padding: 1em;
+  top: 49px;
+}
+
+#enterPrivKey .input {
+  width: 100% !important;
+  margin: 1em 0 !important;
+}
+
+#enterPrivKey h4 {
+  margin: 0.5em 0;
+}
+
+#noInternet {
+  pointer-events: none;
+  opacity: 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 1em;
+  z-index: 11;
+  background: khaki;
+}
+
 .spin {
   -webkit-animation: spin 1s infinite ease;
           animation: spin 1s infinite ease;
@@ -1216,6 +1258,22 @@ input:checked + .slider:before {
 }
 
 @media screen and (min-width: 768px) {
+  #enterPrivKey {
+    border: 1px solid var(--sec-color);
+    width: 400px;
+    padding: 2em;
+    left: 50%;
+    margin: 2em 0;
+    -webkit-transform: translateX(-50%);
+            transform: translateX(-50%);
+  }
+  #enterPrivKey .title-bar {
+    position: relative;
+    border: none;
+  }
+  #enterPrivKey button {
+    margin: 0.5em 0 0.5em auto !important;
+  }
   #transaction-complete svg {
     width: 8em;
   }
@@ -1546,6 +1604,9 @@ input:checked + .slider:before {
       </script>
 
 <div id="main-card">
+    <div id="noInternet">
+        There seems to be a problem connecting to the internet.
+    </div>
     <div id="overlay2"></div>   
     <header id="header">
             <svg viewBox="0 0 96 108" style="enable-background:new 0 0 90.5 106.3;" xml:space="preserve">
@@ -1689,7 +1750,7 @@ input:checked + .slider:before {
                         </svg>
                     </div>
                     <div id="dispMsg" class="hide innerPage">
-                        <div id='title-bar'>
+                        <div class='title-bar'>
                             <svg onclick="showPage('getDataBtn', 'getData')" viewBox="0 0 16 16">
                                 <title>Go back to monitoring page</title>
                                 <path d="M14.9,6.5h-11L8.4,2c0.4-0.4,0.4-1.2,0-1.6C8-0.1,7.2-0.1,6.8,0.3L0.3,6.8C0.2,6.9,0.1,7,0.1,7.2C0,7.5,0,7.8,0.1,8
@@ -1725,7 +1786,7 @@ input:checked + .slider:before {
                                     <h5>Available balance</h5>
                                     <span id="dispBalInt">0</span>
                                     <span id="dispBalFloat"></span>
-                                    <h5 style="opacity: 0.6;font-weight: normal;">To send FLO data, make sure you have enough balance.</h5>
+                                    <h5>To send FLO data, make sure you have enough balance.</h5>
                                 </div>
                                 <div class="input">
                                         <input aria-label="FLO address" autocomplete="new-password" onfocus="animateInput(this.parentNode)" onblur="revertBack(this.parentNode)" type="text" id="getBal_addr" oninput="checkBalAddress(this)"/>
@@ -1735,7 +1796,7 @@ input:checked + .slider:before {
                         </div>
                         <div id="sdright">
                                 <div class="input">
-                                        <input aria-label="Receiver's address" autocomplete="new-password"  type="text" onfocus="animateInput(this.parentNode)" onblur="revertBack(this.parentNode)" id="receiver"/>
+                                        <input aria-label="Receiver's address" oninput="validateInfo(this)" autocomplete="new-password"  type="text" onfocus="animateInput(this.parentNode)" onblur="revertBack(this.parentNode)" id="receiver"/>
                                         <label>Receiver's address</label>
                                 </div>
                                 <div class="input">
@@ -1746,9 +1807,28 @@ input:checked + .slider:before {
                                     <textarea aria-label="FLO data" data-gramm_editor="false" onfocus="animateInput(this.parentNode)" onblur="revertBack(this.parentNode)" rows="8" id="flotextdata"></textarea>
                                     <label>FLO data</label>
                                 </div>
-                                <button id="sendBtn" onclick="sendMessage()" disabled>Send</button>
+                                <button class="primaryButton" id="sendBtn" onclick="showPrivKeyPage()" disabled>Send</button>
                         </div>
-                        <div id="transaction-complete" class="innerPage">
+                    </div>
+                    <div class="innerPage hide" id="privKeyPage">
+                            <div class='title-bar'>
+                                    <svg onclick="showPage('sendDataBtn', 'sendData')" viewBox="0 0 16 16">
+                                        <title>Go back to monitoring page</title>
+                                        <path d="M14.9,6.5h-11L8.4,2c0.4-0.4,0.4-1.2,0-1.6C8-0.1,7.2-0.1,6.8,0.3L0.3,6.8C0.2,6.9,0.1,7,0.1,7.2C0,7.5,0,7.8,0.1,8
+                                        c0.1,0.1,0.1,0.3,0.2,0.4l6.5,6.5c0.4,0.4,1.2,0.4,1.6,0c0.4-0.4,0.4-1.2,0-1.6L3.9,8.8h11c0.6,0,1.1-0.5,1.1-1.1
+                                        C16,7,15.5,6.5,14.9,6.5z"/>
+                                    </svg>
+                                    <span><h3>Send</h3></span>
+                                </div>
+                            <div id="enterPrivKey">
+                                <div class="input">
+                                        <input aria-label="private key" autocomplete="new-password"  type="number" onfocus="animateInput(this.parentNode)" onblur="revertBack(this.parentNode)" id="privKey"/>
+                                        <label>Private key</label>
+                                </div>
+                                <button onclick="sendMessage()">continue</button>
+                            </div>
+                        </div>
+                        <div id="transaction-complete" class="innerPage hide">
                             <svg viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve">
                             <g>
                             <path d="M14.3,2.4L7.9,8.7L5.8,6.6c-0.4-0.4-1-0.4-1.4,0S4,7.6,4.4,8l2.8,2.8c0.4,0.4,1,0.4,1.4,0l7.1-7.1
@@ -1761,8 +1841,6 @@ input:checked + .slider:before {
                             <h4 id="transactionId"></h4>
                             <button onclick="showPage('sendDataBtn', 'sendData')">Done</button>
                         </div>
-
-                    </div>
                     <div id="addrGen" class="page hide">
                         <button id="GenNewAddrBtn" class="primaryButton">Generate new address</button>
                         <button id="showRecoveryModal">Recover FLO address</button><br/><br/>
@@ -1854,9 +1932,13 @@ input:checked + .slider:before {
             addrLabel = document.getElementById('addrLabel'),
             newAddrLabel = document.getElementById('newAddrLabel'),
             recentPage = 'getDataBtn',
-            mode,
-            activeAddress,
-            lastClickedAddress;
+            mode, activeAddress, lastClickedAddress;
+            window.addEventListener('offline', () =>{
+                document.getElementById('noInternet').classList.add('show');
+            })
+            window.addEventListener('online', () =>{
+                document.getElementById('noInternet').classList.remove('show');
+            })
         const html = document.querySelector('html');
         if(localStorage.dark === 'yes')
         {
@@ -2140,20 +2222,27 @@ input:checked + .slider:before {
 
         function getBal(){
             let x= document.getElementById("getBal_addr"),
-                loading = document.getElementById('loadBalance');
+                loading = document.getElementById('loadBalance'),
+                intPartText = document.getElementById('dispBalInt'),
+                floatPartText = document.getElementById('dispBalFloat');
             loading.classList.add('show', 'spin');
             floBlockchainAPI.getBalance(x.value).then((retrievedBal) => {
                 let parts = retrievedBal.split("."),
                     floatPart = parts.pop(),
                     intPart = parts.pop();
                 if(intPart === undefined){
-                    document.getElementById('dispBalInt').textContent= '0';
+                    intPartText.textContent= '0';
                 }
                 else{
-                    document.getElementById('dispBalInt').textContent= intPart;
-                    document.getElementById('dispBalFloat').innerHTML= `.${floatPart} FLOs`;
-                    document.getElementById('sdright').setAttribute('style', 'pointer-events: all; opacity: 1')
-                    document.getElementById('sendBtn').disabled = false;
+                    if(parseFloat(retrievedBal) < 0.005){
+                        intPartText.textContent = `Insufficient Balance`;
+                        floatPartText.textContent = '';
+                    }
+                    else{
+                        intPartText.textContent= intPart;
+                        floatPartText.innerHTML= `.${floatPart} FLOs`;
+                        document.getElementById('sdright').setAttribute('style', 'pointer-events: all; opacity: 1')
+                    }
                 }
                 loading.classList.remove('show', 'spin');
             }).catch((error) => {
@@ -2343,8 +2432,11 @@ input:checked + .slider:before {
         }
 
         function removedata(){
-            activeAddress.parentNode.removeChild(activeAddress);
-            compactIDB.removeData('labels', activeAddress.children[1].textContent);
+            if(confirm('Do you want to delete this address?'))
+            {
+                activeAddress.remove();
+                compactIDB.removeData('labels', activeAddress.children[1].textContent);
+            }
             closeEdit();
         }
 
@@ -2379,12 +2471,24 @@ input:checked + .slider:before {
             })
         }
 
+        function validateInfo(thisInput){
+            if(floCrypto.validateAddr(thisInput.value))
+                document.getElementById('sendBtn').disabled = false;    
+            else  
+                document.getElementById('sendBtn').disabled = true;    
+        }
+
+        function showPrivKeyPage(){
+            document.getElementById('privKey').focus();
+            showInnerPage('privKeyPage');
+        }
+
         function sendMessage(){
             let sender = document.getElementById('getBal_addr').value,
                 amount = document.getElementById('amount').value,
                 receiver = document.getElementById('receiver').value,
-                floData = document.getElementById('flotextdata').value;
-                privKey = prompt('Enter your private key')
+                floData = document.getElementById('flotextdata').value,
+                privKey = document.getElementById('privKey').value;
             floWebWallet.sendTransaction(sender, receiver, amount, floData, privKey).then((transactionid) => {
                 document.getElementById('transactionId').textContent= `transaction ID : ${transactionid}`;
                 showInnerPage('transaction-complete');
@@ -2395,8 +2499,8 @@ input:checked + .slider:before {
 
         function deleteDB(){
             compactIDB.deleteDB().then((message) => {
-                document.getElementById('monitor-list').innerHTML= `<h3 style="text-align: center;width: 100%;">Add a FLO address to start monitoring</h3>`;
                 alert(message)
+                onLoadStartUp()
             }).catch((error) => {
                 alert(error)
             })
