@@ -96,7 +96,6 @@ button[disabled] {
   color: var(--sec-color) !important;
   pointer-events: none;
   background: transparent !important;
-  border: 1px solid transparent !important;
 }
 
 button:focus, input:focus, textarea:focus {
@@ -1751,7 +1750,7 @@ input:checked + .slider:before {
                     </div>
                     <div id="dispMsg" class="hide innerPage">
                         <div class='title-bar'>
-                            <svg onclick="showPage('getDataBtn', 'getData')" viewBox="0 0 16 16">
+                            <svg onclick="backToMonitoringPage()" viewBox="0 0 16 16">
                                 <title>Go back to monitoring page</title>
                                 <path d="M14.9,6.5h-11L8.4,2c0.4-0.4,0.4-1.2,0-1.6C8-0.1,7.2-0.1,6.8,0.3L0.3,6.8C0.2,6.9,0.1,7,0.1,7.2C0,7.5,0,7.8,0.1,8
                                 c0.1,0.1,0.1,0.3,0.2,0.4l6.5,6.5c0.4,0.4,1.2,0.4,1.6,0c0.4-0.4,0.4-1.2,0-1.6L3.9,8.8h11c0.6,0,1.1-0.5,1.1-1.1
@@ -1932,7 +1931,7 @@ input:checked + .slider:before {
             addrLabel = document.getElementById('addrLabel'),
             newAddrLabel = document.getElementById('newAddrLabel'),
             recentPage = 'getDataBtn',
-            mode, activeAddress, lastClickedAddress;
+            mode, activeAddress;
             window.addEventListener('offline', () =>{
                 document.getElementById('noInternet').classList.add('show');
             })
@@ -2073,13 +2072,8 @@ input:checked + .slider:before {
         function clickedAddress(thisCard){
                 let address = thisCard.children[1].textContent,
                     label = thisCard.children[0].textContent;
-                    if(lastClickedAddress !== address)
-                        monitorData(address, label);
+                monitorData(address, label);
                 showInnerPage('dispMsg');
-                lastClickedAddress = address;
-                setTimeout(() => {
-                    lastClickedAddress = ''
-                }, 30000);
             }
         function showAdd(){
             document.getElementById('add-container').classList.add('show');
@@ -2325,6 +2319,14 @@ input:checked + .slider:before {
                         console.log(error);
                     })  
                 }
+
+        function backToMonitoringPage(){
+            let parent = document.getElementById('transactions-container');
+            while (parent.lastChild) {
+                parent.removeChild(parent.lastChild);
+            }
+            showPage('getDataBtn', 'getData');
+        }        
         function monitorData(address, label){
             let dispMsg = document.getElementById("dispMsg"),
                 dbLabels = floWebWallet.getLabels(),
@@ -2350,7 +2352,7 @@ input:checked + .slider:before {
                 }
                 else{
                     document.querySelector('loading').children[0].classList.remove('spin');
-                    tCont.innerHTML = '';
+                    tCont.innerHTML= '';
                     receivedData.forEach(tx => {
                     let date = new Date(tx.time*1000).toLocaleDateString(),
                         time = new Date(tx.time*1000).toLocaleTimeString(),
@@ -2375,6 +2377,9 @@ input:checked + .slider:before {
                     })
                     tCont.appendChild(frag)
                 }
+            }).catch((error) => {
+                console.log(error);
+                alert(error);
             })
         }
         function refreshdata(){
