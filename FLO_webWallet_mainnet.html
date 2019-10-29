@@ -6,9 +6,11 @@
 <meta charset="UTF-8">
 <meta name="description" content="This webapp allows monitoring FLO addresses and performing transactions based on blockchain.">
 <style>
-    @font-face {
-  font-family: 'Roboto', sans-serif;
-  src: url("https://fonts.googleapis.com/css?family=Roboto&display=swap");
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  src: url("../fonts/roboto-v20-latin-regular.eot");
+  src: local("Roboto"), local("Roboto-Regular"), url("../fonts/roboto-v20-latin-regular.eot?#iefix") format("embedded-opentype"), url("../fonts/roboto-v20-latin-regular.woff2") format("woff2"), url("../fonts/roboto-v20-latin-regular.woff") format("woff"), url("../fonts/roboto-v20-latin-regular.ttf") format("truetype"), url("../fonts/roboto-v20-latin-regular.svg#Roboto") format("svg");
 }
 
 :root {
@@ -96,6 +98,7 @@ button[disabled] {
   color: var(--sec-color) !important;
   pointer-events: none;
   background: transparent !important;
+  border: none;
 }
 
 button:focus, input:focus, textarea:focus {
@@ -107,7 +110,6 @@ button:focus, input:focus, textarea:focus {
 }
 
 .icons:active,
-#addNewAddress:active,
 monitor:active,
 button:active,
 svg:active {
@@ -202,7 +204,7 @@ textarea, input {
   bottom: 0;
   position: absolute;
   width: 100vw;
-  padding: 1em 2em;
+  padding: 1em;
   -ms-flex-wrap: wrap;
       flex-wrap: wrap;
   background: var(--body-color);
@@ -592,7 +594,7 @@ input[type=number] {
   right: 0;
   -ms-flex-line-pack: start;
       align-content: flex-start;
-  z-index: 4;
+  z-index: 2;
   background: var(--body-color);
 }
 
@@ -649,7 +651,7 @@ input[type=number] {
   width: 100%;
   bottom: 0;
   top: 65px;
-  padding: 0.5em 0;
+  padding: 0.25em 0 5em 0;
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -658,6 +660,7 @@ input[type=number] {
   -ms-flex-line-pack: start;
       align-content: flex-start;
   background: var(--back-color);
+  scroll-behavior: smooth;
 }
 
 #dispMsg trans-container transaction-card {
@@ -665,10 +668,10 @@ input[type=number] {
   display: -ms-flexbox;
   display: flex;
   position: relative;
-  width: calc(100% - 2em);
+  width: calc(100% - 1em);
   -ms-flex-wrap: wrap;
       flex-wrap: wrap;
-  margin: 0.5em 1em;
+  margin: 0.25em 0.5em;
   border-radius: 0.25em;
   background: var(--body-color);
 }
@@ -737,23 +740,31 @@ loading #p2 {
   fill: var(--accent-color);
 }
 
-#addNewAddress {
+#addNewAddress, #scrollToTop {
   position: fixed;
   cursor: pointer;
-  bottom: 54px;
   width: 3.5em;
   height: 3.5em;
   right: 0;
   margin: 1em;
   padding: 1.2em;
   border-radius: 50%;
-  background: var(--accent-color);
   -webkit-box-shadow: 0.1em 0.2em 0.3em rgba(0, 0, 0, 0.4);
           box-shadow: 0.1em 0.2em 0.3em rgba(0, 0, 0, 0.4);
-  -webkit-transition: right 0.2s ease, bottom 0.2s ease;
-  transition: right 0.2s ease, bottom 0.2s ease;
+  -webkit-transition: right 0.2s ease, bottom 0.2s ease, opacity 0.2s ease;
+  transition: right 0.2s ease, bottom 0.2s ease, opacity 0.2s ease;
   z-index: 2;
+  background: var(--accent-color);
   fill: #fff;
+}
+
+#addNewAddress {
+  bottom: 54px;
+}
+
+#scrollToTop {
+  opacity: 0;
+  pointer-events: none;
 }
 
 #edit-container, #add-container {
@@ -780,7 +791,7 @@ loading #p2 {
       flex-wrap: wrap;
   -webkit-transform: translateY(1em);
           transform: translateY(1em);
-  padding: 1em 2em;
+  padding: 1em;
   background: var(--body-color);
   -webkit-transition: -webkit-transform 0.2s ease;
   transition: -webkit-transform 0.2s ease;
@@ -1288,9 +1299,6 @@ input:checked + .slider:before {
     bottom: 0;
     width: 100%;
   }
-  #dispMsg trans-container transaction-card div:nth-of-type(2) {
-    font-size: 1.1em !important;
-  }
   #settings-page h4 {
     text-align: left;
   }
@@ -1350,6 +1358,7 @@ input:checked + .slider:before {
     place-content: center;
   }
   #add, #edit {
+    padding: 1em 2em;
     -webkit-box-shadow: 0 1em 2em rgba(0, 0, 0, 0.16);
             box-shadow: 0 1em 2em rgba(0, 0, 0, 0.16);
     border-radius: 0.25em;
@@ -1500,6 +1509,7 @@ input:checked + .slider:before {
     place-content: center;
   }
   #overlay #popup {
+    padding: 1em 2em;
     -webkit-box-shadow: 0 1em 2em rgba(0, 0, 0, 0.16);
             box-shadow: 0 1em 2em rgba(0, 0, 0, 0.16);
     border-radius: 0.25em;
@@ -1586,22 +1596,6 @@ input:checked + .slider:before {
 </style>
 </head>
 <body onload="onLoadStartUp()"> 
-    <script>
-        /* Constants for FLO blockchain operations !!Make sure to add this at begining!! */
-        const floGlobals = {
-      
-          //Required for all
-          blockchain: "FLO",
-      
-          //Required for blockchain API operators
-          apiURL: {
-            FLO: 'https://explorer.mediciland.com',
-            FLO_TEST: 'https://testnet-flosight.duckdns.org'
-          },
-          fee: 0.0005
-        }
-      </script>
-
 <div id="main-card">
     <div id="noInternet">
         There seems to be a problem connecting to the internet.
@@ -1768,6 +1762,10 @@ input:checked + .slider:before {
                         <trans-container id="transactions-container">
 
                         </trans-container>
+                        <svg onclick="backToTop()" id="scrollToTop" viewBox="0 0 16 9" style="enable-background:new 0 0 16 9;" xml:space="preserve">
+                        <path class="st0" d="M15.7,7.3l-7-7c-0.4-0.4-1-0.4-1.4,0l-7,7c-0.4,0.4-0.4,1,0,1.4c0.4,0.4,1,0.4,1.4,0L8,2.4l6.3,6.3
+                        c0.4,0.4,1,0.4,1.4,0C16.1,8.3,16.1,7.7,15.7,7.3z"/>
+                        </svg>
                     </div> 
 
                     <div id="sendData" class="page hide">
@@ -1821,7 +1819,7 @@ input:checked + .slider:before {
                                 </div>
                             <div id="enterPrivKey">
                                 <div class="input">
-                                        <input aria-label="private key" autocomplete="new-password"  type="number" onfocus="animateInput(this.parentNode)" onblur="revertBack(this.parentNode)" id="privKey"/>
+                                        <input aria-label="private key" autocomplete="new-password"  type="text" onfocus="animateInput(this.parentNode)" onblur="revertBack(this.parentNode)" id="privKey"/>
                                         <label>Private key</label>
                                 </div>
                                 <button onclick="sendMessage()">continue</button>
@@ -1925,13 +1923,22 @@ input:checked + .slider:before {
         </div>
     </div>
     <script>
+        const floGlobals = {
+        blockchain: "FLO",
+        apiURL: {
+            FLO: 'https://explorer.mediciland.com',
+            FLO_TEST: 'https://testnet-flosight.duckdns.org'
+        },
+        fee: 0.0005
+        }
+
         // repeatedly accessed DOM elements
         let bottomNav = document.getElementById('bottom-nav'),
             floAddr = document.getElementById('floAddr'),
             addrLabel = document.getElementById('addrLabel'),
             newAddrLabel = document.getElementById('newAddrLabel'),
             recentPage = 'getDataBtn',
-            mode, activeAddress;
+            mode, activeAddress, initial = 0, limit = 10, scrollingEvent;
             window.addEventListener('offline', () =>{
                 document.getElementById('noInternet').classList.add('show');
             })
@@ -2072,6 +2079,8 @@ input:checked + .slider:before {
         function clickedAddress(thisCard){
                 let address = thisCard.children[1].textContent,
                     label = thisCard.children[0].textContent;
+                if(thisCard.lastElementChild.tagName === 'badge')
+                    thisCard.lastElementChild.remove();
                 monitorData(address, label);
                 showInnerPage('dispMsg');
             }
@@ -2166,17 +2175,20 @@ input:checked + .slider:before {
         function setElements(){
             let pageBtn = document.getElementById(recentPage),
                 indicator = document.getElementById('indicator'),
-                addNewAddress = document.getElementById('addNewAddress');
+                addNewAddress = document.getElementById('addNewAddress'),
+                scrollToTop = document.getElementById('scrollToTop');
             if(window.innerWidth < 768){
                 bottomNav.classList.remove('reveal');
                 document.getElementById('overlay2').classList.remove('show');
                 addNewAddress.setAttribute('style' ,`bottom: 54px; right: 0`);
+                scrollToTop.setAttribute('style' ,`bottom: 0; right: 0`);
             }
             else{
                 let mainCard = document.getElementById('main-card').getBoundingClientRect(),
                 bottom = ((window.innerHeight - mainCard.height)/2) + 16,
                 right = ((window.innerWidth - mainCard.width)/2) + 16;
                 addNewAddress.setAttribute('style' ,`bottom: ${bottom}px; right: ${right}px`);
+                scrollToTop.setAttribute('style' ,`bottom: ${bottom}px; right: ${right}px`);
                 let topDistance = pageBtn.offsetTop - 16,
                 height = pageBtn.getBoundingClientRect().height;
                 indicator.setAttribute('style', 'transform: translateY('+(topDistance+(height/2))+'px');
@@ -2326,12 +2338,12 @@ input:checked + .slider:before {
                 parent.removeChild(parent.lastChild);
             }
             showPage('getDataBtn', 'getData');
+            initial = 0, limit = 10;
+            document.getElementById('transactions-container').removeEventListener('scroll', scrollingEvent);
         }        
         function monitorData(address, label){
             let dispMsg = document.getElementById("dispMsg"),
-                dbLabels = floWebWallet.getLabels(),
-                tCont = document.getElementById('transactions-container'),
-                frag = document.createDocumentFragment(); 
+                tCont = document.getElementById('transactions-container'); 
             tCont.innerHTML= `<loading>
                                     <svg viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve">
                                     <g>
@@ -2347,23 +2359,68 @@ input:checked + .slider:before {
             document.getElementById('addressLabel').textContent = label;
             document.getElementById('fullAddress').textContent = address;                             
             floWebWallet.readTransactions(address).then((receivedData) => {
-                if(receivedData.length === 0){
-                    tCont.innerHTML = `<div style='display:flex; align-content: center;width: 100%;height:100%'><h3 style='display:flexbox;align-self:center;text-align: center;width:100%'>There are no transactions to show.</h3></div>`;
-                }
-                else{
-                    document.querySelector('loading').children[0].classList.remove('spin');
-                    tCont.innerHTML= '';
-                    receivedData.forEach(tx => {
-                    let date = new Date(tx.time*1000).toLocaleDateString(),
-                        time = new Date(tx.time*1000).toLocaleTimeString(),
+                if(receivedData === undefined)
+                    tCont.innerHTML = `<div style='display:flex; align-content: center;width: 100%;height:100%'><h3 style='display:flexbox;align-self:center;text-align: center;width:100%'>Data is not synced yet, Try again after sometime.</h3></div>`;
+                else
+                    if(receivedData.length === 0){
+                        tCont.innerHTML = `<div style='display:flex; align-content: center;width: 100%;height:100%'><h3 style='display:flexbox;align-self:center;text-align: center;width:100%'>There are no transactions to show.</h3></div>`;
+                    }
+                    else{
+                        receivedData.reverse();
+                        document.querySelector('loading').children[0].classList.remove('spin');
+                        tCont.innerHTML= '';
+                        if(receivedData.length < 10){
+                            limit = receivedData.length;
+                            tCont.appendChild(createTransactionCard(address, receivedData))
+                        }
+                        else{
+                            let timeout;
+                            scrollingEvent = tCont.addEventListener('scroll', (event) => {
+                                clearTimeout(timeout)
+                                timeout = setTimeout(() => {
+                                    if(tCont.scrollTop > window.innerHeight)
+                                        document.getElementById('scrollToTop').classList.add('show');
+                                    else
+                                        document.getElementById('scrollToTop').classList.remove('show'); 
+                                }, 200);
+                            })
+                            tCont.appendChild(createTransactionCard(address, receivedData))
+                            const load = target => {
+                                const sm = new IntersectionObserver((entries, observer) => {
+                                    entries.forEach((entry) => {
+                                        if(entry.isIntersecting && entry.target == tCont.lastElementChild && receivedData.length >= limit){
+                                            tCont.appendChild(createTransactionCard(address, receivedData))
+                                            document.querySelectorAll('transaction-card').forEach(load);
+                                            observer.disconnect();
+                                        }
+                                    })
+                                })
+                                sm.observe(target)
+                            }
+                        document.querySelectorAll('transaction-card').forEach(load);
+                        }
+                    }
+            }).catch((error) => {
+                console.log(error);
+                alert(error);
+            })
+        }
+
+        function createTransactionCard(address, receivedData){
+            let frag = document.createDocumentFragment(),
+                dbLabels = floWebWallet.getLabels();
+            for(initial; initial < limit; initial++)
+                {
+                    let date = new Date(receivedData[initial].time*1000).toLocaleDateString(),
+                        time = new Date(receivedData[initial].time*1000).toLocaleTimeString(),
                         tCard = document.createElement('transaction-card');
-                    if(tx.sender === address){
+                    if(receivedData[initial].sender === address){
                         tCard.innerHTML=`<div>
                                             <svg viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve">
                                             <path d="M14.7,0H3.9C3.2,0,2.6,0.6,2.6,1.3s0.6,1.3,1.3,1.3h7.5l-11,11c-0.5,0.5-0.5,1.4,0,1.9c0.5,0.5,1.4,0.5,1.9,0
                                                 l11-11v7.5c0,0.7,0.6,1.3,1.3,1.3s1.3-0.6,1.3-1.3V1.3C16,0.6,15.4,0,14.7,0z"/>
                                             </svg>
-                                            ${tx.receiver}</div><div> ${tx.floData}</div><div>${time} ${date}</div>`;
+                                            ${receivedData[initial].receiver}</div><div> ${receivedData[initial].floData}</div><div>${time} ${date}</div>`;
                     }
                     else{
                         tCard.innerHTML=`<div>
@@ -2371,18 +2428,18 @@ input:checked + .slider:before {
                                             <path d="M16,14.7V3.9c0-0.7-0.6-1.3-1.3-1.3s-1.3,0.6-1.3,1.3v7.5l-11-11c-0.5-0.5-1.4-0.5-1.9,0
                                             c-0.5,0.5-0.5,1.4,0,1.9l11,11H3.9c-0.7,0-1.3,0.6-1.3,1.3S3.2,16,3.9,16h10.7C15.4,16,16,15.4,16,14.7z"/>
                                         </svg>
-                                        ${tx.sender}</div><div> ${tx.floData}</div><div>  ${time} ${date}</div>`;
+                                        ${receivedData[initial].sender}</div><div> ${receivedData[initial].floData}</div><div>  ${time} ${date}</div>`;
                     }
-                    frag.insertBefore(tCard,frag.firstChild);
-                    })
-                    tCont.appendChild(frag)
+                    frag.appendChild(tCard);
                 }
-            }).catch((error) => {
-                console.log(error);
-                alert(error);
-            })
+            limit += 10;
+            if((receivedData.length - (receivedData.length % 10)) == limit)
+                limit += receivedData.length % 10;
+            return frag;
         }
+
         function refreshdata(){
+            initial = 0, limit = 10;
             floWebWallet.syncTransactions(document.getElementById('fullAddress').textContent);
             monitorData(document.getElementById('fullAddress').textContent, document.getElementById('addressLabel').textContent);
         }
@@ -2490,7 +2547,7 @@ input:checked + .slider:before {
 
         function sendMessage(){
             let sender = document.getElementById('getBal_addr').value,
-                amount = document.getElementById('amount').value,
+                amount = parseFloat(document.getElementById('amount').value),
                 receiver = document.getElementById('receiver').value,
                 floData = document.getElementById('flotextdata').value,
                 privKey = document.getElementById('privKey').value;
@@ -2525,6 +2582,11 @@ input:checked + .slider:before {
             setTimeout(() => {
                 toast.classList.remove('show');
             }, 1000)
+        }
+
+        function backToTop(){
+            console.log('hey')
+            document.getElementById('transactions-container').scrollTop = 0;
         }
     </script>
 
@@ -7650,7 +7712,7 @@ input:checked + .slider:before {
             labels:{},
             transactions:{}
         }
-        compactIDB.initDB("FLO_webWallet",IDBObjects)
+        compactIDB.initDB("FLOwebWallet",IDBObjects)
             .then(result => console.log(result))
             .catch(error => console.log(error))
 
