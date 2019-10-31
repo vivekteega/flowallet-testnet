@@ -309,6 +309,28 @@ textarea, input {
   bottom: 54px;
 }
 
+#loadBalance, #spinner {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 2em;
+  height: 2em;
+  padding: 0.3em;
+  margin: 1.9em 1em;
+}
+
+#loadBalance .p1, #spinner .p1 {
+  fill: none;
+}
+
+#loadBalance .p2, #spinner .p2 {
+  fill: var(--accent-color);
+}
+
+#spinner {
+  margin: 0.7em 0;
+}
+
 #sendData #sdleft {
   display: -webkit-box;
   display: -ms-flexbox;
@@ -351,25 +373,6 @@ textarea, input {
 
 #sendData #sdleft .input:focus-within {
   border: 1px solid var(--accent-color);
-}
-
-#sendData #sdleft #loadBalance {
-  opacity: 0;
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 2em;
-  height: 2em;
-  padding: 0.3em;
-  margin: 2em 1em;
-}
-
-#sendData #sdleft #loadBalance #p1 {
-  fill: none;
-}
-
-#sendData #sdleft #loadBalance #p2 {
-  fill: var(--accent-color);
 }
 
 #sendData #sdright {
@@ -631,7 +634,7 @@ input[type=number] {
   -webkit-box-flex: 1;
       -ms-flex: 1;
           flex: 1;
-  text-overflow: ellipsis;
+  width: calc(100% - 8em);
   font-weight: bold;
   line-height: 1.5em;
 }
@@ -643,6 +646,9 @@ input[type=number] {
 
 .title-bar h3 {
   margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 #dispMsg trans-container {
@@ -819,7 +825,7 @@ loading #p2 {
   width: 100% !important;
 }
 
-#edit-container #edit svg {
+#edit-container #edit #loadingSvg {
   top: 0;
   -ms-flex-item-align: center;
       -ms-grid-row-align: center;
@@ -831,7 +837,7 @@ loading #p2 {
   height: 2em;
   width: 2em;
   padding: 0.5em;
-  margin: 4.8em 1.5em 1em 1.5em;
+  margin: 1.7em 1em 1em 1.5em;
   -webkit-transition: opacity 0.2s ease;
   transition: opacity 0.2s ease;
   z-index: 2;
@@ -839,19 +845,46 @@ loading #p2 {
   cursor: pointer;
 }
 
-#edit-container #edit svg:hover {
+#edit-container #edit #loadingSvg:hover {
   background: var(--sec-color);
+}
+
+#edit-container #edit div:first-of-type {
+  position: relative;
+  width: 100%;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-line-pack: center;
+      align-content: center;
+  margin-bottom: 1em;
+}
+
+#edit-container #edit div:first-of-type button {
+  display: flexbox;
+  white-space: nowrap;
+  margin-left: 0 !important;
+  -ms-flex-item-align: center;
+      align-self: center;
+}
+
+#edit-container #edit div:first-of-type h4 {
+  padding: 0;
+  -ms-flex-item-align: center;
+      align-self: center;
+  display: flexbox;
+  text-align: right;
+}
+
+#edit-container #edit h4 {
+  padding-right: 2em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 #edit-container #edit button:nth-of-type(2) {
   margin-left: auto !important;
-}
-
-#edit-container #edit div:first-of-type {
-  word-break: break-all;
-  opacity: 0.6;
-  margin: 1em 0;
-  padding-right: 2em;
 }
 
 #edit-container #edit h3, #edit-container #edit h4, #edit-container #edit h5 {
@@ -1188,6 +1221,7 @@ input:checked + .slider:before {
   padding: 1em;
   z-index: 11;
   background: khaki;
+  color: #000;
 }
 
 .spin {
@@ -1538,20 +1572,20 @@ input:checked + .slider:before {
 
 @media screen and (min-width: 1280px) {
   #main-card {
-    width: 60% !important;
+    width: 60vw !important;
     height: 80vh !important;
   }
 }
 
 @media screen and (min-width: 1600px) {
   #main-card {
-    width: 50% !important;
+    width: 50vw !important;
   }
 }
 
 @media all and (device-width: 768px) and (device-height: 1024px) and (orientation: portrait) {
   #main-card {
-    width: 80% !important;
+    width: 80vw !important;
     height: 60vh !important;
   }
   monitor svg {
@@ -1561,7 +1595,7 @@ input:checked + .slider:before {
 
 @media all and (device-width: 1024px) and (device-height: 768px) and (orientation: landscape) {
   #main-card {
-    width: 80% !important;
+    width: 80vw !important;
     height: 70vh !important;
   }
   monitor svg {
@@ -1717,19 +1751,29 @@ input:checked + .slider:before {
                         <div id="edit-container" class="hide">
                             <div id="edit">
                                 <h4>Edit display card</h4>
+                                <svg id="loadingSvg" onclick="copyToClipboard(this.parentNode, '0')" viewBox="0 0 13 16" style="enable-background:new 0 0 13 16;" xml:space="preserve">
+                                    <title>Copy FLO address</title>
+                                    <path d="M12,0H4C3.4,0,3,0.4,3,1v3H1C0.4,4,0,4.4,0,5v10c0,0.6,0.4,1,1,1h8c0.6,0,1-0.4,1-1v-3h2c0.6,0,1-0.4,1-1V1
+                                    C13,0.4,12.6,0,12,0z M8,13c0,0.6-0.4,1-1,1H3c-0.6,0-1-0.4-1-1V7c0-0.6,0.4-1,1-1h4c0.6,0,1,0.4,1,1V13z M11,9c0,0.6-0.4,1-1,1V5
+                                    c0-0.6-0.4-1-1-1H5V3c0-0.6,0.4-1,1-1h4c0.6,0,1,0.4,1,1V9z"/>
+                                </svg>
                                 <div>
-                                    Flo address
+                                    <button onclick="showBalance()">Check balance</button>
+                                    <svg class="hide" id="spinner" viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve">
+                                        <g>
+                                            <path class='p1' d="M8,0C3.6,0,0,3.6,0,8s3.6,8,8,8s8-3.6,8-8S12.4,0,8,0z M8,14c-3.3,0-6-2.7-6-6s2.7-6,6-6s6,2.7,6,6
+                                                S11.3,14,8,14z"/>
+                                            <path class='p2' d="M6.5,13.8c-2.2-0.5-3.9-2.3-4.4-4.5c-0.7-3.6,1.7-6.8,5-7.2C7.6,2,8,1.6,8,1.1v0c0-0.6-0.5-1.1-1.1-1
+                                                C2.5,0.7-0.8,4.9,0.2,9.6c0.6,3.1,2.9,5.5,6,6.2c4.8,1.1,9.1-2.2,9.8-6.7C16,8.5,15.5,8,14.9,8h0c-0.5,0-0.9,0.4-1,0.9
+                                                C13.5,12.2,10.2,14.7,6.5,13.8z"/>
+                                        </g>
+                                    </svg>
+                                    <h4 id="showBalance"></h4>
                                 </div>
                                 <div class="input">
                                     <input aria-label="Label" autocomplete="new-password"  type="text" onfocus="animateInput(this.parentNode)" onblur="revertBack(this.parentNode)" id="newAddrLabel"/>
                                         <label>Label</label>
                                 </div>
-                                <svg onclick="copyToClipboard(this.parentNode, '1')" viewBox="0 0 13 16" style="enable-background:new 0 0 13 16;" xml:space="preserve">
-                                        <title>Copy FLO address</title>
-                                        <path d="M12,0H4C3.4,0,3,0.4,3,1v3H1C0.4,4,0,4.4,0,5v10c0,0.6,0.4,1,1,1h8c0.6,0,1-0.4,1-1v-3h2c0.6,0,1-0.4,1-1V1
-                                        C13,0.4,12.6,0,12,0z M8,13c0,0.6-0.4,1-1,1H3c-0.6,0-1-0.4-1-1V7c0-0.6,0.4-1,1-1h4c0.6,0,1,0.4,1,1V13z M11,9c0,0.6-0.4,1-1,1V5
-                                        c0-0.6-0.4-1-1-1H5V3c0-0.6,0.4-1,1-1h4c0.6,0,1,0.4,1,1V9z"/>
-                                </svg>
                                 <button onclick="removedata()" id="removeAddr">Remove</button>
                                 <button onclick="closeEdit()">Cancel</button>
                                 <button id="editdata" onclick="editdata()">Save</button>
@@ -1771,11 +1815,11 @@ input:checked + .slider:before {
                     <div id="sendData" class="page hide">
                         <div id="sdleft">
                                 <div id="dispBal">
-                                        <svg id="loadBalance" viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve">
+                                        <svg class="hide" id="loadBalance" viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve">
                                                 <g>
-                                                    <path id='p1' d="M8,0C3.6,0,0,3.6,0,8s3.6,8,8,8s8-3.6,8-8S12.4,0,8,0z M8,14c-3.3,0-6-2.7-6-6s2.7-6,6-6s6,2.7,6,6
+                                                    <path class='p1' d="M8,0C3.6,0,0,3.6,0,8s3.6,8,8,8s8-3.6,8-8S12.4,0,8,0z M8,14c-3.3,0-6-2.7-6-6s2.7-6,6-6s6,2.7,6,6
                                                         S11.3,14,8,14z"/>
-                                                    <path id='p2' d="M6.5,13.8c-2.2-0.5-3.9-2.3-4.4-4.5c-0.7-3.6,1.7-6.8,5-7.2C7.6,2,8,1.6,8,1.1v0c0-0.6-0.5-1.1-1.1-1
+                                                    <path class='p2' d="M6.5,13.8c-2.2-0.5-3.9-2.3-4.4-4.5c-0.7-3.6,1.7-6.8,5-7.2C7.6,2,8,1.6,8,1.1v0c0-0.6-0.5-1.1-1.1-1
                                                         C2.5,0.7-0.8,4.9,0.2,9.6c0.6,3.1,2.9,5.5,6,6.2c4.8,1.1,9.1-2.2,9.8-6.7C16,8.5,15.5,8,14.9,8h0c-0.5,0-0.9,0.4-1,0.9
                                                         C13.5,12.2,10.2,14.7,6.5,13.8z"/>
                                                 </g>
@@ -1874,7 +1918,7 @@ input:checked + .slider:before {
                         </section>
                         <section>
                             <h4>About</h4>
-                            <h5>Version 2.6</h5>
+                            <h5>Version 2.7.1</h5>
                                     <a class="border-card" href="https://flo.cash/" target="_blank" rel="noopener noreferrer">
                                             <h5>Powered by</h5>
                                             <svg viewBox="0 0 108 48" style="enable-background:new 0 0 107.65 47.07;"
@@ -2226,6 +2270,18 @@ input:checked + .slider:before {
             }
         }
 
+        function showBalance(){
+            let loading = document.getElementById('spinner');
+            loading.classList.add('show', 'spin');
+            floBlockchainAPI.getBalance(activeAddress.children[1].textContent).then((balance) => {
+                loading.classList.remove('show', 'spin');
+                document.getElementById('showBalance').textContent = `${balance} FLOs`;
+            }).catch((error) => {
+                loading.classList.remove('show', 'spin');
+                document.getElementById('showBalance').textContent = `Something went wrong!`;
+            })
+        }
+
         function getBal(){
             let x= document.getElementById("getBal_addr"),
                 loading = document.getElementById('loadBalance'),
@@ -2347,9 +2403,9 @@ input:checked + .slider:before {
             tCont.innerHTML= `<loading>
                                     <svg viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve">
                                     <g>
-                                        <path id='p1' d="M8,0C3.6,0,0,3.6,0,8s3.6,8,8,8s8-3.6,8-8S12.4,0,8,0z M8,14c-3.3,0-6-2.7-6-6s2.7-6,6-6s6,2.7,6,6
+                                        <path class='p1' d="M8,0C3.6,0,0,3.6,0,8s3.6,8,8,8s8-3.6,8-8S12.4,0,8,0z M8,14c-3.3,0-6-2.7-6-6s2.7-6,6-6s6,2.7,6,6
                                             S11.3,14,8,14z"/>
-                                        <path id='p2' d="M6.5,13.8c-2.2-0.5-3.9-2.3-4.4-4.5c-0.7-3.6,1.7-6.8,5-7.2C7.6,2,8,1.6,8,1.1v0c0-0.6-0.5-1.1-1.1-1
+                                        <path class='p2' d="M6.5,13.8c-2.2-0.5-3.9-2.3-4.4-4.5c-0.7-3.6,1.7-6.8,5-7.2C7.6,2,8,1.6,8,1.1v0c0-0.6-0.5-1.1-1.1-1
                                             C2.5,0.7-0.8,4.9,0.2,9.6c0.6,3.1,2.9,5.5,6,6.2c4.8,1.1,9.1-2.2,9.8-6.7C16,8.5,15.5,8,14.9,8h0c-0.5,0-0.9,0.4-1,0.9
                                             C13.5,12.2,10.2,14.7,6.5,13.8z"/>
                                     </g>
@@ -2471,7 +2527,7 @@ input:checked + .slider:before {
             let x = document.getElementById('edit');
             x.classList.add('slide-up');
             newAddrLabel.focus();
-            x.children[1].textContent = parent.children[1].textContent;
+            x.children[0].textContent = parent.children[1].textContent;
             newAddrLabel.value =  parent.children[0].textContent;
             let y =document.addEventListener("click", function(event) {
                 if (event.target.closest('#edit') || event.target.closest('.edit-options')) return;
@@ -2506,6 +2562,7 @@ input:checked + .slider:before {
             document.getElementById('edit-container').classList.remove('show');
             document.getElementById('edit').classList.remove('slide-up');
             newAddrLabel.value='';
+            document.getElementById('showBalance').textContent = ``;
         }
 
         function createAllCards(){
@@ -2588,9 +2645,7 @@ input:checked + .slider:before {
             console.log('hey')
             document.getElementById('transactions-container').scrollTop = 0;
         }
-    </script>
 
-<script>
     /*!
     * Crypto-JS v2.5.4  Crypto.js
     * http://code.google.com/p/crypto-js/
@@ -7251,9 +7306,7 @@ input:checked + .slider:before {
             return true;
         }
     };
-</script>
 
-<script>
     /* FLO Crypto Operators*/
     const floCrypto = {
   
@@ -7317,8 +7370,7 @@ input:checked + .slider:before {
         }
       }
     }
-  </script>
-  <script>
+
     /* FLO Blockchain Operator to send/receive data from blockchain using API calls*/
     const floBlockchainAPI = {
   
@@ -7459,8 +7511,7 @@ input:checked + .slider:before {
         });
       }
     }
-  </script>
-  <script>
+
     /* Compact IndexedDB operations */
   
     window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
@@ -7627,9 +7678,7 @@ input:checked + .slider:before {
         });
       }
     }
-  </script>
 
-<script>
     floWebWallet = {
 
         //generate a new Address triplet : resolves Object(floID,pubKey,privKey)
