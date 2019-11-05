@@ -1918,7 +1918,7 @@ input:checked + .slider:before {
                         </section>
                         <section>
                             <h4>About</h4>
-                            <h5>Version 2.7.1</h5>
+                            <h5>Version 2.7.2</h5>
                                     <a class="border-card" href="https://flo.cash/" target="_blank" rel="noopener noreferrer">
                                             <h5>Powered by</h5>
                                             <svg viewBox="0 0 108 48" style="enable-background:new 0 0 107.65 47.07;"
@@ -2541,7 +2541,7 @@ input:checked + .slider:before {
                 label = newAddrLabel.value;
                 if(label == '')
                     label = 'Unknown';
-                compactIDB.writeData('labels', label, x.children[1].textContent).then((resolve) => {
+                compactIDB.writeData('labels', label, x.children[0].textContent).then((resolve) => {
                     activeAddress.children[0].textContent = label;
                     closeEdit()
                 }).catch((error) => {
