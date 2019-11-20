@@ -22,7 +22,14 @@
     fee: 0.0005,
 
     //Required for Supernode operations
-    supernodes: {} //each supnernode must be stored as floID : {uri:<uri>,pubKey:<publicKey>}
+    SNStorageID: "FEzk75EGMPEQMrCuPosGiwuK162hcEu49E",
+    supernodes: {}, //each supnernode must be stored as floID : {uri:<uri>,pubKey:<publicKey>}
+
+    //for cloud apps
+    subAdmins: [],
+    application: "Test_RIBC",
+    vectorClock: {},
+    appObjects: {}
   }
 </script>
 
@@ -6240,6 +6247,26 @@
             })
         },
 
+        //request any data from supernode cloud
+        requestApplicationData: function(options = {}){
+            return new Promise((resolve,reject) => {
+                var request = {
+                    receiverID: options.receiverID || floGlobals.adminID,
+                    senderIDs: options.senderIDs || undefined,
+                    application: options.application || floGlobals.application,
+                    type: options.type || undefined,
+                    comment: options.comment || undefined,
+                    lowerVectorClock: options.lowerVectorClock || undefined,
+                    upperVectorClock: options.upperVectorClock || undefined,
+                    atVectorClock: options.atVectorClock || undefined,
+                    mostRecent: options.mostRecent || undefined,
+                }
+                floSupernode.requestData(JSON.stringify(request), request.receiverID)
+                    .then(response => resolve(response))
+                    .catch(error => reject(error))
+            })
+        },
+
         //request an object data from supernode cloud
         requestObjectData: function(objectName, options = {}){
             var request = {
@@ -6265,10 +6292,10 @@
             var message = {
                 division: options.division || floGlobals.division, 
                 object: objectName, 
-                vectorClock: floGlobals.vectorClock[object], 
+                vectorClock: floGlobals.vectorClock[objectName], 
                 reset: newObject
             }
-            this.sendApplicationData(message, `${object}@Reset`, options)
+            this.sendApplicationData(message, `${objectName}@Reset`, options)
                 .then(result => reactor.dispatchEvent('logHandle',result))
                 .catch(error => reactor.dispatchEvent('errorHandle',error))
         },
@@ -6278,10 +6305,10 @@
             var message = {
                 division: options.division || floGlobals.division,
                 object: objectName, 
-                vectorClock: floGlobals.vectorClock[object],
+                vectorClock: floGlobals.vectorClock[objectName],
                 diff: detailedDiff(oldObject, newObject)
             }
-            this.sendApplicationData(message, `${object}@Update`, options)
+            this.sendApplicationData(message, `${objectName}@Update`, options)
                 .then(result => reactor.dispatchEvent('logHandle',result))
                 .catch(error => reactor.dispatchEvent('errorHandle',error))
         }
@@ -6293,15 +6320,15 @@
             dataSet = JSON.parse(dataSet);
             console.log(dataSet)
             for(vc in dataSet){
-                if(floGlobals.subAdmins.includes(dataSet[v].senderID)){
-                    var message = dataSet[v].message;
+                //if(floGlobals.subAdmins.includes(dataSet[vc].senderID)){
+                    var message = dataSet[vc].message;
                     if(message.reset){
                         floGlobals.appObjects[message.object] = message.reset
                         floGlobals.vectorClock[message.object] = vc
                         //compactIDB.writeData("appObjects", floGlobals.appObjects[message.object], message.object)
                         //compactIDB.writeData("vectorClocks", vc, message.object)
                     }
-                }
+                //}
             }
         }catch(error){
             console.log(error)
@@ -6314,13 +6341,13 @@
             dataSet = JSON.parse(dataSet);
             console.log(dataSet)
             for(vc in dataSet){
-                if(floGlobals.subAdmins.includes(dataSet[v].senderID)){
-                    var message = dataSet[v].message;
+                //if(floGlobals.subAdmins.includes(dataSet[vc].senderID)){
+                    var message = dataSet[vc].message;
                     if(message.diff){
                         floGlobals.appObjects[message.object] = mergeAllDiff(floGlobals.appObjects[message.object], message.diff)
-                        //compactIDB.writeData("objects",floGlobals.appObjects[message.object], message.object)
+                        //compactIDB.writeData("appObjects",floGlobals.appObjects[message.object], message.object)
                     }
-                }
+                //}
                 floGlobals.vectorClock[message.object] = vc
                 //compactIDB.writeData("vectorClocks", vc, message.object)
             }
