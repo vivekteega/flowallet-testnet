@@ -10,12 +10,12 @@
   const floGlobals = {
 
     //Required for all
-    blockchain: "FLO_TEST",
+    blockchain: "FLO",
 
     //Required for blockchain API operators
     apiURL: {
-      FLO: 'https://flosight.duckdns.org',
-      FLO_TEST: 'https://testnet-flosight.duckdns.org'
+      FLO: ['https://explorer.mediciland.com/', 'https://livenet.flocha.in/', 'https://flosight.duckdns.org/', 'http://livenet-explorer.floexperiments.com', 'http://ec2-13-233-133-128.ap-south-1.compute.amazonaws.com/', 'http://ec2-13-233-131-136.ap-south-1.compute.amazonaws.com/', 'http://ec2-13-233-194-1.ap-south-1.compute.amazonaws.com/'],
+      FLO_TEST: ['https://testnet-flosight.duckdns.org', 'https://testnet.flocha.in/']
     },
     adminID: "oTZw3ydCRKDhcYC5Bp6mRJMGTTVv9JHtg8",
     sendAmt: 0.001,
@@ -4692,7 +4692,6 @@
     };
 </script>
 
-
 <script>
   /* Reactor Event handling */
   if (typeof reactor == "undefined" || !reactor) {
@@ -4974,44 +4973,75 @@
 </script>
 <script>
   /* FLO Blockchain Operator to send/receive data from blockchain using API calls*/
+
+    const getRandomInt = function(min, max) {
+        min = Math.ceil(min);
+        max = Math.floor(max);
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
   const floBlockchainAPI = {
 
-    //Promised AJAX function to get data from API
-    promisedAJAX: function (method, uri) {
+    util: {
+        serverList: floGlobals.apiURL[floGlobals.blockchain].slice(0),
+        curPos: getRandomInt(0, floGlobals.apiURL[floGlobals.blockchain].length),
+        fetch_retry: function(apicall){
+            return new Promise((resolve,reject) => {
+                this.serverList.splice(this.curPos, 1);
+                this.curPos = getRandomInt(0, this.serverList.length)
+                this.fetch_api(apicall)
+                    .then(result => resolve(result))
+                    .catch(error => reject(error));
+            })
+        },
+        fetch_api: function(apicall){
+            return new Promise((resolve, reject) => {
+                if(this.serverList.length === 0)
+                    reject("No floSight server working")
+                else{
+                    fetch(this.serverList[this.curPos] + apicall).then(response  => {
+                        if(response.ok)
+                            response.json().then(data => resolve(data));
+                        else{
+                            this.fetch_retry(apicall)
+                                .then(result => resolve(result))
+                                .catch(error => reject(error));
+                        }
+                    }).catch(error => {
+                        this.fetch_retry(apicall)
+                            .then(result => resolve(result))
+                            .catch(error => reject(error));
+                    })
+                }
+            })
+        }
+    },
+
+    //Promised function to get data from API
+    promisedAPI: function (apicall) {
       return new Promise((resolve, reject) => {
-        var request = new XMLHttpRequest();
-        var url = `${floGlobals.apiURL[floGlobals.blockchain]}/${uri}`;
-        console.log(url)
-        request.open(method, url, true);
-        request.onload = (evt) => {
-          if (request.readyState == 4 && request.status == 200)
-            resolve(request.response);
-          else
-            reject(request.response);
-        };
-        request.send();
+        console.log(apicall)
+        this.util.fetch_api(apicall)
+            .then(result => resolve(result))
+            .catch(error => reject(error));
       });
     },
 
     //Get balance for the given Address
     getBalance: function (addr) {
       return new Promise((resolve, reject) => {
-        this.promisedAJAX("GET", `api/addr/${addr}/balance`).then(balance => {
-          resolve(parseFloat(balance));
-        }).catch(error => {
-          reject(error);
-        });
+        this.promisedAPI(`api/addr/${addr}/balance`)
+            .then(balance => resolve(parseFloat(balance)))
+            .catch(error => reject(error));
       });
     },
 
     //Write Data into blockchain
     writeData: function (senderAddr, Data, PrivKey, receiverAddr = floGlobals.adminID) {
       return new Promise((resolve, reject) => {
-        this.sendTx(senderAddr, receiverAddr, floGlobals.sendAmt, PrivKey, Data).then(txid => {
-          resolve(txid);
-        }).catch(error => {
-          reject(error);
-        });
+        this.sendTx(senderAddr, receiverAddr, floGlobals.sendAmt, PrivKey, Data)
+            .then(txid => resolve(txid))
+            .catch(error => reject(error))
       });
     },
 
@@ -5030,8 +5060,7 @@
           var trx = bitjs.transaction();
           var utxoAmt = 0.0;
           var fee = floGlobals.fee;
-          this.promisedAJAX("GET", `api/addr/${senderAddr}/utxo`).then(response => {
-            var utxos = JSON.parse(response);
+          this.promisedAPI(`api/addr/${senderAddr}/utxo`).then(utxos => {
             for (var i = utxos.length - 1;
               (i >= 0) && (utxoAmt < sendAmt + fee); i--) {
               if (utxos[i].confirmations) {
@@ -5048,15 +5077,11 @@
                 trx.addoutput(senderAddr, change);
               trx.addflodata(floData);
               var signedTxHash = trx.sign(PrivKey, 1);
-              this.broadcastTx(signedTxHash).then(txid => {
-                resolve(txid)
-              }).catch(error => {
-                reject(error);
-              });
+              this.broadcastTx(signedTxHash)
+                .then(txid => resolve(txid))
+                .catch(error => reject(error))
             }
-          }).catch(error => {
-            reject(error);
-          });
+          }).catch(error => reject(error))
         }
       });
     },
@@ -5065,7 +5090,7 @@
     broadcastTx: function (signedTxHash) {
       return new Promise((resolve, reject) => {
         var request = new XMLHttpRequest();
-        var url = `${floGlobals.apiURL[floGlobals.blockchain]}/api/tx/send`;
+        var url = this.util.serverList[this.util.curPos] + 'api/tx/send';
         if (signedTxHash.length < 1)
           reject("Empty Signature");
         else {
@@ -5088,27 +5113,20 @@
     //Read Txs of Address between from and to
     readTxs: function (addr, from, to) {
       return new Promise((resolve, reject) => {
-        this.promisedAJAX("GET", `api/addrs/${addr}/txs?from=${from}&to=${to}`).then(response => {
-          resolve(JSON.parse(response));
-        }).catch(error => {
-          reject(error);
-        });
+        this.promisedAPI(`api/addrs/${addr}/txs?from=${from}&to=${to}`)
+            .then(response => resolve(response))
+            .catch(error => reject(error))
       });
     },
 
     //Read All Txs of Address (newest first)
     readAllTxs: function (addr) {
       return new Promise((resolve, reject) => {
-        this.promisedAJAX("GET", `api/addrs/${addr}/txs?from=0&to=1`).then(response => {
-          var totalItems = JSON.parse(response).totalItems;
-          this.promisedAJAX("GET", `api/addrs/${addr}/txs?from=0&to=${totalItems}0`).then(response => {
-            resolve(JSON.parse(response).items);
-          }).catch(error => {
-            reject(error);
-          });
-        }).catch(error => {
-          reject(error);
-        });
+        this.promisedAPI(`api/addrs/${addr}/txs?from=0&to=1`).then(response => {
+          this.promisedAPI(`api/addrs/${addr}/txs?from=0&to=${response.totalItems}0`)
+            .then(response => resolve(response.items))
+            .catch(error => reject(error));
+        }).catch(error => reject(error))
       });
     },
 
@@ -5125,10 +5143,9 @@
         options.limit = options.limit | 1000
         options.ignoreOld = options.ignoreOld | 0
         return new Promise((resolve, reject) => {
-        this.promisedAJAX("GET", `api/addrs/${addr}/txs?from=0&to=1`).then(response => {
-          var newItems = JSON.parse(response).totalItems - options.ignoreOld;
-          this.promisedAJAX("GET", `api/addrs/${addr}/txs?from=0&to=${newItems*2}`).then(response => {
-              response = JSON.parse(response)
+        this.promisedAPI(`api/addrs/${addr}/txs?from=0&to=1`).then(response => {
+          var newItems = response.totalItems - options.ignoreOld;
+          this.promisedAPI(`api/addrs/${addr}/txs?from=0&to=${newItems*2}`).then(response => {
               if (options.limit <= 0) 
                 options.limit = response.items.length;
               var filteredData = [];
@@ -5218,6 +5235,50 @@
           }
         });
       },
+      getPrevSupernode: function(flo_addr, n = 1, KB = this.supernodeKBucket){
+        return new Promise((resolve, reject) => {
+          try {
+            let isFloIdUint8 = flo_addr instanceof Uint8Array;
+            if (!isFloIdUint8)
+              flo_addr = this.floIdToKbucketId(flo_addr);
+            const KA = KB.toArray();
+            let pos = KB._indexOf(KB.root,flo_addr)
+            var prevSupernode = []
+            for(var i = 1; i <= n; i++){
+                if(pos - i < 0)
+                    var prev = pos - i + KA.length
+                else
+                    var prev = pos - i
+                prevSupernode.push(KA[prev])
+            }
+            resolve(prevSupernode);
+          } catch (error) {
+            reject(error);
+          }
+        });
+      },
+      getNextSupernode: function(flo_addr, n = 1, KB = this.supernodeKBucket){
+        return new Promise((resolve, reject) => {
+          try {
+            let isFloIdUint8 = flo_addr instanceof Uint8Array;
+            if (!isFloIdUint8)
+              flo_addr = this.floIdToKbucketId(flo_addr);
+            const KA = KB.toArray();
+            let pos = KB._indexOf(KB.root,flo_addr)
+            var nextSupernode = []
+            for(var i = 1; i <= n; i++){
+                if(pos + i >= KA.length)
+                    var next = pos + i - KA.length
+                else
+                    var next = pos + i
+                nextSupernode.push(KA[next])
+            }
+            resolve(nextSupernode);
+          } catch (error) {
+            reject(error);
+          }
+        });
+      },
       determineClosestSupernode: function (flo_addr, n = 1, KB = this.supernodeKBucket) {
         return new Promise((resolve, reject) => {
           try {
@@ -5233,42 +5294,78 @@
       }
     },
 
+    sendDataToSN(data, snfloID){
+        return new Promise((resolve, reject) => {
+            console.log(snfloID)
+            var websocket = new WebSocket("wss://" + floGlobals.supernodes[snfloID].uri + "/ws");
+            websocket.onmessage = (evt => {
+                if(evt.data == '$+'){
+                    websocket.send(data);
+                    resolve(`Data sent to supernode : ${snfloID}`);
+                }else if(evt.data == '$-'){
+                    this.kBucket.getNextSupernode(snfloID)
+                        .then(nextnode => this.sendDataToSN(data, nextnode[0].floID))
+                        .catch(error => reject(error))
+                }else{
+                    console.log(evt.data)
+                    reject(evt.data)
+                }
+                websocket.close();
+            })
+            websocket.onerror = (evt) => {
+                this.kBucket.getNextSupernode(snfloID)
+                    .then(nextnode => this.sendDataToSN(data, nextnode[0].floID))
+                    .catch(error => reject(error))
+            };
+        })
+    },
+
     //Sends data to the supernode
     sendData: function (data, floID) {
       return new Promise((resolve, reject) => {
         this.kBucket.determineClosestSupernode(floID).then(result => {
-          var websocket = new WebSocket("wss://" + floGlobals.supernodes[result[0].floID].uri + "/ws");
-          websocket.onopen = (evt) => {
-            websocket.send(data);
-            resolve(`Data sent to ${floID}'s supernode`);
-            websocket.close();
-          };
-          websocket.onerror = (evt) => {
-            reject(evt);
-          };
+            this.sendDataToSN(data, result[0].floID)
+                .then(result => resolve(result))
+                .catch(error => reject(error))
         }).catch(error => {
-          reject(error);
+            reject(error);
         });
       });
+    },
+
+    requestDataFromSN(request, snfloID){
+        return new Promise((resolve, reject) => {
+            var websocket = new WebSocket("wss://" + floGlobals.supernodes[snfloID].uri + "/ws");
+            websocket.onmessage = (evt => {
+                if(evt.data == '$+'){
+                    websocket.send(`?${request}`);
+                }else if(evt.data == '$-'){
+                    this.kBucket.getNextSupernode(snfloID)
+                        .then(nextnode => this.requestDataFromSN(request, nextnode[0].floID))
+                        .catch(error => reject(error))
+                    websocket.close()
+                }else{
+                    resolve(evt.data);
+                    websocket.close();
+                }
+            })
+            websocket.onerror = (evt) => {
+                this.kBucket.getNextSupernode(snfloID)
+                    .then(nextnode => this.requestDataFromSN(request, nextnode[0].floID))
+                    .catch(error => reject(error))
+            };
+        })
     },
 
     //Request data from supernode
     requestData: function (request, floID) {
       return new Promise((resolve, reject) => {
         this.kBucket.determineClosestSupernode(floID).then(result => {
-          var websocket = new WebSocket("wss://" + floGlobals.supernodes[result[0].floID].uri + "/ws");
-          websocket.onopen = (evt) => {
-            websocket.send(`?${request}`);
-          };
-          websocket.onmessage = (evt) => {
-            resolve(evt.data);
-            websocket.close();
-          };
-          websocket.onerror = (evt) => {
-            reject(evt);
-          };
+            this.requestDataFromSN(request, result[0].floID)
+                .then(result => resolve(result))
+                .catch(error => reject(error))
         }).catch(error => {
-          reject(error);
+            reject(error);
         });
       });
     }
@@ -5833,6 +5930,413 @@
 
     }
   }
+</script>
+<script>
+//For diff base
+    /*
+    Functions available:
+    diff(originalObj, updatedObj) returns the difference of the original and updated objects
+    addedDiff(original, updatedObj) returns only the values added to the updated object
+    deletedDiff(original, updatedObj) returns only the values deleted in the updated object
+    updatedDiff(original, updatedObj) returns only the values that have been changed in the updated object
+    detailedDiff(original, updatedObj) returns an object with the added, deleted and updated differences  
+    mergeRecurcive(original, diff) this will get you a new object that will merge all the changes between the old object and the new object
+    */
+    
+    const isDate = d => d instanceof Date;
+    const isEmpty = o => Object.keys(o).length === 0;
+    const isObject = o => o != null && typeof o === 'object';
+    const properObject = o => isObject(o) && !o.hasOwnProperty ? { ...o } : o;
+    
+    
+    const getLargerArray = (l, r) => l.length > r.length ? l : r;
+    
+    const preserve = (diff, left, right) => {
+    
+      if (!isObject(diff)) return diff;
+    
+      return Object.keys(diff).reduce((acc, key) => {
+    
+        const leftArray = left[key];
+        const rightArray = right[key];
+    
+        if (Array.isArray(leftArray) && Array.isArray(rightArray)) {
+          const array = [...getLargerArray(leftArray, rightArray)];
+          return {
+            ...acc,
+            [key]: array.reduce((acc2, item, index) => {
+              if (diff[key].hasOwnProperty(index)) {
+                acc2[index] = preserve(diff[key][index], leftArray[index], rightArray[index]); // diff recurse and check for nested arrays
+                return acc2;
+              }
+    
+              delete acc2[index]; // no diff aka empty
+              return acc2;
+            }, array)
+          };
+        }
+    
+        return {
+          ...acc,
+          [key]: diff[key]
+        };
+      }, {});
+    };
+    
+    
+    const updatedDiff = (lhs, rhs) => {
+    
+      if (lhs === rhs) return {};
+    
+      if (!isObject(lhs) || !isObject(rhs)) return rhs;
+    
+      const l = properObject(lhs);
+      const r = properObject(rhs);
+    
+      if (isDate(l) || isDate(r)) {
+        if (l.valueOf() == r.valueOf()) return {};
+        return r;
+      }
+    
+      return Object.keys(r).reduce((acc, key) => {
+    
+        if (l.hasOwnProperty(key)) {
+          const difference = updatedDiff(l[key], r[key]);
+    
+          if (isObject(difference) && isEmpty(difference) && !isDate(difference)) return acc;
+    
+          return { ...acc, [key]: difference };
+        }
+    
+        return acc;
+      }, {});
+    };
+    
+    
+    const diff = (lhs, rhs) => {
+      if (lhs === rhs) return {}; // equal return no diff
+    
+      if (!isObject(lhs) || !isObject(rhs)) return rhs; // return updated rhs
+    
+      const l = properObject(lhs);
+      const r = properObject(rhs);
+    
+      const deletedValues = Object.keys(l).reduce((acc, key) => {
+        return r.hasOwnProperty(key) ? acc : { ...acc, [key]: null };
+      }, {});
+    
+      if (isDate(l) || isDate(r)) {
+        if (l.valueOf() == r.valueOf()) return {};
+        return r;
+      }
+    
+      return Object.keys(r).reduce((acc, key) => {
+        if (!l.hasOwnProperty(key)) return { ...acc, [key]: r[key] }; // return added r key
+    
+        const difference = diff(l[key], r[key]);
+    
+        if (isObject(difference) && isEmpty(difference) && !isDate(difference)) return acc; // return no diff
+    
+        return { ...acc, [key]: difference }; // return updated key
+      }, deletedValues);
+    };
+    
+    const detailedDiff = (lhs, rhs) => ({
+      added: addedDiff(lhs, rhs),
+      deleted: deletedDiff(lhs, rhs),
+      updated: updatedDiff(lhs, rhs),
+    });
+    
+    
+    
+    const addedDiff = (lhs, rhs) => {
+    
+      if (lhs === rhs || !isObject(lhs) || !isObject(rhs)) return {};
+    
+      const l = properObject(lhs);
+      const r = properObject(rhs);
+    
+      return Object.keys(r).reduce((acc, key) => {
+        if (l.hasOwnProperty(key)) {
+          const difference = addedDiff(l[key], r[key]);
+    
+          if (isObject(difference) && isEmpty(difference)) return acc;
+    
+          return { ...acc, [key]: difference };
+        }
+    
+        return { ...acc, [key]: r[key] };
+      }, {});
+    };
+    
+    
+    const arrayDiff = (lhs, rhs) => {
+      if (lhs === rhs) return {}; // equal return no diff
+    
+      if (!isObject(lhs) || !isObject(rhs)) return rhs; // return updated rhs
+    
+      const l = properObject(lhs);
+      const r = properObject(rhs);
+    
+      const deletedValues = Object.keys(l).reduce((acc, key) => {
+        return r.hasOwnProperty(key) ? acc : { ...acc, [key]: null };
+      }, {});
+    
+      if (isDate(l) || isDate(r)) {
+        if (l.valueOf() == r.valueOf()) return {};
+        return r;
+      }
+    
+      if (Array.isArray(r) && Array.isArray(l)) {
+        const deletedValues = l.reduce((acc, item, index) => {
+          return r.hasOwnProperty(index) ? acc.concat(item) : acc.concat(null);
+        }, []);
+    
+        return r.reduce((acc, rightItem, index) => {
+          if (!deletedValues.hasOwnProperty(index)) {
+            return acc.concat(rightItem);
+          }
+    
+          const leftItem = l[index];
+          const difference = diff(rightItem, leftItem);
+    
+          if (isObject(difference) && isEmpty(difference) && !isDate(difference)) {
+            delete acc[index];
+            return acc; // return no diff
+          }
+    
+          return acc.slice(0, index).concat(rightItem).concat(acc.slice(index + 1)); // return updated key
+        }, deletedValues);
+      }
+    
+      return Object.keys(r).reduce((acc, key) => {
+        if (!l.hasOwnProperty(key)) return { ...acc, [key]: r[key] }; // return added r key
+    
+        const difference = diff(l[key], r[key]);
+    
+        if (isObject(difference) && isEmpty(difference) && !isDate(difference)) return acc; // return no diff
+    
+        return { ...acc, [key]: difference }; // return updated key
+      }, deletedValues);
+    };
+    
+    const deletedDiff = (lhs, rhs) => {
+      if (lhs === rhs || !isObject(lhs) || !isObject(rhs)) return {};
+    
+      const l = properObject(lhs);
+      const r = properObject(rhs);
+    
+      return Object.keys(l).reduce((acc, key) => {
+        if (r.hasOwnProperty(key)) {
+          const difference = deletedDiff(l[key], r[key]);
+    
+          if (isObject(difference) && isEmpty(difference)) return acc;
+    
+          return { ...acc, [key]: difference };
+        }
+    
+        return { ...acc, [key]: null };
+      }, {});
+    };
+    
+    function mergeRecursive(obj1, obj2) {
+        for (var p in obj2) {
+            try {
+                if(obj2[p].constructor == Object) {
+                    obj1[p] = mergeRecursive(obj1[p], obj2[p]);
+                }
+                // Property in destination object set; update its value.
+                else if (Ext.isArray(obj2[p])) {
+                    // obj1[p] = [];
+                    if (obj2[p].length < 1) {
+                        obj1[p] = obj2[p];
+                    }
+                    else {
+                        obj1[p] = mergeRecursive(obj1[p], obj2[p]);
+                    }
+    
+                }else{
+                    obj1[p] = obj2[p];
+                }
+            } catch (e) {
+                // Property in destination object not set; create it and set its value.
+                obj1[p] = obj2[p];
+            }
+        }
+        return obj1;
+    }
+    
+    /*
+    var test = {
+      foo : {
+        bar : {
+          baz : null
+        }
+      },
+      bar : 1
+    };
+    cleanse(test);
+    
+    Rohit: Added a small fix for object being entered as Array*/
+    
+    function cleanse(obj) {
+        console.log(obj)
+        Object.keys(obj).forEach(function(key) {
+            var value = obj[key];
+            if (typeof value === "object" && value !== null) {
+                // Recurse...
+                cleanse(value);
+                // ...and remove if now "empty" (NOTE: insert your definition of "empty" here)
+                if (!Object.keys(value).length) {
+                    delete obj[key]
+                }
+            }
+            else if (value === null) {
+                // null, remove it
+                delete obj[key];
+    
+            }
+        });
+    
+    if(obj.constructor.toString().indexOf("Array") != -1)  {obj = obj.filter(function (el) {
+      return el != null;
+    });}
+    
+    return obj; 
+    }
+    
+    /*obj is original object or array, diff is the output of detailedDiff */
+    function mergeAllDiff(obj,diff){
+      if(Object.keys(diff.updated).length !== 0)
+        obj = mergeRecursive(obj,diff.updated)
+      if(Object.keys(diff.deleted).length !== 0){
+        obj = mergeRecursive(obj,diff.deleted)
+        obj = cleanse(obj)
+      }
+      if(Object.keys(diff.added).length !== 0)
+        obj = mergeRecursive(obj,diff.added)
+        return obj
+    }
+</script>
+<script>
+    /* FLO Cloud operations to send/request application data*/
+    floCloudAPI = {
+        //send Any message to supernode cloud storage
+        sendApplicationData: function(message, type, options = {}){
+            return new Promise((resolve,reject) => {
+                var data = {
+                    senderID : myFloID,
+                    receiverID: options.receiverID || floGlobals.adminID,
+                    pubKey : myPubKey,
+                    message : message,
+                    sign: floCrypto.signData(JSON.stringify(message), myPrivKey),
+                    application : options.application || floGlobals.application,
+                    type: type,
+                    comment: options.comment || ""
+                }
+                floSupernode.sendData(JSON.stringify(data), data.receiverID)
+                    .then(result => resolve(result))
+                    .catch(error => reject(error))
+            })
+        },
+
+        //request an object data from supernode cloud
+        requestObjectData: function(objectName, options = {}){
+            var request = {
+                receiverID: options.receiverID || floGlobals.adminID,
+                senderIDs: options.senderIDs || floGlobals.subAdmins,
+                application: options.application || floGlobals.application,
+                type: `${objectName}@Reset`,
+                lowerVectorClock: floGlobals.vectorClock[objectName]+1,
+                mostRecent: true
+            }
+            floSupernode.requestData(JSON.stringify(request),request.receiverID).then(resetData => {
+                reactor.dispatchEvent('resetData', resetData);
+                request.type = `${objectName}@Update`
+                request.lowerVectorClock = floGlobals.vectorClock[objectName]+1
+                request.mostRecent = false
+                floSupernode.requestData(JSON.stringify(request), request.receiverID)
+                    .then(updateData => reactor.dispatchEvent('updateData', updateData))
+            }).catch(error => reactor.dispatchEvent('errorHandle', error))
+        },
+
+        //reset or initialize an object and send it to cloud
+        resetObjectData: function(newObject, objectName, options = {}){
+            var message = {
+                division: options.division || floGlobals.division, 
+                object: objectName, 
+                vectorClock: floGlobals.vectorClock[object], 
+                reset: newObject
+            }
+            this.sendApplicationData(message, `${object}@Reset`, options)
+                .then(result => reactor.dispatchEvent('logHandle',result))
+                .catch(error => reactor.dispatchEvent('errorHandle',error))
+        },
+
+        //update the diff and send it to cloud
+        updateObjectData: function(oldObject, newObject, objectName, options = {}){
+            var message = {
+                division: options.division || floGlobals.division,
+                object: objectName, 
+                vectorClock: floGlobals.vectorClock[object],
+                diff: detailedDiff(oldObject, newObject)
+            }
+            this.sendApplicationData(message, `${object}@Update`, options)
+                .then(result => reactor.dispatchEvent('logHandle',result))
+                .catch(error => reactor.dispatchEvent('errorHandle',error))
+        }
+    }
+
+    reactor.registerEvent('resetData');
+    reactor.addEventListener('resetData', function(dataSet){
+        try{
+            dataSet = JSON.parse(dataSet);
+            console.log(dataSet)
+            for(vc in dataSet){
+                if(floGlobals.subAdmins.includes(dataSet[v].senderID)){
+                    var message = dataSet[v].message;
+                    if(message.reset){
+                        floGlobals.appObjects[message.object] = message.reset
+                        floGlobals.vectorClock[message.object] = vc
+                        //compactIDB.writeData("appObjects", floGlobals.appObjects[message.object], message.object)
+                        //compactIDB.writeData("vectorClocks", vc, message.object)
+                    }
+                }
+            }
+        }catch(error){
+            console.log(error)
+        }
+    });
+
+    reactor.registerEvent('updateData');
+    reactor.addEventListener('updateData', function(dataSet){
+        try{
+            dataSet = JSON.parse(dataSet);
+            console.log(dataSet)
+            for(vc in dataSet){
+                if(floGlobals.subAdmins.includes(dataSet[v].senderID)){
+                    var message = dataSet[v].message;
+                    if(message.diff){
+                        floGlobals.appObjects[message.object] = mergeAllDiff(floGlobals.appObjects[message.object], message.diff)
+                        //compactIDB.writeData("objects",floGlobals.appObjects[message.object], message.object)
+                    }
+                }
+                floGlobals.vectorClock[message.object] = vc
+                //compactIDB.writeData("vectorClocks", vc, message.object)
+            }
+        }catch(error){
+            console.log(error)
+        }
+    });
+
+    reactor.registerEvent('errorHandle');
+    reactor.addEventListener('errorHandle', function(event){
+        console.log(event)
+    });
+    reactor.registerEvent('logHandle');
+    reactor.addEventListener('logHandle', function(event){
+        console.log(event)
+    });
 </script>
 </body>
 </html>
