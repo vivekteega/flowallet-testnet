@@ -14,8 +14,8 @@
 
     //Required for blockchain API operators
     apiURL: {
-      FLO: ['https://explorer.mediciland.com/', 'https://livenet.flocha.in/', 'https://flosight.duckdns.org/', 'http://livenet-explorer.floexperiments.com', 'http://ec2-13-233-133-128.ap-south-1.compute.amazonaws.com/', 'http://ec2-13-233-131-136.ap-south-1.compute.amazonaws.com/', 'http://ec2-13-233-194-1.ap-south-1.compute.amazonaws.com/'],
-      FLO_TEST: ['https://testnet-flosight.duckdns.org', 'https://testnet.flocha.in/']
+      FLO: ['https://explorer.mediciland.com/', 'https://livenet.flocha.in/', 'https://flosight.duckdns.org/', 'http://livenet-explorer.floexperiments.com/'],
+      FLO_TEST: ['https://testnet-flosight.duckdns.org/', 'https://testnet.flocha.in/']
     },
     adminID: "oTZw3ydCRKDhcYC5Bp6mRJMGTTVv9JHtg8",
     sendAmt: 0.001,
@@ -29,14 +29,16 @@
     subAdmins: [],
     application: "Test_RIBC",
     vectorClock: {},
-    appObjects: {}
+    appObjects: {},
+    generalData: {},
+    generalVC: {}
   }
 </script>
 
 <body>
   use console
 
-  <script>
+<script>
     //All util libraries required for Standard operations (DO NOT EDIT ANY)
 
     /*!
@@ -6883,12 +6885,29 @@
             })
         },
 
+        sendGeneralData: function(message, type, options = {}){
+            this.sendApplicationData(message, type, options)
+                .then(result => reactor.dispatchEvent('logHandle',result))
+                .catch(error => reactor.dispatchEvent('errorHandle',error))
+        },
+
+        //request General Data
+        requestGeneralData: function(type, options = {}){
+            var filterStr = JSON.stringify({application: options.application || floGlobals.application, type: type, comment: options.comment})
+            options.type = type
+            options.lowerVectorClock = options.lowerVectorClock || floGlobals.generalVC[filterStr] + 1
+            this.requestApplicationData(options)
+                .then(dataSet => reactor.dispatchEvent("storeGeneralData", {filterStr: filterStr, dataSet:dataSet}))
+                .catch(error => reactor.dispatchEvent('errorHandle',error))
+        },
+
         //request an object data from supernode cloud
         requestObjectData: function(objectName, options = {}){
             var request = {
                 receiverID: options.receiverID || floGlobals.adminID,
-                senderIDs: options.senderIDs || floGlobals.subAdmins,
+                senderIDs: (options.senderIDs === false) ? false: options.senderIDs || floGlobals.subAdmins,
                 application: options.application || floGlobals.application,
+                comment: options.comment,
                 type: `${objectName}@Reset`,
                 lowerVectorClock: floGlobals.vectorClock[objectName]+1,
                 mostRecent: true
@@ -6966,6 +6985,24 @@
                 //}
                 floGlobals.vectorClock[message.object] = vc
                 //compactIDB.writeData("vectorClocks", vc, message.object)
+            }
+        }catch(error){
+            console.log(error)
+        }
+    });
+
+    reactor.registerEvent('storeGeneralData');
+    reactor.addEventListener('storeGeneralData', function(event){
+        try{
+            dataSet = JSON.parse(event.dataSet);
+            console.log(dataSet)
+            if(!Array.isArray(floGlobals.generalData[event.filterStr]))
+                floGlobals.generalData[event.filterStr] = [] 
+            for(vc in dataSet){
+                floGlobals.generalData[event.filterStr].push({sender: dataSet[vc].senderID, message: dataSet[vc].message})
+                //compactIDB.writeData("generalData", floGlobals.generalData[event.filterStr], event.filterStr)
+                floGlobals.generalVC[event.filterStr] = vc
+                //compactIDB.writeData("generalVC", vc, event.filterStr)
             }
         }catch(error){
             console.log(error)
