@@ -1948,7 +1948,7 @@
                         </svg>
                         <h5>Available balance</h5>
                         <span id="dispBalInt">0</span>
-                        <span id="dispBalFloat"></span>
+                        <span id="dispBalFloat"></span> FLO(s)
                         <h5>To send FLO data, make sure you have enough balance.</h5>
                     </div>
                     <div class="input">
@@ -2431,21 +2431,12 @@
             loading.classList.add('show', 'spin');
             floWebWallet.getBalance(x.value).then((retrievedBal) => {
                 let parts = retrievedBal.toString().split("."),
-                    floatPart = parts.pop(),
-                    intPart = parts.pop();
-                if (intPart === undefined) {
-                    intPartText.textContent = '0';
-                } else {
-                    if (retrievedBal < 0.005) {
-                        intPartText.textContent = `Insufficient Balance`;
-                        floatPartText.textContent = '';
-                    } else {
-                        intPartText.textContent = intPart;
-                        floatPartText.innerHTML = `.${floatPart} FLOs`;
-                        document.getElementById('sdright').setAttribute('style',
-                            'pointer-events: all; opacity: 1')
-                    }
-                }
+                    floatPart = parts[1],
+                    intPart = parts[0];
+                intPartText.textContent = intPart;
+                if(floatPart)
+                    floatPartText.textContent = `.${floatPart}`;
+                document.getElementById('sdright').setAttribute('style', 'pointer-events: all; opacity: 1')
                 loading.classList.remove('show', 'spin');
             }).catch((error) => {
                 console.log(error);
