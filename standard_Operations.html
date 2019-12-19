@@ -3,9 +3,8 @@
 
 <head>
   <title>FLO Operators</title>
-</head>
 
-<script>
+<script id="floGlobals">
   /* Constants for FLO blockchain operations !!Make sure to add this at begining!! */
   const floGlobals = {
 
@@ -35,10 +34,12 @@
   }
 </script>
 
+</head>
+
 <body>
   use console
 
-<script>
+<script id="init_lib">
     //All util libraries required for Standard operations (DO NOT EDIT ANY)
 
     /*!
@@ -5325,7 +5326,7 @@
 
   */
 </script>
-<script>
+<script id="floCrypto">
   /* FLO Crypto Operators*/
   const floCrypto = {
 
@@ -5603,7 +5604,7 @@
     }
   }
 </script>
-<script>
+<script id="floBlockchainAPI">
   /* FLO Blockchain Operator to send/receive data from blockchain using API calls*/
   const floBlockchainAPI = {
 
@@ -5796,7 +5797,7 @@
     }
   }
 </script>
-<script>
+<script id="floSupernode">
   /* flo Supernode Operators to send/receive data from supernodes using websocket */
   const floSupernode = {
 
@@ -5997,7 +5998,7 @@
   }
 
 </script>
-<script>
+<script id="compactIDB">
   /* Compact IndexedDB operations */
 
   window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
@@ -6843,7 +6844,7 @@
         return obj
     }
 </script>
-<script>
+<script id="floCloudAPI">
     /* FLO Cloud operations to send/request application data*/
     floCloudAPI = {
         //send Any message to supernode cloud storage
