@@ -5610,19 +5610,99 @@
   /* FLO Crypto Operators*/
   const floCrypto = {
 
-    p: BigInteger("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F", 16),
+    util:{
+        p: BigInteger("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F", 16),
 
-    ecparams: EllipticCurve.getSECCurveByName("secp256k1"),
+        ecparams: EllipticCurve.getSECCurveByName("secp256k1"),
 
-    exponent1: function () {
-      return this.p.add(BigInteger.ONE).divide(BigInteger("4"))
-    },
+        exponent1: function () {
+            return this.p.add(BigInteger.ONE).divide(BigInteger("4"))
+        },
 
-    calculateY: function (x) {
-      let p = this.p;
-      let exp = this.exponent1();
-      // x is x value of public key in BigInteger format without 02 or 03 or 04 prefix
-      return x.modPow(BigInteger("3"), p).add(BigInteger("7")).mod(p).modPow(exp, p)
+        calculateY: function (x) {
+            let p = this.p;
+            let exp = this.exponent1();
+            // x is x value of public key in BigInteger format without 02 or 03 or 04 prefix
+            return x.modPow(BigInteger("3"), p).add(BigInteger("7")).mod(p).modPow(exp, p)
+        },
+        getUncompressedPublicKey: function (compressedPublicKey) {
+            const p = this.p;
+            // Fetch x from compressedPublicKey
+            let pubKeyBytes = Crypto.util.hexToBytes(compressedPublicKey);
+            const prefix = pubKeyBytes.shift() // remove prefix
+            let prefix_modulus = prefix % 2;
+            pubKeyBytes.unshift(0) // add prefix 0
+            let x = new BigInteger(pubKeyBytes)
+            let xDecimalValue = x.toString()
+            // Fetch y
+            let y = this.calculateY(x);
+            let yDecimalValue = y.toString();
+            // verify y value
+            let resultBigInt = y.mod(BigInteger("2"));
+            let check = resultBigInt.toString() % 2;
+            if (prefix_modulus !== check) {
+                yDecimalValue = y.negate().mod(p).toString();
+            }
+            return {
+                x: xDecimalValue,
+                y: yDecimalValue
+            };
+        },
+
+        getSenderPublicKeyString: function () {
+            privateKey = ellipticCurveEncryption.senderRandom();
+            senderPublicKeyString = ellipticCurveEncryption.senderPublicString(privateKey);
+            return {
+                privateKey: privateKey,
+                senderPublicKeyString: senderPublicKeyString
+            }
+        },
+
+        deriveSharedKeySender: function (receiverCompressedPublicKey, senderPrivateKey) {
+            try {
+                let receiverPublicKeyString = this.getUncompressedPublicKey(receiverCompressedPublicKey);
+                var senderDerivedKey = ellipticCurveEncryption.senderSharedKeyDerivation(
+                receiverPublicKeyString.x, receiverPublicKeyString.y, senderPrivateKey);
+                return senderDerivedKey;
+            } catch (error) {
+                return new Error(error);
+            }
+        },
+
+        deriveReceiverSharedKey: function (senderPublicKeyString, receiverPrivateKey) {
+            return ellipticCurveEncryption.receiverSharedKeyDerivation(
+                senderPublicKeyString.XValuePublicString, senderPublicKeyString.YValuePublicString,
+                receiverPrivateKey);
+        },
+
+        getReceiverPublicKeyString: function (privateKey) {
+            return ellipticCurveEncryption.receiverPublicString(privateKey);
+        },
+
+        deriveSharedKeyReceiver: function (senderPublicKeyString, receiverPrivateKey) {
+            try {
+                return ellipticCurveEncryption.receiverSharedKeyDerivation(senderPublicKeyString.XValuePublicString,
+                senderPublicKeyString.YValuePublicString, receiverPrivateKey);
+
+            } catch (error) {
+                return new Error(error);
+            }
+        },
+
+        wifToDecimal: function (pk_wif, isPubKeyCompressed = false) {
+            let pk = Bitcoin.Base58.decode(pk_wif)
+            pk.shift()
+            pk.splice(-4, 4)
+            //If the private key corresponded to a compressed public key, also drop the last byte (it should be 0x01).
+            if (isPubKeyCompressed == true) pk.pop()
+            pk.unshift(0)
+            privateKeyDecimal = BigInteger(pk).toString()
+            privateKeyHex = Crypto.util.bytesToHex(pk)
+            return {
+                privateKeyDecimal: privateKeyDecimal,
+                privateKeyHex: privateKeyHex
+            }
+        }
     },
 
     //generate a random Interger within range
@@ -5644,96 +5724,10 @@
         return result;
     },
 
-    getUncompressedPublicKey: function (compressedPublicKey) {
-
-      const p = this.p;
-
-      // Fetch x from compressedPublicKey
-      let pubKeyBytes = Crypto.util.hexToBytes(compressedPublicKey);
-      const prefix = pubKeyBytes.shift() // remove prefix
-      let prefix_modulus = prefix % 2;
-      pubKeyBytes.unshift(0) // add prefix 0
-      let x = new BigInteger(pubKeyBytes)
-      let xDecimalValue = x.toString()
-
-      // Fetch y
-      let y = this.calculateY(x);
-      let yDecimalValue = y.toString();
-
-      // verify y value
-      let resultBigInt = y.mod(BigInteger("2"));
-
-      let check = resultBigInt.toString() % 2;
-
-      if (prefix_modulus !== check) {
-        yDecimalValue = y.negate().mod(p).toString();
-      }
-
-      return {
-        x: xDecimalValue,
-        y: yDecimalValue
-      };
-    },
-
-    getSenderPublicKeyString: function () {
-      privateKey = ellipticCurveEncryption.senderRandom();
-      senderPublicKeyString = ellipticCurveEncryption.senderPublicString(privateKey);
-      return {
-        privateKey: privateKey,
-        senderPublicKeyString: senderPublicKeyString
-      }
-    },
-
-    deriveSharedKeySender: function (receiverCompressedPublicKey, senderPrivateKey) {
-      try {
-        let receiverPublicKeyString = this.getUncompressedPublicKey(receiverCompressedPublicKey);
-        var senderDerivedKey = ellipticCurveEncryption.senderSharedKeyDerivation(
-          receiverPublicKeyString.x, receiverPublicKeyString.y, senderPrivateKey);
-        return senderDerivedKey;
-      } catch (error) {
-        return new Error(error);
-      }
-    },
-
-    deriveReceiverSharedKey: function (senderPublicKeyString, receiverPrivateKey) {
-      return ellipticCurveEncryption.receiverSharedKeyDerivation(
-        senderPublicKeyString.XValuePublicString, senderPublicKeyString.YValuePublicString,
-        receiverPrivateKey);
-    },
-
-    getReceiverPublicKeyString: function (privateKey) {
-      return ellipticCurveEncryption.receiverPublicString(privateKey);
-    },
-
-    deriveSharedKeyReceiver: function (senderPublicKeyString, receiverPrivateKey) {
-      try {
-        return ellipticCurveEncryption.receiverSharedKeyDerivation(senderPublicKeyString.XValuePublicString,
-          senderPublicKeyString.YValuePublicString, receiverPrivateKey);
-
-      } catch (error) {
-        return new Error(error);
-      }
-    },
-
-    wifToDecimal: function (pk_wif, isPubKeyCompressed = false) {
-      let pk = Bitcoin.Base58.decode(pk_wif)
-      pk.shift()
-      pk.splice(-4, 4)
-      //If the private key corresponded to a compressed public key, also drop the last byte (it should be 0x01).
-      if (isPubKeyCompressed == true) pk.pop()
-      pk.unshift(0)
-      privateKeyDecimal = BigInteger(pk).toString()
-      privateKeyHex = Crypto.util.bytesToHex(pk)
-      return {
-        privateKeyDecimal: privateKeyDecimal,
-        privateKeyHex: privateKeyHex
-      }
-    },
-
     //Encrypt Data using public-key
     encryptData: function (data, receiverCompressedPublicKey) {
-      var senderECKeyData = this.getSenderPublicKeyString();
-      var senderDerivedKey = this.deriveSharedKeySender(receiverCompressedPublicKey, senderECKeyData.privateKey);
+      var senderECKeyData = this.util.getSenderPublicKeyString();
+      var senderDerivedKey = this.util.deriveSharedKeySender(receiverCompressedPublicKey, senderECKeyData.privateKey);
       let senderKey = senderDerivedKey.XValue + senderDerivedKey.YValue;
       let secret = Crypto.AES.encrypt(data, senderKey);
       return {
@@ -5747,12 +5741,12 @@
       var receiverECKeyData = {};
       if (typeof myPrivateKey !== "string") throw new Error("No private key found.");
 
-      let privateKey = this.wifToDecimal(myPrivateKey, true);
+      let privateKey = this.util.wifToDecimal(myPrivateKey, true);
       if (typeof privateKey.privateKeyDecimal !== "string") throw new Error(
         "Failed to detremine your private key.");
       receiverECKeyData.privateKey = privateKey.privateKeyDecimal;
 
-      var receiverDerivedKey = this.deriveReceiverSharedKey(data.senderPublicKeyString, receiverECKeyData
+      var receiverDerivedKey = this.util.deriveReceiverSharedKey(data.senderPublicKeyString, receiverECKeyData
         .privateKey);
 
       let receiverKey = receiverDerivedKey.XValue + receiverDerivedKey.YValue;
@@ -5784,7 +5778,7 @@
       var sigBytes = Crypto.util.hexToBytes(signatureHex);
       var signature = Bitcoin.ECDSA.parseSig(sigBytes);
 
-      var publicKeyPoint = this.ecparams.getCurve().decodePointHex(publicKeyHex);
+      var publicKeyPoint = this.util.ecparams.getCurve().decodePointHex(publicKeyHex);
 
       var verify = Bitcoin.ECDSA.verifyRaw(messageHashBigInteger, signature.r, signature.s,
         publicKeyPoint);
@@ -5853,6 +5847,7 @@
       }
     },
 
+    //Split the str using shamir's Secret and Returns the shares 
     createShamirsSecretShares: function (str, total_shares, threshold_limit) {
         try{
             if (str.length > 0) {
@@ -5866,10 +5861,12 @@
         }
     },
 
+    //Verifies the shares and str
     verifyShamirsSecret: function (sharesArray, str) {
         return (str && this.retrieveShamirSecret(sharesArray) === str)
     },
 
+    //Returns the retrived secret by combining the shamirs shares
     retrieveShamirSecret: function (sharesArray) {
         try{
             if (sharesArray.length > 0) {
