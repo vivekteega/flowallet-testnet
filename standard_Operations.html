@@ -6833,7 +6833,8 @@
 </script>
 <script id="floCloudAPI">
     /* FLO Cloud operations to send/request application data*/
-    floCloudAPI = {
+    const floCloudAPI = {
+
         //send Any message to supernode cloud storage
         sendApplicationData: function(message, type, options = {}){
             return new Promise((resolve,reject) => {
@@ -6873,6 +6874,7 @@
             })
         },
 
+        //send General Data
         sendGeneralData: function(message, type, options = {}){
             this.sendApplicationData(message, type, options)
                 .then(result => reactor.dispatchEvent('logHandle',result))
@@ -6929,7 +6931,7 @@
                 division: options.division || floGlobals.division,
                 object: objectName, 
                 vectorClock: floGlobals.vectorClock[objectName],
-                diff: detailedDiff(oldObject, newObject)
+                diff: findDifference(oldObject, newObject)
             }
             this.sendApplicationData(message, `${objectName}@Update`, options)
                 .then(result => reactor.dispatchEvent('logHandle',result))
@@ -6948,8 +6950,8 @@
                     if(message.reset){
                         floGlobals.appObjects[message.object] = message.reset
                         floGlobals.vectorClock[message.object] = vc
-                        //compactIDB.writeData("appObjects", floGlobals.appObjects[message.object], message.object)
-                        //compactIDB.writeData("vectorClocks", vc, message.object)
+                        compactIDB.writeData("appObjects", floGlobals.appObjects[message.object], message.object)
+                        compactIDB.writeData("vectorClocks", vc, message.object)
                     }
                 //}
             }
@@ -6967,12 +6969,12 @@
                 //if(floGlobals.subAdmins.includes(dataSet[vc].senderID)){
                     var message = dataSet[vc].message;
                     if(message.diff){
-                        floGlobals.appObjects[message.object] = mergeAllDiff(floGlobals.appObjects[message.object], message.diff)
-                        //compactIDB.writeData("appObjects",floGlobals.appObjects[message.object], message.object)
+                        floGlobals.appObjects[message.object] = mergeDifference(floGlobals.appObjects[message.object], message.diff)
+                        compactIDB.writeData("appObjects",floGlobals.appObjects[message.object], message.object)
                     }
                 //}
                 floGlobals.vectorClock[message.object] = vc
-                //compactIDB.writeData("vectorClocks", vc, message.object)
+                compactIDB.writeData("vectorClocks", vc, message.object)
             }
         }catch(error){
             console.log(error)
@@ -6987,10 +6989,10 @@
             if(!Array.isArray(floGlobals.generalData[event.filterStr]))
                 floGlobals.generalData[event.filterStr] = [] 
             for(vc in dataSet){
-                floGlobals.generalData[event.filterStr].push({sender: dataSet[vc].senderID, message: dataSet[vc].message})
-                //compactIDB.writeData("generalData", floGlobals.generalData[event.filterStr], event.filterStr)
+                floGlobals.generalData[event.filterStr].push({sender: dataSet[vc].senderID, vectorClock: vc, message: dataSet[vc].message})
+                compactIDB.writeData("generalData", floGlobals.generalData[event.filterStr], event.filterStr)
                 floGlobals.generalVC[event.filterStr] = vc
-                //compactIDB.writeData("generalVC", vc, event.filterStr)
+                compactIDB.writeData("generalVC", vc, event.filterStr)
             }
         }catch(error){
             console.log(error)
