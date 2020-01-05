@@ -8447,6 +8447,7 @@ Bitcoin.Util = {
     }
 </script>
 <script id="floDapps">
+    /* General functions for FLO Dapps*/
     const floDapps = {
 
         util:{
@@ -8702,7 +8703,7 @@ Bitcoin.Util = {
     reactor.registerEvent("startUpSuccessLog");
     reactor.addEventListener("startUpSuccessLog", log => console.log(log))
 
-    reactor.registerEvent("startUpSuccessLog");
+    reactor.registerEvent("startUpErrorLog");
     reactor.addEventListener("startUpErrorLog", log => console.error(log))
 
     function onLoadStartUp() {
