@@ -73,8 +73,8 @@ This template contains standard operations that can be used for the following:
 2. privateKey - private key of the signer
 
 ####  Verify Signature
-	 floCrypto.decryptData(data, signature, publicKey)
-`decryptData` verifies signatue of the data using public-key
+	 floCrypto.verifySign(data, signature, publicKey)
+`verifySign` verifies signatue of the data using public-key
 1. data - data of the given signature
 2. signature - signature of the data
 3. publicKey - public key of the signer
