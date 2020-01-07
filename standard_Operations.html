@@ -8311,17 +8311,17 @@ Bitcoin.Util = {
                 }
             },
         
-            storeGeneralData: function(event){
+            storeGeneralData: function(filterStr, dataSet){
                 try{
-                    dataSet = JSON.parse(event.dataSet);
+                    dataSet = JSON.parse(dataSet);
                     console.log(dataSet)
-                    if(!Array.isArray(floGlobals.generalData[event.filterStr]))
-                        floGlobals.generalData[event.filterStr] = [] 
+                    if(!Array.isArray(floGlobals.generalData[filterStr]))
+                        floGlobals.generalData[filterStr] = [] 
                     for(vc in dataSet){
-                        floGlobals.generalData[event.filterStr].push({sender: dataSet[vc].senderID, vectorClock: vc, message: dataSet[vc].message})
-                        compactIDB.writeData("generalData", floGlobals.generalData[event.filterStr], event.filterStr)
-                        floGlobals.generalVC[event.filterStr] = vc
-                        compactIDB.writeData("generalVC", vc, event.filterStr)
+                        floGlobals.generalData[filterStr].push({sender: dataSet[vc].senderID, vectorClock: vc, message: dataSet[vc].message})
+                        compactIDB.writeData("generalData", floGlobals.generalData[filterStr], filterStr)
+                        floGlobals.generalVC[filterStr] = vc
+                        compactIDB.writeData("generalVC", vc, filterStr)
                     }
                 }catch(error){
                     console.error(error)
@@ -8403,12 +8403,12 @@ Bitcoin.Util = {
                     mostRecent: true
                 }
                 floSupernode.requestData(JSON.stringify(request),request.receiverID).then(dataSet => {
-                    this.util.resetData(filterStr, dataSet)
+                    this.util.resetData(dataSet)
                     request.type = `${objectName}@Update`
                     request.lowerVectorClock = floGlobals.vectorClock[objectName]+1
                     request.mostRecent = false
                     floSupernode.requestData(JSON.stringify(request), request.receiverID).then(dataSet => {
-                        this.util.updateData(filterStr, dataSet)
+                        this.util.updateData(dataSet)
                         resolve('Object Data Updated')
                     }).catch(error => reject(error))
                 }).catch(error => reject(error))
