@@ -8285,7 +8285,7 @@ Bitcoin.Util = {
                             floGlobals.appObjects[message.object] = message.reset
                             floGlobals.vectorClock[message.object] = vc
                             compactIDB.writeData("appObjects", floGlobals.appObjects[message.object], message.object)
-                            compactIDB.writeData("vectorClocks", vc, message.object)
+                            compactIDB.writeData("vectorClock", vc, message.object)
                         }
                     }
                 }catch(error){
@@ -8304,7 +8304,7 @@ Bitcoin.Util = {
                                 compactIDB.writeData("appObjects",floGlobals.appObjects[message.object], message.object)
                             }
                         floGlobals.vectorClock[message.object] = vc
-                        compactIDB.writeData("vectorClocks", vc, message.object)
+                        compactIDB.writeData("vectorClock", vc, message.object)
                     }
                 }catch(error){
                     console.error(error)
@@ -8468,7 +8468,7 @@ Bitcoin.Util = {
                         //for Dapps
                         subAdmins:{},
                         appObjects:{},
-                        vectorClocks:{},
+                        vectorClock:{},
                         generalData:{},
                         generalVC:{}
                     }
@@ -8532,7 +8532,7 @@ Bitcoin.Util = {
 
                 loadDataFromIDB: function(){
                     return new Promise((resolve,reject) => {
-                        var loadData = ["appObjects", "vectorClocks", "generalData", "generalVC"]
+                        var loadData = ["appObjects", "vectorClock", "generalData", "generalVC"]
                         var promises = []
                         for(var i = 0; i < loadData.length; i++)
                             promises[i] = compactIDB.readAllData(loadData[i])
