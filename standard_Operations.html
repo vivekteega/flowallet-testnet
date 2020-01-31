@@ -7638,16 +7638,17 @@ Bitcoin.Util = {
 
     sendDataToSN(data, snfloID){
         return new Promise((resolve, reject) => {
-            console.log(snfloID)
             var websocket = new WebSocket("wss://" + floGlobals.supernodes[snfloID].uri + "/ws");
             websocket.onmessage = (evt => {
                 if(evt.data == '$+'){
                     websocket.send(data);
                     resolve(`Data sent to supernode : ${snfloID}`);
                 }else if(evt.data == '$-'){
-                    this.kBucket.getNextSupernode(snfloID)
-                        .then(nextNode => this.sendDataToSN(data, nextNode[0]))
-                        .catch(error => reject(error))
+                    this.kBucket.getNextSupernode(snfloID).then(nextNode => {
+                        this.sendDataToSN(data, nextNode[0])
+                            .then(result => resolve(result))
+                            .catch(error => reject(error))
+                    }).catch(error => reject(error))
                 }else{
                     console.log(evt.data)
                     reject(evt.data)
@@ -7655,9 +7656,11 @@ Bitcoin.Util = {
                 websocket.close();
             })
             websocket.onerror = (evt) => {
-                this.kBucket.getNextSupernode(snfloID)
-                    .then(nextNode => this.sendDataToSN(data, nextNode[0]))
-                    .catch(error => reject(error))
+                this.kBucket.getNextSupernode(snfloID).then(nextNode => {
+                    this.sendDataToSN(data, nextNode[0])
+                        .then(result => resolve(result))
+                        .catch(error => reject(error))
+                }).catch(error => reject(error))
             };
         })
     },
@@ -7682,9 +7685,11 @@ Bitcoin.Util = {
                 if(evt.data == '$+'){
                     websocket.send(`?${request}`);
                 }else if(evt.data == '$-'){
-                    this.kBucket.getNextSupernode(snfloID)
-                        .then(nextNode => this.requestDataFromSN(request, nextNode[0]))
-                        .catch(error => reject(error))
+                    this.kBucket.getNextSupernode(snfloID).then(nextNode => {
+                        this.requestDataFromSN(request, nextNode[0])
+                            .then(result => resolve(result))
+                            .catch(error => reject(error))
+                    }).catch(error => reject(error))
                     websocket.close()
                 }else{
                     resolve(evt.data);
@@ -7692,9 +7697,11 @@ Bitcoin.Util = {
                 }
             })
             websocket.onerror = (evt) => {
-                this.kBucket.getNextSupernode(snfloID)
-                    .then(nextNode => this.requestDataFromSN(request, nextNode[0]))
-                    .catch(error => reject(error))
+                this.kBucket.getNextSupernode(snfloID).then(nextNode => {
+                    this.requestDataFromSN(request, nextNode[0])
+                        .then(result => resolve(result))
+                        .catch(error => reject(error))
+                }).catch(error => reject(error))
             };
         })
     },
