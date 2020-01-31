@@ -7638,16 +7638,17 @@ Bitcoin.Util = {
 
     sendDataToSN(data, snfloID){
         return new Promise((resolve, reject) => {
-            console.log(snfloID)
             var websocket = new WebSocket("wss://" + floGlobals.supernodes[snfloID].uri + "/ws");
             websocket.onmessage = (evt => {
                 if(evt.data == '$+'){
                     websocket.send(data);
                     resolve(`Data sent to supernode : ${snfloID}`);
                 }else if(evt.data == '$-'){
-                    this.kBucket.getNextSupernode(snfloID)
-                        .then(nextNode => this.sendDataToSN(data, nextNode[0]))
-                        .catch(error => reject(error))
+                    this.kBucket.getNextSupernode(snfloID).then(nextNode => {
+                        this.sendDataToSN(data, nextNode[0])
+                            .then(result => resolve(result))
+                            .catch(error => reject(error))
+                    }).catch(error => reject(error))
                 }else{
                     console.log(evt.data)
                     reject(evt.data)
@@ -7655,9 +7656,11 @@ Bitcoin.Util = {
                 websocket.close();
             })
             websocket.onerror = (evt) => {
-                this.kBucket.getNextSupernode(snfloID)
-                    .then(nextNode => this.sendDataToSN(data, nextNode[0]))
-                    .catch(error => reject(error))
+                this.kBucket.getNextSupernode(snfloID).then(nextNode => {
+                    this.sendDataToSN(data, nextNode[0])
+                        .then(result => resolve(result))
+                        .catch(error => reject(error))
+                }).catch(error => reject(error))
             };
         })
     },
@@ -7682,9 +7685,11 @@ Bitcoin.Util = {
                 if(evt.data == '$+'){
                     websocket.send(`?${request}`);
                 }else if(evt.data == '$-'){
-                    this.kBucket.getNextSupernode(snfloID)
-                        .then(nextNode => this.requestDataFromSN(request, nextNode[0]))
-                        .catch(error => reject(error))
+                    this.kBucket.getNextSupernode(snfloID).then(nextNode => {
+                        this.requestDataFromSN(request, nextNode[0])
+                            .then(result => resolve(result))
+                            .catch(error => reject(error))
+                    }).catch(error => reject(error))
                     websocket.close()
                 }else{
                     resolve(evt.data);
@@ -7692,9 +7697,11 @@ Bitcoin.Util = {
                 }
             })
             websocket.onerror = (evt) => {
-                this.kBucket.getNextSupernode(snfloID)
-                    .then(nextNode => this.requestDataFromSN(request, nextNode[0]))
-                    .catch(error => reject(error))
+                this.kBucket.getNextSupernode(snfloID).then(nextNode => {
+                    this.requestDataFromSN(request, nextNode[0])
+                        .then(result => resolve(result))
+                        .catch(error => reject(error))
+                }).catch(error => reject(error))
             };
         })
     },
@@ -8285,7 +8292,7 @@ Bitcoin.Util = {
                             floGlobals.appObjects[message.object] = message.reset
                             floGlobals.vectorClock[message.object] = vc
                             compactIDB.writeData("appObjects", floGlobals.appObjects[message.object], message.object)
-                            compactIDB.writeData("vectorClocks", vc, message.object)
+                            compactIDB.writeData("vectorClock", vc, message.object)
                         }
                     }
                 }catch(error){
@@ -8304,24 +8311,24 @@ Bitcoin.Util = {
                                 compactIDB.writeData("appObjects",floGlobals.appObjects[message.object], message.object)
                             }
                         floGlobals.vectorClock[message.object] = vc
-                        compactIDB.writeData("vectorClocks", vc, message.object)
+                        compactIDB.writeData("vectorClock", vc, message.object)
                     }
                 }catch(error){
                     console.error(error)
                 }
             },
         
-            storeGeneralData: function(event){
+            storeGeneralData: function(filterStr, dataSet){
                 try{
-                    dataSet = JSON.parse(event.dataSet);
+                    dataSet = JSON.parse(dataSet);
                     console.log(dataSet)
-                    if(!Array.isArray(floGlobals.generalData[event.filterStr]))
-                        floGlobals.generalData[event.filterStr] = [] 
+                    if(!Array.isArray(floGlobals.generalData[filterStr]))
+                        floGlobals.generalData[filterStr] = [] 
                     for(vc in dataSet){
-                        floGlobals.generalData[event.filterStr].push({sender: dataSet[vc].senderID, vectorClock: vc, message: dataSet[vc].message})
-                        compactIDB.writeData("generalData", floGlobals.generalData[event.filterStr], event.filterStr)
-                        floGlobals.generalVC[event.filterStr] = vc
-                        compactIDB.writeData("generalVC", vc, event.filterStr)
+                        floGlobals.generalData[filterStr].push({sender: dataSet[vc].senderID, vectorClock: vc, message: dataSet[vc].message})
+                        compactIDB.writeData("generalData", floGlobals.generalData[filterStr], filterStr)
+                        floGlobals.generalVC[filterStr] = vc
+                        compactIDB.writeData("generalVC", vc, filterStr)
                     }
                 }catch(error){
                     console.error(error)
@@ -8403,12 +8410,12 @@ Bitcoin.Util = {
                     mostRecent: true
                 }
                 floSupernode.requestData(JSON.stringify(request),request.receiverID).then(dataSet => {
-                    this.util.resetData(filterStr, dataSet)
+                    this.util.resetData(dataSet)
                     request.type = `${objectName}@Update`
                     request.lowerVectorClock = floGlobals.vectorClock[objectName]+1
                     request.mostRecent = false
                     floSupernode.requestData(JSON.stringify(request), request.receiverID).then(dataSet => {
-                        this.util.updateData(filterStr, dataSet)
+                        this.util.updateData(dataSet)
                         resolve('Object Data Updated')
                     }).catch(error => reject(error))
                 }).catch(error => reject(error))
@@ -8468,7 +8475,7 @@ Bitcoin.Util = {
                         //for Dapps
                         subAdmins:{},
                         appObjects:{},
-                        vectorClocks:{},
+                        vectorClock:{},
                         generalData:{},
                         generalVC:{}
                     }
@@ -8480,6 +8487,11 @@ Bitcoin.Util = {
                         resolve("IndexedDB App Storage Initated Successfully")
                     }).catch(error => reject(error));
                 })
+            },
+            
+            privKeyInput: function(){
+                var privKey = prompt("Enter Private Key: ")
+                return privKey
             },
 
             startUpFunctions:{
@@ -8532,7 +8544,7 @@ Bitcoin.Util = {
 
                 loadDataFromIDB: function(){
                     return new Promise((resolve,reject) => {
-                        var loadData = ["appObjects", "vectorClocks", "generalData", "generalVC"]
+                        var loadData = ["appObjects", "vectorClock", "generalData", "generalVC"]
                         var promises = []
                         for(var i = 0; i < loadData.length; i++)
                             promises[i] = compactIDB.readAllData(loadData[i])
@@ -8586,7 +8598,7 @@ Bitcoin.Util = {
                                     .catch(error => reject(error))
                             }else{
                                 try{
-                                    var privKey = prompt("Enter Private Key: ")
+                                    var privKey = floDapps.util.privKeyInput();
                                     if(!privKey)
                                         return reject("Empty Private Key")
                                     var floID = floCrypto.getFloIDfromPubkeyHex(floCrypto.getPubKeyHex(privKey))
@@ -8665,6 +8677,10 @@ Bitcoin.Util = {
             this.util.startUpFunctions[fname] = fn;
         },
 
+        setCustomPrivKeyInput: function(customFn){
+            this.util.privKeyInput = customFn
+        },
+
         setAppObjectStores: function(appObs){
             this.util.appObs = appObs
         },
@@ -8708,12 +8724,14 @@ Bitcoin.Util = {
 
     function onLoadStartUp() {
 
-        //addStartUpFunction('Sample', Promised Function)
-        //setAppObjectStores({sampleObs1:{}, sampleObs2:{options{autoIncrement:true, keyPath:'SampleKey'}, Indexes:{sampleIndex:{}}}})
+        //floDapps.addStartUpFunction('Sample', Promised Function)
+        //floDapps.setAppObjectStores({sampleObs1:{}, sampleObs2:{options{autoIncrement:true, keyPath:'SampleKey'}, Indexes:{sampleIndex:{}}}})
+        //floDapps.setCustomPrivKeyInput( () => { FUNCTION BODY *must return private key* } )
 
         floDapps.launchStartUp().then(result => {
             console.log(result)
             alert(`Welcome FLO_ID: ${myFloID}`)
+            //App functions....
         }).catch(error => console.error(error))
     }
 </script>
