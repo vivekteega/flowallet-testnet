@@ -8481,6 +8481,11 @@ Bitcoin.Util = {
                     }).catch(error => reject(error));
                 })
             },
+            
+            privKeyInput: function(){
+                var privKey = prompt("Enter Private Key: ")
+                return privKey
+            },
 
             startUpFunctions:{
 
@@ -8586,7 +8591,7 @@ Bitcoin.Util = {
                                     .catch(error => reject(error))
                             }else{
                                 try{
-                                    var privKey = prompt("Enter Private Key: ")
+                                    var privKey = floDapps.util.privKeyInput();
                                     if(!privKey)
                                         return reject("Empty Private Key")
                                     var floID = floCrypto.getFloIDfromPubkeyHex(floCrypto.getPubKeyHex(privKey))
@@ -8665,6 +8670,10 @@ Bitcoin.Util = {
             this.util.startUpFunctions[fname] = fn;
         },
 
+        setCustomPrivKeyInput: function(customFn){
+            this.util.privKeyInput = customFn
+        },
+
         setAppObjectStores: function(appObs){
             this.util.appObs = appObs
         },
@@ -8708,12 +8717,14 @@ Bitcoin.Util = {
 
     function onLoadStartUp() {
 
-        //addStartUpFunction('Sample', Promised Function)
-        //setAppObjectStores({sampleObs1:{}, sampleObs2:{options{autoIncrement:true, keyPath:'SampleKey'}, Indexes:{sampleIndex:{}}}})
+        //floDapps.addStartUpFunction('Sample', Promised Function)
+        //floDapps.setAppObjectStores({sampleObs1:{}, sampleObs2:{options{autoIncrement:true, keyPath:'SampleKey'}, Indexes:{sampleIndex:{}}}})
+        //floDapps.setCustomPrivKeyInput( () => { FUNCTION BODY *must return private key* } )
 
         floDapps.launchStartUp().then(result => {
             console.log(result)
             alert(`Welcome FLO_ID: ${myFloID}`)
+            //App functions....
         }).catch(error => console.error(error))
     }
 </script>
