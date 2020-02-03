@@ -8600,7 +8600,7 @@ Bitcoin.Util = {
                                 try{
                                     var privKey = floDapps.util.privKeyInput();
                                     if(!privKey)
-                                        return reject("Empty Private Key")
+                                        privKey = floCrypto.generateNewID().privKey
                                     var floID = floCrypto.getFloIDfromPubkeyHex(floCrypto.getPubKeyHex(privKey))
                                     console.log(floID)
                                 }catch(error){
