@@ -8608,7 +8608,7 @@ Bitcoin.Util = {
                                         if(!result)
                                             return reject("Empty Private Key")
                                         var floID = floCrypto.getFloIDfromPubkeyHex(floCrypto.getPubKeyHex(result))
-                                        console.log(floID)
+                                        privKey = result
                                     }catch(error){
                                         console.error(error)
                                         return reject("Invalid Private Key")
