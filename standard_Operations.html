@@ -8490,8 +8490,13 @@ Bitcoin.Util = {
             },
             
             privKeyInput: function(){
-                var privKey = prompt("Enter Private Key: ")
-                return privKey
+                return new Promise((resolve, reject) => {
+                    var privKey = prompt("Enter Private Key: ")
+                    if(privKey === null)
+                        reject(null)
+                    else
+                        resolve(privKey)
+                })
             },
 
             startUpFunctions:{
@@ -8597,27 +8602,33 @@ Bitcoin.Util = {
                                     .then(result => resolve(result))
                                     .catch(error => reject(error))
                             }else{
-                                try{
-                                    var privKey = floDapps.util.privKeyInput();
-                                    if(!privKey)
-                                        privKey = floCrypto.generateNewID().privKey
-                                    var floID = floCrypto.getFloIDfromPubkeyHex(floCrypto.getPubKeyHex(privKey))
-                                    console.log(floID)
-                                }catch(error){
-                                    console.error(error)
-                                    return reject("Invalid Private Key")
-                                }
-                                var threshold = floCrypto.randInt(10,20)
-                                writeSharesToIDB(floCrypto.createShamirsSecretShares(privKey, threshold, threshold)).then(resultIndexes =>{
-                                    //store index keys in localStorage
-                                    localStorage.setItem(`${floGlobals.application}#privKey`, JSON.stringify(resultIndexes))
-                                    //also add a dummy privatekey to the IDB
-                                    var randomPrivKey = floCrypto.generateNewID().privKey
-                                    var randomThreshold = floCrypto.randInt(10,20)
-                                    writeSharesToIDB(floCrypto.createShamirsSecretShares(randomPrivKey, randomThreshold, randomThreshold))
-                                    //resolve private Key
-                                    resolve(privKey)
-                                }).catch(error => reject(error))
+                                var privKey;
+                                floDapps.util.privKeyInput().then(result => {
+                                    try{
+                                        if(!result)
+                                            return reject("Empty Private Key")
+                                        var floID = floCrypto.getFloIDfromPubkeyHex(floCrypto.getPubKeyHex(result))
+                                        console.log(floID)
+                                    }catch(error){
+                                        console.error(error)
+                                        return reject("Invalid Private Key")
+                                    }
+                                }).catch(error => {
+                                    console.log(error, "Generating Random Keys")
+                                    privKey = floCrypto.generateNewID().privKey
+                                }).finally(_ => {
+                                    var threshold = floCrypto.randInt(10,20)
+                                    writeSharesToIDB(floCrypto.createShamirsSecretShares(privKey, threshold, threshold)).then(resultIndexes =>{
+                                        //store index keys in localStorage
+                                        localStorage.setItem(`${floGlobals.application}#privKey`, JSON.stringify(resultIndexes))
+                                        //also add a dummy privatekey to the IDB
+                                        var randomPrivKey = floCrypto.generateNewID().privKey
+                                        var randomThreshold = floCrypto.randInt(10,20)
+                                        writeSharesToIDB(floCrypto.createShamirsSecretShares(randomPrivKey, randomThreshold, randomThreshold))
+                                        //resolve private Key
+                                        resolve(privKey)
+                                    }).catch(error => reject(error))
+                                })
                             }
                         })
                     }
