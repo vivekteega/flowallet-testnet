@@ -8696,6 +8696,26 @@ Bitcoin.Util = {
             this.util.appObs = appObs
         },
         
+        manageSubAdmins(adminPrivKey, addList, rmList){
+            return new Promise((resolve, reject) => {
+                if(!Array.isArray(addList)) addList = undefined;
+                if(!Array.isArray(rmList)) rmList = undefined;
+                var floData = {
+                    [floGlobals.application] : {
+                        addSubAdmin : addList,
+                        removeSubAdmin: rmList,
+                    }
+                }
+                var floID = floCrypto.getFloIDfromPubkeyHex(floCrypto.getPubKeyHex(adminPrivKey))
+                if(floID != floGlobals.adminID)
+                    reject('Access Denied for Admin privilege')
+                else
+                    floBlockchainAPI.writeData(floID, JSON.stringify(floData), adminPrivKey)
+                        .then(result => resolve(['Updated SubAdmin List', result]))
+                        .catch(error => reject(error))
+            })
+        },
+
         clearCredentials: function(){
             var indexArr = localStorage.getItem(`${floGlobals.application}#privKey`)
             if(!indexArr)
