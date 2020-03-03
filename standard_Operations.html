@@ -7214,7 +7214,7 @@ Bitcoin.Util = {
     getPubKeyHex: function (privateKeyHex) {
       var key = new Bitcoin.ECKey(privateKeyHex);
       if (key.priv == null) {
-        alert("Invalid Private key");
+        console.error("Invalid Private key");
         return;
       }
       key.setCompressed(true);
@@ -7224,9 +7224,13 @@ Bitcoin.Util = {
 
     //Returns flo-ID from public-key
     getFloIDfromPubkeyHex: function (pubkeyHex) {
-      var key = new Bitcoin.ECKey().setPub(pubkeyHex);
-      var floID = key.getBitcoinAddress();
-      return floID;
+      try{
+        var key = new Bitcoin.ECKey().setPub(pubkeyHex);
+        var floID = key.getBitcoinAddress();
+        return floID;
+      }catch (e) {
+        console.error(e);
+      }
     },
 
     //Verify the private-key for the given public-key or flo-ID
