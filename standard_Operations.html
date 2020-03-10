@@ -8286,6 +8286,9 @@ Bitcoin.Util = {
     const floCloudAPI = {
 
         util:{
+
+            lastCommit: {},
+
             resetData: function(dataSet){
                 try{
                     dataSet = JSON.parse(dataSet);
@@ -8420,6 +8423,7 @@ Bitcoin.Util = {
                     request.mostRecent = false
                     floSupernode.requestData(JSON.stringify(request), request.receiverID).then(dataSet => {
                         this.util.updateData(dataSet)
+                        this.util.lastCommit[objectName] = JSON.stringify(floGlobals.appObjects[objectName])
                         resolve('Object Data Updated')
                     }).catch(error => reject(error))
                 }).catch(error => reject(error))
@@ -8427,32 +8431,34 @@ Bitcoin.Util = {
         },
 
         //reset or initialize an object and send it to cloud
-        resetObjectData: function(newObject, objectName, options = {}){
+        resetObjectData: function(objectName, options = {}){
             return new Promise((resolve,reject) => {
                 var message = {
                     division: options.division || floGlobals.division, 
                     object: objectName, 
                     vectorClock: floGlobals.vectorClock[objectName], 
-                    reset: newObject
+                    reset: floGlobals.appObjects[objectName]
                 }
-                this.sendApplicationData(message, `${objectName}@Reset`, options)
-                    .then(result => resolve(result))
-                    .catch(error => reject(error))
+                this.sendApplicationData(message, `${objectName}@Reset`, options).then(result => {
+                    this.util.lastCommit[objectName] = JSON.stringify(floGlobals.appObjects[objectName])
+                    resolve(result)
+                }).catch(error => reject(error))
             })
         },
 
         //update the diff and send it to cloud
-        updateObjectData: function(oldObject, newObject, objectName, options = {}){
+        updateObjectData: function(objectName, options = {}){
             return new Promise((resolve,reject) => {
                 var message = {
                     division: options.division || floGlobals.division,
                     object: objectName, 
                     vectorClock: floGlobals.vectorClock[objectName],
-                    diff: findDifference(oldObject, newObject)
+                    diff: findDifference(JSON.parse(this.util.lastCommit[objectName]), floGlobals.appObjects[objectName])
                 }
-                this.sendApplicationData(message, `${objectName}@Update`, options)
-                    .then(result => resolve(result))
-                    .catch(error => reject(error))
+                this.sendApplicationData(message, `${objectName}@Update`, options).then(result => {
+                    this.util.lastCommit[objectName] = JSON.stringify(floGlobals.appObjects[objectName])
+                    resolve(result)
+                }).catch(error => reject(error))
             })
         }
     }
