@@ -8401,8 +8401,12 @@ Bitcoin.Util = {
                         .stringify(Object.keys(
                             objectStores).sort()))
                         resolve("Initiated IndexedDB");
-                    else
-                        reject("IndexedDB already exist with different ObjectStores!");
+                    else {
+                        Object.values(db.objectStoreNames).forEach(obs => delete objectStores[obs])
+                        this.initDB(dbName, objectStores, db.version + 1)
+                            .then(result => resolve(result))
+                            .catch(error => reject(error))
+                    }
                     db.close();
                 }
             });
@@ -8432,7 +8436,7 @@ Bitcoin.Util = {
                     writeReq.onsuccess = (evt) => resolve(`Write data Successful`);
                     writeReq.onerror = (evt) => reject(
                         `Write data unsuccessful [${evt.target.error.name}] ${evt.target.error.message}`
-                        );
+                    );
                     db.close();
                 }).catch(error => reject(error));
             });
@@ -8446,7 +8450,7 @@ Bitcoin.Util = {
                     addReq.onsuccess = (evt) => resolve(`Add data successful`);
                     addReq.onerror = (evt) => reject(
                         `Add data unsuccessful [${evt.target.error.name}] ${evt.target.error.message}`
-                        );
+                    );
                     db.close();
                 }).catch(error => reject(error));
             });
@@ -8460,7 +8464,7 @@ Bitcoin.Util = {
                     delReq.onsuccess = (evt) => resolve(`Removed Data ${key}`);
                     delReq.onerror = (evt) => reject(
                         `Remove data unsuccessful [${evt.target.error.name}] ${evt.target.error.message}`
-                        );
+                    );
                     db.close();
                 }).catch(error => reject(error));
             });
@@ -8474,7 +8478,7 @@ Bitcoin.Util = {
                     getReq.onsuccess = (evt) => resolve(evt.target.result);
                     getReq.onerror = (evt) => reject(
                         `Read data unsuccessful [${evt.target.error.name}] ${evt.target.error.message}`
-                        );
+                    );
                     db.close();
                 }).catch(error => reject(error));
             });
@@ -8496,7 +8500,7 @@ Bitcoin.Util = {
                     }
                     curReq.onerror = (evt) => reject(
                         `Read-All data unsuccessful [${evt.target.error.name}] ${evt.target.error.message}`
-                        );
+                    );
                     db.close();
                 }).catch(error => reject(error));
             });
@@ -8519,7 +8523,7 @@ Bitcoin.Util = {
                     }
                     curReq.onerror = (evt) => reject(
                         `Search unsuccessful [${evt.target.error.name}] ${evt.target.error.message}`
-                        );
+                    );
                     db.close();
                 }).catch(error => reject(error));
             });
