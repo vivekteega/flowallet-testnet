@@ -8751,7 +8751,6 @@ Bitcoin.Util = {
 
             initIndexedDB: function () {
                 return new Promise((resolve, reject) => {
-                    var storageList = floGlobals.storageList;
                     var obj = {
                         //general
                         lastTx: {},
@@ -9076,6 +9075,7 @@ Bitcoin.Util = {
             return new Promise((resolve, reject) => {
                 compactIDB.clearData('credentials').then(result => {
                     localStorage.removeItem(`${floGlobals.application}#privKey`)
+                    myPrivKey = myPubKey = myFloID = undefined;
                     resolve("privKey credentials deleted!")
                 }).catch(error => reject(error))
             })
