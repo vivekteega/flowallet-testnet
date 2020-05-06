@@ -8361,7 +8361,7 @@
       },
   
       //Write Data into blockchain
-      writeData: function (senderAddr, Data, PrivKey, receiverAddr = floGlobals.adminID) {
+      writeData: function (senderAddr, Data, PrivKey, receiverAddr) {
         return new Promise((resolve, reject) => {
           this.sendTx(senderAddr, receiverAddr, floGlobals.sendAmt, PrivKey, Data)
               .then(txid => resolve(txid))
@@ -8409,12 +8409,234 @@
           }
         });
       },
-  
+
+      
+        //merge all UTXOs of a given floID into a single UTXO
+        mergeUTXOs: function (floID, privKey, floData = '') {
+            return new Promise((resolve, reject) => {
+                if (!floCrypto.validateAddr(floID))
+                    return reject(`Invalid floID`);
+                if (!floCrypto.verifyPrivKey(privKey, floID))
+                    return reject("Invalid Private Key")
+
+                var trx = bitjs.transaction();
+                var utxoAmt = 0.0;
+                var fee = floGlobals.fee;
+                this.promisedAPI(`api/addr/${floID}/utxo`).then(utxos => {
+                    for (var i = utxos.length - 1; i >= 0; i--) {
+                        if (utxos[i].confirmations) {
+                            trx.addinput(utxos[i].txid, utxos[i].vout, utxos[i]
+                                .scriptPubKey)
+                            utxoAmt += utxos[i].amount;
+                        }
+                    }
+                    trx.addoutput(floID, utxoAmt - fee);
+                    trx.addflodata(floData);
+                    var signedTxHash = trx.sign(privKey, 1);
+                    this.broadcastTx(signedTxHash)
+                        .then(txid => resolve(txid))
+                        .catch(error => reject(error))
+                }).catch(error => reject(error))
+            })
+        },
+
+        /**Write data into blockchain from (and/or) to multiple floID
+         * @param  {Array} senderPrivKeys List of sender private-keys
+         * @param  {string} data FLO data of the txn
+         * @param  {Array} receivers List of receivers
+         * @param  {float} sendAmt (optional) amount to be sent to receivers (default value: floGlobals.sendAmt)
+         * @return {Promise}
+         */
+        writeDataMultiple: function (senderPrivKeys, data, receivers, preserveRatio = true){
+            return new Promise((resolve, reject) => {
+                if (!Array.isArray(senderPrivKeys)) 
+                    return reject("Invalid senderPrivKeys: SenderPrivKeys must be Array")
+                if(!preserveRatio){
+                    let tmp = {};
+                    let amount = (floGlobals.sendAmt * receivers.length) / senderPrivKeys.length;
+                    senderPrivKeys.forEach(key => tmp[key] = amount);
+                    senderPrivKeys = tmp
+                }
+                if (!Array.isArray(receivers))
+                    return reject("Invalid receivers: Receivers must be Array")
+                else {
+                    let tmp = {};
+                    let amount = floGlobals.sendAmt;
+                    receivers.forEach(floID => tmp[floID] = amount);
+                    receivers = tmp
+                }
+                if (typeof data != "string")
+                    data = JSON.stringify(data);
+                this.sendTxMultiple(senderPrivKeys, receivers, data)
+                    .then(txid => resolve(txid))
+                    .catch(error => reject(error))
+            })
+        },
+
+        /**Send Tx from (and/or) to multiple floID
+         * @param  {Array or Object} senderPrivKeys List of sender private-key (optional: with coins to be sent)
+         * @param  {Object} receivers List of receivers with respective amount to be sent
+         * @param  {string} floData FLO data of the txn
+         * @return {Promise}
+         */
+        sendTxMultiple: function (senderPrivKeys, receivers, floData = '') {
+            return new Promise((resolve, reject) => {
+                
+                let senders = {}, preserveRatio; 
+                //check for argument validations
+                try{
+                    let invalids = {
+                        InvalidSenderPrivKeys: [],
+                        InvalidSenderAmountFor: [],
+                        InvalidReceiverIDs: [],
+                        InvalidReceiveAmountFor: []
+                    }
+                    let inputVal = 0, outputVal = 0;
+                    //Validate sender privatekeys (and send amount if passed)
+                    //conversion when only privateKeys are passed (preserveRatio mode)
+                    if(Array.isArray(senderPrivKeys)){  
+                        senderPrivKeys.forEach(key => {
+                            try{
+                                if(!key)
+                                    invalids.InvalidSenderPrivKeys.push(key);
+                                else{
+                                    let floID = floCrypto.getFloIDfromPubkeyHex(floCrypto.getPubKeyHex(key));
+                                    senders[floID] = {
+                                        wif: key
+                                    }
+                                }
+                            }catch(error){
+                                invalids.InvalidSenderPrivKeys.push(key)
+                            }
+                        })
+                        preserveRatio = true;
+                    }
+                    //conversion when privatekeys are passed with send amount
+                    else{
+                        for(let key in senderPrivKeys){
+                            try{
+                                if(!key)
+                                    invalids.InvalidSenderPrivKeys.push(key);
+                                else{
+                                    if(typeof senderPrivKeys[key] !== 'number' || senderPrivKeys[key] <= 0)
+                                        invalids.InvalidSenderAmountFor.push(key)
+                                    else
+                                        inputVal += senderPrivKeys[key];
+                                    let floID = floCrypto.getFloIDfromPubkeyHex(floCrypto.getPubKeyHex(key));
+                                    senders[floID] = {
+                                        wif: key,
+                                        coins: senderPrivKeys[key]
+                                    }
+                                }
+                            }catch(error){
+                                invalids.InvalidSenderPrivKeys.push(key)
+                            }
+                        }
+                        preserveRatio = false;
+                    }
+                    //Validate the receiver IDs and receive amount
+                    for (let floID in receivers) {
+                        if (!floCrypto.validateAddr(floID))
+                            invalids.InvalidReceiverIDs.push(floID)
+                        if (typeof receivers[floID] !== 'number' || receivers[floID] <= 0)
+                            invalids.InvalidReceiveAmountFor.push(floID)
+                        else
+                            outputVal += receivers[floID];
+                    }
+                    //Reject if any invalids are found
+                    for (let i in invalids)
+                        if (!invalids[i].length)
+                            delete invalids[i];
+                    if (Object.keys(invalids).length)
+                        return reject(invalids);
+                    //Reject if given inputVal and outputVal are not equal
+                    if(!preserveRatio && inputVal != outputVal)
+                        return reject(`Input Amount (${inputVal}) not equal to Output Amount (${outputVal})`)
+                }catch(error){
+                    return reject(error)
+                }
+                //Get balance of senders
+                let promises = []
+                for (let floID in senders)
+                    promises.push(this.getBalance(floID))
+                Promise.all(promises).then(results => {
+                    let totalBalance = 0,
+                        totalFee = floGlobals.fee,
+                        balance = {};
+                    //Divide fee among sender if not for preserveRatio
+                    if(!preserveRatio) 
+                        var dividedFee = totalFee / Object.keys(senders).length;
+                    //Check if balance of each sender is sufficient enough
+                    let insufficient = [];
+                    for (let floID in senders) {
+                        balance[floID] = parseFloat(results.shift());
+                        if (isNaN(balance[floID]) || (preserveRatio && balance[floID] <= totalFee) || (!preserveRatio && balance[floID] < senders[floID].coins + dividedFee))
+                            insufficient.push(floID)
+                        totalBalance += balance[floID];
+                    }
+                    if (insufficient.length)
+                        return reject({InsufficientBalance: insufficient})
+                    //Calculate totalSentAmount and check if totalBalance is sufficient
+                    let totalSendAmt = totalFee;
+                    for (floID in receivers)
+                        totalSendAmt += receivers[floID];
+                    if (totalBalance < totalSendAmt)
+                        return reject("Insufficient total Balance")
+                    //Get the UTXOs of the senders
+                    let promises = []
+                    for (floID in senders)
+                        promises.push(this.promisedAPI(`api/addr/${floID}/utxo`))
+                    Promise.all(promises).then(results => {
+                        let wifSeq = [];
+                        var trx = bitjs.transaction();
+                        for (floID in senders) {
+                            let utxos = results.shift();
+                            let sendAmt;
+                            if(preserveRatio){
+                                let ratio = (balance[floID] / totalBalance);
+                                sendAmt = totalSendAmt * ratio;
+                            } else 
+                                sendAmt = senders[floID].coins + dividedFee;
+                            let wif = senders[floID].wif;
+                            let utxoAmt = 0.0;
+                            for (let i = utxos.length - 1;
+                                (i >= 0) && (utxoAmt < sendAmt); i--) {
+                                if (utxos[i].confirmations) {
+                                    trx.addinput(utxos[i].txid, utxos[i].vout, utxos[i]
+                                        .scriptPubKey)
+                                    wifSeq.push(wif);
+                                    utxoAmt += utxos[i].amount;
+                                }
+                            }
+                            if (utxoAmt < sendAmt)
+                                return reject("Insufficient balance:" + floID);
+                            let change = (utxoAmt - sendAmt);
+                            if (change > 0)
+                                trx.addoutput(floID, change);
+                        }
+                        for (floID in receivers)
+                            trx.addoutput(floID, receivers[floID]);
+                        trx.addflodata(floData);
+                        for (let i = 0; i < wifSeq.length; i++)
+                            trx.signinput(i, wifSeq[i], 1);
+                        var signedTxHash = trx.serialize();
+                        this.broadcastTx(signedTxHash)
+                            .then(txid => resolve(txid))
+                            .catch(error => reject(error))
+                    }).catch(error => reject(error))
+                }).catch(error => reject(error))
+            })
+        },
+
+
+
+
       //Broadcast signed Tx in blockchain using API
       broadcastTx: function (signedTxHash) {
         return new Promise((resolve, reject) => {
           var request = new XMLHttpRequest();
           var url = this.util.serverList[this.util.curPos] + 'api/tx/send';
+          console.log(url)
           if (signedTxHash.length < 1)
             reject("Empty Signature");
           else {
