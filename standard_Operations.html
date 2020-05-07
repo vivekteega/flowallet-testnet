@@ -8377,33 +8377,40 @@ Bitcoin.Util = {
             this.dbName = dbName;
         },
 
-        initDB: function (dbName, objectStores = {}) {
+        initDB: function (dbName, objectStores = {}, version = null, removeStores = []) {
             return new Promise((resolve, reject) => {
                 this.dbName = this.dbName || dbName;
-                var idb = indexedDB.open(dbName);
+                var idb = version ? indexedDB.open(dbName, version) : indexedDB.open(dbName);
                 idb.onerror = (event) => {
                     reject("Error in opening IndexedDB!");
                 };
                 idb.onupgradeneeded = (event) => {
                     var db = event.target.result;
-                    for (obs in objectStores) {
+                    for (let obs in objectStores) {
                         var objectStore = db.createObjectStore(obs, objectStores[obs].options ||
                         {});
                         if (objectStores[obs].indexes && typeof objectStores[obs].indexes ===
                             'object')
-                            for (i in objectStores[obs].indexes)
+                            for (let i in objectStores[obs].indexes)
                                 objectStore.createIndex(i, i, objectStores[obs].indexes[i] || {});
                     }
+                    if (version)
+                        removeStores.forEach(obs => db.deleteObjectStore(obs));
                 }
                 idb.onsuccess = (event) => {
                     var db = event.target.result;
                     if (JSON.stringify(Object.values(db.objectStoreNames).sort()) === JSON
-                        .stringify(Object.keys(
-                            objectStores).sort()))
+                        .stringify(Object.keys(objectStores).sort()))
                         resolve("Initiated IndexedDB");
                     else {
-                        Object.values(db.objectStoreNames).forEach(obs => delete objectStores[obs])
-                        this.initDB(dbName, objectStores, db.version + 1)
+                        let removeObs = [];
+                        Object.values(db.objectStoreNames).forEach(obs => {
+                            if (obs in objectStores)
+                                delete objectStores[obs]
+                            else
+                                removeObs.push(obs)
+                        })
+                        this.initDB(dbName, objectStores, db.version + 1, removeObs)
                             .then(result => resolve(result))
                             .catch(error => reject(error))
                     }
