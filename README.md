@@ -7,8 +7,8 @@ This template contains standard operations that can be used for the following:
 3. FLO Blockchain API Operations
 4. FLO SuperNode Websocket Operations
 5. Compact IndexedDB Operations
-6. FLO Cloud API
-7. FLO Decentralized app (Dapp)
+6. FLO Cloud API Operations
+7. FLO Decentralized app (Dapp) module
 
 ## FLO Globals 
 `floGlobals` object contains the global variables and constants required for the operations.  Make sure to add this object before any other scripts.
