@@ -141,7 +141,7 @@ This template contains standard operations that can be used for the following:
 2. uri(Uniform Resource Identifier) - identifier for AJAX resource. It is used to create URL(Uniform Resource Locator) for further operations.
 * Resolves: responseData from the API
 
-#### getBalalnce
+#### getBalance
 	floBlockchainAPI.getBalance(addr)
 `getBalance` requests balance for specified FLO address.
 1. addr - FLO address for which balance has to be retrieved
