@@ -422,15 +422,15 @@ Sample startup is defined in onLoadStartUp function
 
 vectorClock, senderID, receiverID, pubKey, message, sign, application, type, comment
 
-`vectorClock`: Unique time stamp and sender FLO ID attached to every message
-`senderID`: FLO ID of the sender
-`receiverID`: FLO ID of the receiver
-`pubKey`: Public Key of the sender 
-`message`: The actual user data
-`sign`: Digital signature of the entire data
-`application`: The name of the application sending the data
-`type`: What internal type of data the application is sending 
-`comment`: A free field for additional data
+1. `vectorClock`: Unique time stamp and sender FLO ID attached to every message
+2. * `senderID`: FLO ID of the sender
+3. `receiverID`: FLO ID of the receiver
+4. `pubKey`: Public Key of the sender 
+5. `message`: The actual user data
+6. `sign`: Digital signature of the entire data
+7. `application`: The name of the application sending the data
+8. `type`: What internal type of data the application is sending 
+9. `comment`: A free field for additional data
 
 ## 2. Concept of Vector Clock
 Decentralized cloud servers attach a unique time based ID to every message sent to the cloud, and store it alongside the message fields. 
