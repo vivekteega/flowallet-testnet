@@ -63,16 +63,16 @@ This approach decentralizes the trust process totally and extends the capacity o
 # Technical Details of standard operations 
 
 This template contains standard operations that can be used for the following:
-1. FLO Globals
-2. FLO Crypto  Operations 
+1. FLO Globals for system variables and data objects users must configure
+2. FLO Crypto Operations 
 3. FLO Blockchain API Operations
-4. FLO SuperNode Websocket Operations
-5. Compact IndexedDB Operations
-6. FLO Cloud API Operations
-7. FLO Decentralized app (Dapp) module
+4. Compact IndexedDB Operations
+5. FLO Cloud API Operations
+6. FLO Decentralized app (Dapp) Operations
 
 ## FLO Globals 
 `floGlobals` object contains the global variables and constants required for the operations.  Make sure to add this object before any other scripts.
+
 `floGlobals` contains the following properties :
 1. `blockchain` : Indicates the blockchain (`"FLO"` or `"FLO_TEST"`).
 2. `apiURL` : Indicates the URL for blockchain API calls. 
@@ -417,22 +417,13 @@ Note: value of objectData is taken from floGlobals
 ## FLO Decentralised Applications (Dapps)
 `floDapps` module contains methods for basic Dapp. floDapps uses all of the above modules.
 
-#### addStartUpFunction
-	floDapps.addStartUpFunction(fname, fn)
-`addStartUpFunction` adds a startup funtion to the Dapp
-1. fname - Name of the startup function
-2. fn - body of the function
-Note: startup funtions are called in parallel. Therefore only add custom startup funtion only if it can run in parallel with other startup functions. (default startup funtions are read supernode list and subAdmin list from blockchain API, load data from indexedDB, get login credentials)
+
 
 #### setCustomPrivKeyInput
 	floDapps.setCustomPrivKeyInput(customFn)
 `setCustomPrivKeyInput` adds a startup funtion to the Dapp
 1. customFn - custom function to get login credentials (privateKey)
 
-#### setAppObjectStores
-	floDapps.setAppObjectStores(appObs)
-`setAppObjectStores` adds additionals objectstores for the app
-1. appObs - additionals objects for the app
 
 #### manageSubAdmins
 	floDapps.manageSubAdmins(adminPrivKey, addList, rmList)
@@ -451,13 +442,6 @@ Note: startup funtions are called in parallel. Therefore only add custom startup
 1. pwd - password for the encryption
 Note: if securePrivKey is used, then password must be requested during customPrivKeyInput (in setCustomPrivKeyInput).
 
-#### objectDataMapper
-	floDapps.objectDataMapper(object, path, data)
-`objectDataMapper` maps the object and data via path
-1. object - object to be mapped
-2. path - end path for the data holder
-3. data - data to be pushed in map
-
 #### getNextGeneralData
 	floDapps.getNextGeneralData(type, vectorClock, options = {})
 `getNextGeneralData` return the next generaldata
@@ -475,6 +459,27 @@ Note: if securePrivKey is used, then password must be requested during customPri
 
 ##### onLoadStartUp 
 Sample startup is defined in onLoadStartUp function
+
+#### addStartUpFunction
+	floDapps.addStartUpFunction(fname, fn)
+`addStartUpFunction` adds a startup funtion to the Dapp
+1. fname - Name of the startup function
+2. fn - body of the function
+Note: startup funtions are called in parallel. Therefore only add custom startup funtion only if it can run in parallel with other startup functions. (default startup funtions are read supernode list and subAdmin list from blockchain API, load data from indexedDB, get login credentials)
+
+### Advanced Dapp functions usually not needed for users
+
+#### setAppObjectStores
+	floDapps.setAppObjectStores(appObs)
+`setAppObjectStores` adds additionals objectstores for the app
+1. appObs - additionals objects for the app
+
+#### objectDataMapper
+	floDapps.objectDataMapper(object, path, data)
+`objectDataMapper` maps the object and data via path
+1. object - object to be mapped
+2. path - end path for the data holder
+3. data - data to be pushed in map
 
 
 # Repeat of Basic Concepts of RanchiMall Blockchain Cloud for developers
