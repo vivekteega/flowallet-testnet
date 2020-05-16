@@ -450,15 +450,15 @@ FP97cbzsgTjHn7eyBtKSVcbkSSxZ5jWYHM is the FLO ID of sender
 ## 3. Data Types supported by the cloud
 
 ### User Data Types
-`General Data`: Message field can be in any user form. 
-`Object Data`: Message field can only be a JavaScript Object
+ * `General Data`: Message field can be in any user form. 
+ * `Object Data`: Message field can only be a JavaScript Object
 
 ### System Data Type 
-`Application Data`: Application data is the base on which General Data system and Object Data system has been created. The formats for  General Data and Application Data are exactly the same. Users will never need to use Application Data. So we have deprecated Application Data. 
+* `Application Data`: Application data is the base on which General Data system and Object Data system has been created. The formats for  General Data and Application Data are exactly the same. Users will never need to use Application Data. So we have deprecated Application Data. 
  
 Note:
-`General Data:` Type field is mandatory
-`Object Data:` Type field has been consumed to create object functionality
+ * `General Data:` Type field is mandatory
+ * `Object Data:` Type field has been consumed to create object functionality
 
 
 ## 4. General Data
@@ -466,49 +466,49 @@ Note:
 ### SEND DATA
 Parameters while sending
 
-`Message`: Actual Message to be sent
-`Type`: User defined type (anything that user wants to classify as type) 
+ * `Message`: Actual Message to be sent
+ * `Type`: User defined type (anything that user wants to classify as type) 
 
 #### Options
-`receiverID` - receiver of the data 
-`application` - application using the data
-`comment` - user comment of the data
+ * `receiverID` - receiver of the data 
+ * `application` - application using the data
+ * `comment` - user comment of the data
 
 ### REQUEST DATA
 
 #### request options
-`receiverID` - receiver of the data
-`type` - type of the data ( a free user field)
-`senderIDs` - array of senderIDs
-`application` - application of the data
-`comment` - comment of the data
-`lowerVectorClock` - VC from which the data is to be requested
-`upperVectorClock` - VC till which the data is to be requested
-`atVectorClock` - VC at which the data is to requested
-`mostRecent` - boolean (true: request only the recent data matching the pattern)
+ * `receiverID` - receiver of the data
+ * `type` - type of the data ( a free user field)
+ * `senderIDs` - array of senderIDs
+ * `application` - application of the data
+ * `comment` - comment of the data
+ * `lowerVectorClock` - VC from which the data is to be requested
+ * `upperVectorClock` - VC till which the data is to be requested
+ * `atVectorClock` - VC at which the data is to requested
+ * `mostRecent` - boolean (true: request only the recent data matching the pattern)
 
 ## 5. ObjectData
 
 ### RESET or UPDATE operations 
 Parameters while resetting or updating
-`Object Data`
+ * `Object Data`
 
 #### Options
-`receiverID` - receiver of the data 
-`application` - application using the data
-`comment` - comment of the data
+ * `receiverID` - receiver of the data 
+ * `application` - application using the data
+ * `comment` - comment of the data
 
 ### REQUEST DATA
 
 #### request options
-`receiverID` - receiver of the data
-`senderIDs` - array of senderIDs
-`application` - application of the data
-`comment` - comment of the data
-`lowerVectorClock` - VC from which the data is to be requested
-`upperVectorClock` - VC till which the data is to be requested
-`atVectorClock` - VC at which the data is to requested
-`mostRecent` - boolean (true: request only the recent data matching the pattern)
+ * `receiverID` - receiver of the data
+ * `senderIDs` - array of senderIDs
+ * `application` - application of the data
+ * `comment` - comment of the data
+ * `lowerVectorClock` - VC from which the data is to be requested
+ * `upperVectorClock` - VC till which the data is to be requested
+ * `atVectorClock` - VC at which the data is to requested
+ * `mostRecent` - boolean (true: request only the recent data matching the pattern)
 
 ## 5. Application Data
 
