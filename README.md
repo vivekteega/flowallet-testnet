@@ -438,7 +438,7 @@ Sample startup is defined in onLoadStartUp function
 
 * The two basic forms in which users can submit data to the cloud are General Data and Object Data. General Data is freely flowing data, and Object Data is pure Javascript Object.
 
-* Both General Data and Object Data have been derived from Application Data which is the basic system data type in the cloud. Normal users will never need to use Application Data. But for documentation purposes, we are providing the technical details.
+* Both General Data and Object Data have been derived from Application Data which is the basic system data type in the cloud. Normal users will never need to use Application Data. But for documentation purposes, we are providing the technical details for Application Data as well.
 
    - General Data = Application Data + User level Vector Clock filtering facilities
 
