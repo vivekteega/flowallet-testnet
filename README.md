@@ -9,6 +9,59 @@ We are offering methods simplifying access to inbuilt browser database IndexedDB
 
 Last but not the least, we are also providing methods for simplying common operations for FLO based Distributed Application Development. 
 
+# Background on FLO Distributed Applications
+
+FLO distibuted applications use the FLO Blockchain to store core data, and FLO Blockchain Cloud for other data. The data is accessed directly by browser based clients. No other component or servers are needed typically.
+
+Every application has a role called the Master Admin. The clients trust anything that the Master Admin declares in the FLO Blockchain. Usually Master Admin will only declare the FLO IDs that will have operational roles in the application. These FLO IDs are called SubAdmins. The browser based clients trust actions only and only from subAdmins and no one else. That creates the trust model. First trust the Master Admin. Then find out who the master admin has authorized to act as SubAdmins in the FLO blockchain. Then trust the data and actions signed by approved SubAdmins.
+
+This approach decentralizes the trust process totally and extends the capacity of the blockchain to model almost any server based IT application. 
+
+## RanchiMall recommended approach to create a FLO Distributed Application
+
+1. Create Master Admin FLO ID and private key
+2. Role Modeling: Create SubAdmins by having Master Admin declare it in the FLO Blockchain, and decide what roles will differnent kind of SubAdmins play
+3. Data Modeling:  Create Blockchain cloud data formats for your application. Do it twice: One for system trusted users like SubAdmins using Object Data. And again for normal untrusted users using General Data 
+4. Define core business functionalities of the app, and create Javascript methods to model it
+5. Secure the user Private Key (and other sensitive data, if any)
+6. Create UI for the application, and create Javascript methods invoking them
+7. Define initial startup routines using onLoadStartUp function to act when the initial load of page is done, and when refresh of the page is required for in response to any user action
+
+## Basic Concepts of RanchiMall Blockchain Cloud for developers
+
+* RanchiMall blockchain cloud is a service to provide a set of decentralized servers that will provide data storage to users. These decentralized servers are listed in the FLO Blockchain under an authorized FLO address. This gives the assurance to the users that those data servers can be trusted.
+
+* The user can store his data in these servers freely. RanchiMall cloud service also provides facilities to store Javascript Objects directly. Storage in JavaScript object form makes it easier for JavaScript based applications to process the data.
+
+* The cloud servers provide automatic backup and restoration for each other.
+
+* Using the blockchain based data cloud, users will not need any database to store their data. The cloud will provide data storage, backup and restoration facilites.
+
+* RanchiMall Blockchain Cloud is a password less system. Every sender has to digitally sign his data with the private key associated with its FLO ID. The cloud verifies the digital signature of the sender before storing sender data.
+
+* Since the blockchain cloud is an ensemble of servers, we need a method to pick the right server to store the data. For this purpose, we find the a server closest to receipient of the data according to an artificial distance measure. 
+
+* Every client of the cloud can automatically compute the correct server where the data needs to be stored, and sends the message directly to that server.
+
+* Every client of the cloud is the consumer of the data. It can ask the cloud for data sorted by a recipient, or by various options we provide like name of application, type of data, or by specific comments. The client can can also ask for all data  after or before a certain point of time using a concept called Vector Clock.
+
+* The cloud attaches the exact epoch time to any message given by a sender, and using the combination of epoch time, and sender FLO ID, the vector clock is constructed.
+
+* The two basic forms in which users can submit data to the cloud are `General Data` and `Object Data`. `General Data` is freely flowing data, and `Object Data` is stored directly as pure Javascript Object.
+
+* Both `General Data` and `Object Data` have been derived from `Application Data` which is the basic system data type in the cloud. Normal users will never need to use Application Data. But for documentation purposes, we are providing the technical details for Application Data as well.
+
+   - `General Data` = `Application Data` + User level Vector Clock filtering facilities
+
+   - `Object Data` = `Application Data` + Message field modified to handle Javascript Object + User level Vector Clock filtering facilities
+
+* Consistent with blockchain data principles, RanchiMall blockchain cloud will also provide data to everyone who asks for it. So sensitive data should be encrypted using the receiver's public key using Crypto functions of FLO Standard Operations.
+
+* Consumers of data can ask for data by receiver ID, or filter it by application, type, or comment. They can also ask for data for a given type before and after a certain vector clock.
+
+
+# Technical Details of standard operations 
+
 This template contains standard operations that can be used for the following:
 1. FLO Globals
 2. FLO Crypto  Operations 
@@ -424,7 +477,7 @@ Note: if securePrivKey is used, then password must be requested during customPri
 Sample startup is defined in onLoadStartUp function
 
 
-# Basic Concepts of RanchiMall Blockchain Cloud for developers
+# Repeat of Basic Concepts of RanchiMall Blockchain Cloud for developers
 
 * RanchiMall blockchain cloud is a service to provide a set of decentralized servers that will provide data storage to users. These decentralized servers are listed in the FLO Blockchain under an authorized FLO address. This gives the assurance to the users that those data servers can be trusted.
 
@@ -554,20 +607,4 @@ Parameters while resetting or updating
 
 Application data system is a legacy data field without vector clock support in options. In our development process, General Data was created by adding vector clock support to application data at user level. So SEND and REQUEST options in Application Data are exactly the same as General data without vector clock options
 
-# Background on FLO Distributed Applications
 
-FLO distibuted applications use the FLO Blockchain to store core data, and FLO Blockchain Cloud for other data. The data is accessed directly by browser based clients. No other component or servers are needed typically.
-
-Every application has a role called the Master Admin. The clients trust anything that the Master Admin declares in the FLO Blockchain. Usually Master Admin will only declare the FLO IDs that will have operational roles in the application. These FLO IDs are called SubAdmins. The browser based clients trust actions only and only from subAdmins and no one else. That creates the trust model. First trust the Master Admin. Then find out who the master admin has authorized to act as SubAdmins in the FLO blockchain. Then trust the data and actions signed by approved SubAdmins.
-
-This approach decentralizes the trust process totally and extends the capacity of the blockchain to model almost any server based IT application. 
-
-## RanchiMall recommended approach to create a FLO Distributed Application
-
-1. Create Master Admin FLO ID and private key
-2. Role Modeling: Create SubAdmins by having Master Admin declare it in the FLO Blockchain, and decide what roles will differnent kind of SubAdmins play
-3. Data Modeling:  Create Blockchain cloud data formats for your application. Do it twice: One for system trusted users like SubAdmins using Object Data. And again for normal untrusted users using General Data 
-4. Define core business functionalities of the app, and create Javascript methods to model it
-5. Secure the user Private Key (and other sensitive data, if any)
-6. Create UI for the application, and create Javascript methods invoking them
-7. Define initial startup routines using onLoadStartUp function to act when the initial load of page is done, and when refresh of the page is required for in response to any user action
