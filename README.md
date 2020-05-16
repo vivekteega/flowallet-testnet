@@ -1,5 +1,13 @@
 # Standard_Operations
- Standard operations required for FLO Crypto, Blockchain API, Supernode WS, IndexedDB 
+RanchiMall is releasing FLO Standard Operations in order to make it easier for  everyone in community to access common functions that any developer would need in a standardized way for JavaScript based development around FLO Blockchain ecosystem. 
+
+The methods enable developers to read and write into FLO Blockchain directly without any wallet or Chrome extension dependencies. They also enable developers to create digital signatures for any message out of any FLO ID, and functions verify them as well. In additional, standard methods are being provided for data encryption using recipient FLO ID and private key splitting using Shamir Secret Sharing algorithm.
+
+We are also provding access to a common data infrastructure called the FLO Blockchain Data Cloud which can provide place for host data that will be too expensive to put inside the blockchain.
+
+We are offering methods simplifying access to inbuilt browser database IndexedDB or IDB.
+
+Last but not the least, we are also providing methods for simplying common operations for FLO based Distributed Application Development. 
 
 This template contains standard operations that can be used for the following:
 1. FLO Globals
@@ -546,12 +554,20 @@ Parameters while resetting or updating
 
 Application data system is a legacy data field without vector clock support in options. In our development process, General Data was created by adding vector clock support to application data at user level. So SEND and REQUEST options in Application Data are exactly the same as General data without vector clock options
 
-# RanchiMall recommended approach to create FLO Distributed Apps
+# Background on FLO Distributed Applications
 
-1. create master admin key
-2. create subAdmins
-3. create blockchain cloud data formats
-4. define functions of the app
-5. secure the user privKey (and other sensitive data, if any)
-6. create UI for the application
-7. define onLoadStartUp function to act when the initial load of page is done, and when refresh of the page is required for in response to any user action
+FLO distibuted applications use the FLO Blockchain to store core data, and FLO Blockchain Cloud for other data. The data is accessed directly by browser based clients. No other component or servers are needed typically.
+
+Every application has a role called the Master Admin. The clients trust anything that the Master Admin declares in the FLO Blockchain. Usually Master Admin will only declare the FLO IDs that will have operational roles in the application. These FLO IDs are called SubAdmins. The browser based clients trust actions only and only from subAdmins and no one else. That creates the trust model. First trust the Master Admin. Then find out who the master admin has authorized to act as SubAdmins in the FLO blockchain. Then trust the data and actions signed by approved SubAdmins.
+
+This approach decentralizes the trust process totally and extends the capacity of the blockchain to model almost any server based IT application. 
+
+## RanchiMall recommended approach to create a FLO Distributed Application
+
+1. Create Master Admin FLO ID and private key
+2. Role Modeling: Create SubAdmins by having Master Admin declare it in the FLO Blockchain, and decide what roles will differnent kind of SubAdmins play
+3. Data Modeling:  Create Blockchain cloud data formats for your application. Do it twice: One for system trusted users like SubAdmins using Object Data. And again for normal untrusted users using General Data 
+4. Define core business functionalities of the app, and create Javascript methods to model it
+5. Secure the user Private Key (and other sensitive data, if any)
+6. Create UI for the application, and create Javascript methods invoking them
+7. Define initial startup routines using onLoadStartUp function to act when the initial load of page is done, and when refresh of the page is required for in response to any user action
