@@ -414,3 +414,104 @@ Note: if securePrivKey is used, then password must be requested during customPri
 
 ##### onLoadStartUp 
 Sample startup is defined in onLoadStartUp function
+
+
+# Basic Concepts of RanchiMall Blockchain Cloud for developers
+
+## 1. Data fields stored in each of decentralised servers
+
+vectorClock, senderID, receiverID, pubKey, message, sign, application, type, comment
+
+`vectorClock`: Unique time stamp and sender FLO ID attached to every message
+`senderID`: FLO ID of the sender
+`receiverID`: FLO ID of the receiver
+`pubKey`: Public Key of the sender 
+`message`: The actual user data
+`sign`: Digital signature of the entire data
+`application`: The name of the application sending the data
+`type`: What internal type of data the application is sending 
+`comment`: A free field for additional data
+
+## 2. Concept of Vector Clock
+Decentralized cloud servers attach a unique time based ID to every message sent to the cloud, and store it alongside the message fields. 
+
+It is stored in the form EpochTime_SenderFLOID
+
+Vector Clock field is unique for every message stored in cloud
+
+It allows the clients to retrieve messages before and after a certain time, and also help us identify who sent the message easily
+
+### Example of Vector Clock
+1580484792246_FP97cbzsgTjHn7eyBtKSVcbkSSxZ5jWYHM
+
+1580484792246 Epoch time is GMT: Friday, January 31, 2020 3:33:12.246 PM in common time
+FP97cbzsgTjHn7eyBtKSVcbkSSxZ5jWYHM is the FLO ID of sender
+
+## 3. Data Types supported by the cloud
+
+### User Data Types
+`General Data`: Message field can be in any user form. 
+`Object Data`: Message field can only be a JavaScript Object
+
+### System Data Type 
+`Application Data`: Application data is the base on which General Data system and Object Data system has been created. The formats for  General Data and Application Data are exactly the same. Users will never need to use Application Data. So we have deprecated Application Data. 
+ 
+Note:
+`General Data:` Type field is mandatory
+`Object Data:` Type field has been consumed to create object functionality
+
+
+## 4. General Data
+
+### SEND DATA
+Parameters while sending
+
+`Message`: Actual Message to be sent
+`Type`: User defined type (anything that user wants to classify as type) 
+
+#### Options
+`receiverID` - receiver of the data 
+`application` - application using the data
+`comment` - user comment of the data
+
+### REQUEST DATA
+
+#### request options
+`receiverID` - receiver of the data
+`type` - type of the data ( a free user field)
+`senderIDs` - array of senderIDs
+`application` - application of the data
+`comment` - comment of the data
+`lowerVectorClock` - VC from which the data is to be requested
+`upperVectorClock` - VC till which the data is to be requested
+`atVectorClock` - VC at which the data is to requested
+`mostRecent` - boolean (true: request only the recent data matching the pattern)
+
+## 5. ObjectData
+
+### RESET or UPDATE operations 
+Parameters while resetting or updating
+`Object Data`
+
+#### Options
+`receiverID` - receiver of the data 
+`application` - application using the data
+`comment` - comment of the data
+
+### REQUEST DATA
+
+#### request options
+`receiverID` - receiver of the data
+`senderIDs` - array of senderIDs
+`application` - application of the data
+`comment` - comment of the data
+`lowerVectorClock` - VC from which the data is to be requested
+`upperVectorClock` - VC till which the data is to be requested
+`atVectorClock` - VC at which the data is to requested
+`mostRecent` - boolean (true: request only the recent data matching the pattern)
+
+## 5. Application Data
+
+### DEPRECATED
+
+Application data system is a legacy data field without vector clock support in options. In our development process, General Data was created by adding vector clock support to application data at user level. So SEND and REQUEST options in Application Data are exactly the same as General data without vector clock options
