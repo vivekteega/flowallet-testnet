@@ -436,17 +436,17 @@ Sample startup is defined in onLoadStartUp function
 
 * The cloud attaches the exact epoch time to any message given by a sender, and using the combination of epoch time, and sender FLO ID, the vector clock is constructed.
 
-* The two basic forms in which users can submit data to the cloud are General Data and Object Data. General Data is freely flowing data, and Object Data is pure Javascript Object.
+* The two basic forms in which users can submit data to the cloud are `General Data` and `Object Data`. `General Data` is freely flowing data, and `Object Data` is stored directly as pure Javascript Object.
 
-* Both General Data and Object Data have been derived from Application Data which is the basic system data type in the cloud. Normal users will never need to use Application Data. But for documentation purposes, we are providing the technical details for Application Data as well.
+* Both `General Data` and `Object Data` have been derived from `Application Data` which is the basic system data type in the cloud. Normal users will never need to use Application Data. But for documentation purposes, we are providing the technical details for Application Data as well.
 
-   - General Data = Application Data + User level Vector Clock filtering facilities
+   - `General Data` = `Application Data` + User level Vector Clock filtering facilities
 
-   - Object Data = Application Data + Message field modified to handle Javascript Object + User level Vector Clock filtering facilities
+   - `Object Data` = `Application Data` + Message field modified to handle Javascript Object + User level Vector Clock filtering facilities
 
-* Just like how blockchain provides data, RacnhiMal blcokchain cloud will also provide data to everyone who asks for it. So sensitive data should be encrypted using the receiver's public key using Crypto functions of FLO Standard Operations.
+* Consistent with blockchain data principles, RanchiMall blockchain cloud will also provide data to everyone who asks for it. So sensitive data should be encrypted using the receiver's public key using Crypto functions of FLO Standard Operations.
 
-* Consumers of data can ask for data by receiver ID, or filter it by application, type, or comment. They can aslo ask for data for a given type before and after a certain vector clock.
+* Consumers of data can ask for data by receiver ID, or filter it by application, type, or comment. They can also ask for data for a given type before and after a certain vector clock.
 
 ## 1. Data fields stored in each of decentralised servers
 
