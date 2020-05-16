@@ -441,11 +441,11 @@ Vector Clock field is unique for every message stored in cloud
 
 It allows the clients to retrieve messages before and after a certain time, and also help us identify who sent the message easily
 
-### Example of Vector Clock
-1580484792246_FP97cbzsgTjHn7eyBtKSVcbkSSxZ5jWYHM
+#### Example of Vector Clock
+* `1580484792246_FP97cbzsgTjHn7eyBtKSVcbkSSxZ5jWYHM`
 
-1580484792246 Epoch time is GMT: Friday, January 31, 2020 3:33:12.246 PM in common time
-FP97cbzsgTjHn7eyBtKSVcbkSSxZ5jWYHM is the FLO ID of sender
+   - `1580484792246` Epoch time is GMT: Friday, January 31, 2020 3:33:12.246 PM in common time
+   - `FP97cbzsgTjHn7eyBtKSVcbkSSxZ5jWYHM` is the FLO ID of sender
 
 ## 3. Data Types supported by the cloud
 
