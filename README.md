@@ -444,6 +444,9 @@ Sample startup is defined in onLoadStartUp function
 
    - Object Data = Application Data + Message field modified to handle Javascript Object + User level Vector Clock filtering facilities
 
+* Just like how blockchain provides data, RacnhiMal blcokchain cloud will also provide data to everyone who asks for it. So sensitive data should be encrypted using the receiver's public key using Crypto functions of FLO Standard Operations.
+
+* Consumers of data can ask for data by receiver ID, or filter it by application, type, or comment. They can aslo ask for data for a given type before and after a certain vector clock.
 
 ## 1. Data fields stored in each of decentralised servers
 
