@@ -545,3 +545,13 @@ Parameters while resetting or updating
 ### DEPRECATED
 
 Application data system is a legacy data field without vector clock support in options. In our development process, General Data was created by adding vector clock support to application data at user level. So SEND and REQUEST options in Application Data are exactly the same as General data without vector clock options
+
+# RanchiMall recommended approach to create FLO Distributed Apps
+
+1. create master admin key
+2. create subAdmins
+3. create blockchain cloud data formats
+4. define functions of the app
+5. secure the user privKey (and other sensitive data, if any)
+6. create UI for the application
+7. define onLoadStartUp function to act when the initial load of page is done, and when refresh of the page is required for in response to any user action
