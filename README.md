@@ -350,7 +350,7 @@ Note: If passed as Array, then ratio of the balance of the senders are preserved
 This module contains functions that interact with the supernode to send and retrive data in the backend. Use floClouldAPI operations to send and receive data for application.
 
 ## FLO Cloud API operations
-`floCloudAPI` operations can interact with floSupernode cloud to send and retrive data for applications. floCloudAPI uses floSupernode module for backend interactions.
+`floCloudAPI` operations can interact with floSupernode cloud to send and retrieve data for applications. floCloudAPI uses floSupernode module for backend interactions.
 
 #### sendApplicationData
 	floCloudAPI.sendApplicationData(message, type, options = {})
