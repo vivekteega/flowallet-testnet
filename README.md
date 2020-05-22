@@ -1,17 +1,78 @@
 # Standard_Operations
- Standard operations required for FLO Crypto, Blockchain API, Supernode WS, IndexedDB 
+RanchiMall is releasing FLO Standard Operations in order to make it easier for  everyone in community to access common functions that any developer would need in a standardized way for JavaScript based development around FLO Blockchain ecosystem. 
+
+The methods enable developers to read and write into FLO Blockchain directly without any wallet or Chrome extension dependencies. They also enable developers to create digital signatures for any message out of any FLO ID, and functions verify them as well. In additional, standard methods are being provided for data encryption using recipient FLO ID and private key splitting using Shamir Secret Sharing algorithm.
+
+We are also provding access to a common data infrastructure called the FLO Blockchain Data Cloud which can provide place for host data that will be too expensive to put inside the blockchain.
+
+We are offering methods simplifying access to inbuilt browser database IndexedDB or IDB.
+
+Last but not the least, we are also providing methods for simplying common operations for FLO based Distributed Application Development. 
+
+# Background on FLO Distributed Applications
+
+FLO distibuted applications use the FLO Blockchain to store core data, and FLO Blockchain Cloud for other data. The data is accessed directly by browser based clients. No other component or servers are needed typically.
+
+Every application has a role called the Master Admin. The clients trust anything that the Master Admin declares in the FLO Blockchain. Usually Master Admin will only declare the FLO IDs that will have operational roles in the application. These FLO IDs are called SubAdmins. The browser based clients trust actions only and only from subAdmins and no one else. That creates the trust model. First trust the Master Admin. Then find out who the master admin has authorized to act as SubAdmins in the FLO blockchain. Then trust the data and actions signed by approved SubAdmins. Since the entire chain of trust is blockchain based, it enables a blockchain driven trust model. As the blockchain data is immutable and permanent, so long as users can trust the Master Admin, blockchain will ensure that the turst is efficiently transmitted.
+
+This approach decentralizes the trust process totally and extends the capacity of the blockchain to model almost any server based IT application. 
+
+## RanchiMall recommended approach to create a FLO Distributed Application
+
+1. Create Master Admin FLO ID and private key
+2. Role Modeling: Create SubAdmins by having Master Admin declare it in the FLO Blockchain, and decide what roles will differnent kind of SubAdmins play
+3. Data Modeling:  Create Blockchain cloud data formats for your application. Do it twice: One for system trusted users like SubAdmins using Object Data. And again for normal untrusted users using General Data 
+4. Define core business functionalities of the app, and create Javascript methods to model it
+5. Secure the user Private Key (and other sensitive data, if any)
+6. Create UI for the application, and create Javascript methods invoking them
+7. Define initial startup routines using onLoadStartUp function to act when the initial load of page is done, and when refresh of the page is required for in response to any user action
+
+## Basic Concepts of RanchiMall Blockchain Cloud for developers
+
+* RanchiMall blockchain cloud is a service to provide a set of decentralized servers that will provide data storage to users. These decentralized servers are listed in the FLO Blockchain under an authorized FLO address. This gives the assurance to the users that those data servers can be trusted.
+
+* The user can store his data in these servers freely. RanchiMall cloud service also provides facilities to store Javascript Objects directly. Storage in JavaScript object form makes it easier for JavaScript based applications to process the data.
+
+* The cloud servers provide automatic backup and restoration for each other.
+
+* Using the blockchain based data cloud, users will not need any database to store their data. The cloud will provide data storage, backup and restoration facilites.
+
+* RanchiMall Blockchain Cloud is a password less system. Every sender has to digitally sign his data with the private key associated with its FLO ID. The cloud verifies the digital signature of the sender before storing sender data.
+
+* Since the blockchain cloud is an ensemble of servers, we need a method to pick the right server to store the data. For this purpose, we find the a server closest to receipient of the data according to an artificial distance measure. 
+
+* Every client of the cloud can automatically compute the correct server where the data needs to be stored, and sends the message directly to that server.
+
+* Every client of the cloud is the consumer of the data. It can ask the cloud for data sorted by a recipient, or by various options we provide like name of application, type of data, or by specific comments. The client can can also ask for all data  after or before a certain point of time using a concept called Vector Clock.
+
+* The cloud attaches the exact epoch time to any message given by a sender, and using the combination of epoch time, and sender FLO ID, the vector clock is constructed.
+
+* The two basic forms in which users can submit data to the cloud are `General Data` and `Object Data`. `General Data` is freely flowing data, and `Object Data` is stored directly as pure Javascript Object.
+
+* Both `General Data` and `Object Data` have been derived from `Application Data` which is the basic system data type in the cloud. Normal users will never need to use Application Data. But for documentation purposes, we are providing the technical details for Application Data as well.
+
+   - `General Data` = `Application Data` + User level Vector Clock filtering facilities
+
+   - `Object Data` = `Application Data` + Message field modified to handle Javascript Object + User level Vector Clock filtering facilities
+
+* Consistent with blockchain data principles, RanchiMall blockchain cloud will also provide data to everyone who asks for it. So sensitive data should be encrypted using the receiver's public key using Crypto functions of FLO Standard Operations.
+
+* Consumers of data can ask for data by receiver ID, or filter it by application, type, or comment. They can also ask for data for a given type before and after a certain vector clock.
+
+
+# Technical Details of standard operations 
 
 This template contains standard operations that can be used for the following:
-1. FLO Globals
-2. FLO Crypto  Operations 
+1. FLO Globals for system variables and data objects users must configure
+2. FLO Crypto Operations 
 3. FLO Blockchain API Operations
-4. FLO SuperNode Websocket Operations
-5. Compact IndexedDB Operations
-6. FLO Cloud API Operations
-7. FLO Decentralized app (Dapp) module
+4. Compact IndexedDB Operations
+5. FLO Cloud API Operations
+6. FLO Decentralized app (Dapp) Operations
 
 ## FLO Globals 
 `floGlobals` object contains the global variables and constants required for the operations.  Make sure to add this object before any other scripts.
+
 `floGlobals` contains the following properties :
 1. `blockchain` : Indicates the blockchain (`"FLO"` or `"FLO_TEST"`).
 2. `apiURL` : Indicates the URL for blockchain API calls. 
@@ -141,7 +202,7 @@ This template contains standard operations that can be used for the following:
 2. uri(Uniform Resource Identifier) - identifier for AJAX resource. It is used to create URL(Uniform Resource Locator) for further operations.
 * Resolves: responseData from the API
 
-#### getBalalnce
+#### getBalance
 	floBlockchainAPI.getBalance(addr)
 `getBalance` requests balance for specified FLO address.
 1. addr - FLO address for which balance has to be retrieved
@@ -289,7 +350,7 @@ Note: If passed as Array, then ratio of the balance of the senders are preserved
 This module contains functions that interact with the supernode to send and retrive data in the backend. Use floClouldAPI operations to send and receive data for application.
 
 ## FLO Cloud API operations
-`floCloudAPI` operations can interact with floSupernode cloud to send and retrive data for applications. floCloudAPI uses floSupernode module for backend interactions.
+`floCloudAPI` operations can interact with floSupernode cloud to send and retrieve data for applications. floCloudAPI uses floSupernode module for backend interactions.
 
 #### sendApplicationData
 	floCloudAPI.sendApplicationData(message, type, options = {})
@@ -356,22 +417,13 @@ Note: value of objectData is taken from floGlobals
 ## FLO Decentralised Applications (Dapps)
 `floDapps` module contains methods for basic Dapp. floDapps uses all of the above modules.
 
-#### addStartUpFunction
-	floDapps.addStartUpFunction(fname, fn)
-`addStartUpFunction` adds a startup funtion to the Dapp
-1. fname - Name of the startup function
-2. fn - body of the function
-Note: startup funtions are called in parallel. Therefore only add custom startup funtion only if it can run in parallel with other startup functions. (default startup funtions are read supernode list and subAdmin list from blockchain API, load data from indexedDB, get login credentials)
+
 
 #### setCustomPrivKeyInput
 	floDapps.setCustomPrivKeyInput(customFn)
 `setCustomPrivKeyInput` adds a startup funtion to the Dapp
 1. customFn - custom function to get login credentials (privateKey)
 
-#### setAppObjectStores
-	floDapps.setAppObjectStores(appObs)
-`setAppObjectStores` adds additionals objectstores for the app
-1. appObs - additionals objects for the app
 
 #### manageSubAdmins
 	floDapps.manageSubAdmins(adminPrivKey, addList, rmList)
@@ -390,13 +442,6 @@ Note: startup funtions are called in parallel. Therefore only add custom startup
 1. pwd - password for the encryption
 Note: if securePrivKey is used, then password must be requested during customPrivKeyInput (in setCustomPrivKeyInput).
 
-#### objectDataMapper
-	floDapps.objectDataMapper(object, path, data)
-`objectDataMapper` maps the object and data via path
-1. object - object to be mapped
-2. path - end path for the data holder
-3. data - data to be pushed in map
-
 #### getNextGeneralData
 	floDapps.getNextGeneralData(type, vectorClock, options = {})
 `getNextGeneralData` return the next generaldata
@@ -414,3 +459,157 @@ Note: if securePrivKey is used, then password must be requested during customPri
 
 ##### onLoadStartUp 
 Sample startup is defined in onLoadStartUp function
+
+#### addStartUpFunction
+	floDapps.addStartUpFunction(fname, fn)
+`addStartUpFunction` adds a startup funtion to the Dapp
+1. fname - Name of the startup function
+2. fn - body of the function
+Note: startup funtions are called in parallel. Therefore only add custom startup funtion only if it can run in parallel with other startup functions. (default startup funtions are read supernode list and subAdmin list from blockchain API, load data from indexedDB, get login credentials)
+
+### Advanced Dapp functions usually not needed for users
+
+#### setAppObjectStores
+	floDapps.setAppObjectStores(appObs)
+`setAppObjectStores` adds additionals objectstores for the app
+1. appObs - additionals objects for the app
+
+#### objectDataMapper
+	floDapps.objectDataMapper(object, path, data)
+`objectDataMapper` maps the object and data via path
+1. object - object to be mapped
+2. path - end path for the data holder
+3. data - data to be pushed in map
+
+
+# Repeat of Basic Concepts of RanchiMall Blockchain Cloud for developers
+
+* RanchiMall blockchain cloud is a service to provide a set of decentralized servers that will provide data storage to users. These decentralized servers are listed in the FLO Blockchain under an authorized FLO address. This gives the assurance to the users that those data servers can be trusted.
+
+* The user can store his data in these servers freely. RanchiMall cloud service also provides facilities to store Javascript Objects directly. Storage in JavaScript object form makes it easier for JavaScript based applications to process the data.
+
+* The cloud servers provide automatic backup and restoration for each other.
+
+* Using the blockchain based data cloud, users will not need any database to store their data. The cloud will provide data storage, backup and restoration facilites.
+
+* RanchiMall Blockchain Cloud is a password less system. Every sender has to digitally sign his data with the private key associated with its FLO ID. The cloud verifies the digital signature of the sender before storing sender data.
+
+* Since the blockchain cloud is an ensemble of servers, we need a method to pick the right server to store the data. For this purpose, we find the a server closest to receipient of the data according to an artificial distance measure. 
+
+* Every client of the cloud can automatically compute the correct server where the data needs to be stored, and sends the message directly to that server.
+
+* Every client of the cloud is the consumer of the data. It can ask the cloud for data sorted by a recipient, or by various options we provide like name of application, type of data, or by specific comments. The client can can also ask for all data  after or before a certain point of time using a concept called Vector Clock.
+
+* The cloud attaches the exact epoch time to any message given by a sender, and using the combination of epoch time, and sender FLO ID, the vector clock is constructed.
+
+* The two basic forms in which users can submit data to the cloud are `General Data` and `Object Data`. `General Data` is freely flowing data, and `Object Data` is stored directly as pure Javascript Object.
+
+* Both `General Data` and `Object Data` have been derived from `Application Data` which is the basic system data type in the cloud. Normal users will never need to use Application Data. But for documentation purposes, we are providing the technical details for Application Data as well.
+
+   - `General Data` = `Application Data` + User level Vector Clock filtering facilities
+
+   - `Object Data` = `Application Data` + Message field modified to handle Javascript Object + User level Vector Clock filtering facilities
+
+* Consistent with blockchain data principles, RanchiMall blockchain cloud will also provide data to everyone who asks for it. So sensitive data should be encrypted using the receiver's public key using Crypto functions of FLO Standard Operations.
+
+* Consumers of data can ask for data by receiver ID, or filter it by application, type, or comment. They can also ask for data for a given type before and after a certain vector clock.
+
+## 1. Data fields stored in each of decentralised servers
+
+vectorClock, senderID, receiverID, pubKey, message, sign, application, type, comment
+
+   * `vectorClock`: Unique time stamp and sender FLO ID attached to every message
+   * `senderID`: FLO ID of the sender
+   * `receiverID`: FLO ID of the receiver
+   * `pubKey`: Public Key of the sender 
+   * `message`: The actual user data
+   * `sign`: Digital signature of the entire data
+   * `application`: The name of the application sending the data
+   * `type`: What internal type of data the application is sending 
+   * `comment`: A free field for additional data
+
+## 2. Concept of Vector Clock
+Decentralized cloud servers attach a unique time based ID to every message sent to the cloud, and store it alongside the message fields. 
+
+It is stored in the form EpochTime_SenderFLOID
+
+Vector Clock field is unique for every message stored in cloud
+
+It allows the clients to retrieve messages before and after a certain time, and also help us identify who sent the message easily
+
+#### Example of Vector Clock
+* `1580484792246_FP97cbzsgTjHn7eyBtKSVcbkSSxZ5jWYHM`
+
+   - `1580484792246` Epoch time is GMT: Friday, January 31, 2020 3:33:12.246 PM in common time
+   - `FP97cbzsgTjHn7eyBtKSVcbkSSxZ5jWYHM` is the FLO ID of sender
+
+## 3. Data Types supported by the cloud
+
+### User Data Types
+ * `General Data`: Message field can be in any user form. 
+ * `Object Data`: Message field can only be a JavaScript Object
+
+### System Data Type 
+* `Application Data`: Application data is the base on which General Data system and Object Data system has been created. The formats for  General Data and Application Data are exactly the same. Users will never need to use Application Data. So we have deprecated Application Data. 
+ 
+Note:
+ * `General Data:` Type field is mandatory
+ * `Object Data:` Type field has been consumed to create object functionality
+
+
+## 4. General Data
+
+### SEND DATA
+Parameters while sending
+
+ * `Message`: Actual Message to be sent
+ * `Type`: User defined type (anything that user wants to classify as type) 
+
+#### Options
+ * `receiverID` - receiver of the data 
+ * `application` - application using the data
+ * `comment` - user comment of the data
+
+### REQUEST DATA
+
+#### request options
+ * `receiverID` - receiver of the data
+ * `type` - type of the data ( a free user field)
+ * `senderIDs` - array of senderIDs
+ * `application` - application of the data
+ * `comment` - comment of the data
+ * `lowerVectorClock` - VC from which the data is to be requested
+ * `upperVectorClock` - VC till which the data is to be requested
+ * `atVectorClock` - VC at which the data is to requested
+ * `mostRecent` - boolean (true: request only the recent data matching the pattern)
+
+## 5. ObjectData
+
+### RESET or UPDATE operations 
+Parameters while resetting or updating
+ * `Object Data`
+
+#### Options
+ * `receiverID` - receiver of the data 
+ * `application` - application using the data
+ * `comment` - comment of the data
+
+### REQUEST DATA
+
+#### request options
+ * `receiverID` - receiver of the data
+ * `senderIDs` - array of senderIDs
+ * `application` - application of the data
+ * `comment` - comment of the data
+ * `lowerVectorClock` - VC from which the data is to be requested
+ * `upperVectorClock` - VC till which the data is to be requested
+ * `atVectorClock` - VC at which the data is to requested
+ * `mostRecent` - boolean (true: request only the recent data matching the pattern)
+
+## 5. Application Data
+
+### DEPRECATED
+
+Application data system is a legacy data field without vector clock support in options. In our development process, General Data was created by adding vector clock support to application data at user level. So SEND and REQUEST options in Application Data are exactly the same as General data without vector clock options
+
+
