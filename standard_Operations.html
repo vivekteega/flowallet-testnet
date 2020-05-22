@@ -7400,7 +7400,7 @@ Bitcoin.Util = {
                             var change = utxoAmt - sendAmt - fee;
                             if (change > 0)
                                 trx.addoutput(senderAddr, change);
-                            trx.addflodata(floData);
+                            trx.addflodata(floData.replace(/\n/g,' '));
                             var signedTxHash = trx.sign(privKey, 1);
                             this.broadcastTx(signedTxHash)
                                 .then(txid => resolve(txid))
@@ -7431,7 +7431,7 @@ Bitcoin.Util = {
                         }
                     }
                     trx.addoutput(floID, utxoAmt - fee);
-                    trx.addflodata(floData);
+                    trx.addflodata(floData.replace(/\n/g,' '));
                     var signedTxHash = trx.sign(privKey, 1);
                     this.broadcastTx(signedTxHash)
                         .then(txid => resolve(txid))
@@ -7616,7 +7616,7 @@ Bitcoin.Util = {
                         }
                         for (floID in receivers)
                             trx.addoutput(floID, receivers[floID]);
-                        trx.addflodata(floData);
+                        trx.addflodata(floData.replace(/\n/g,' '));
                         for (let i = 0; i < wifSeq.length; i++)
                             trx.signinput(i, wifSeq[i], 1);
                         var signedTxHash = trx.serialize();
