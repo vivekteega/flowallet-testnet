@@ -8,11 +8,7 @@
     <meta name="description"
         content="This webapp allows monitoring FLO addresses and performing transactions based on blockchain.">
     <style>
-        @font-face {
-            font-family: 'Roboto';
-            font-style: normal;
-            src: local("Roboto"), local("Roboto-Regular");
-        }
+        @import url("https://fonts.googleapis.com/css?family=Roboto:400,500,700&display=swap");
 
         :root {
             --sidenav-color: #f0f0f0;
@@ -1848,14 +1844,14 @@
                     <div id="add">
                         <h4>Add new address to monitoring list</h4>
                         <div class="input">
-                            <input aria-label="FLO address" type="text" oninput="checkAddress(this)"
+                            <input autocomplete="off" aria-label="FLO address" type="text" oninput="checkAddress(this)"
                                 onfocus="animateInput(this.parentNode)" onblur="revertBack(this.parentNode)"
-                                id="floAddr" autocomplete="new-password" />
+                                id="floAddr"  />
                             <label>FLO Address</label>
                         </div>
                         <div class="input">
-                            <input aria-label="Label" type="text" onfocus="animateInput(this.parentNode)"
-                                onblur="revertBack(this.parentNode)" id="addrLabel" autocomplete="new-password" />
+                            <input autocomplete="off" aria-label="Label" type="text" onfocus="animateInput(this.parentNode)"
+                                onblur="revertBack(this.parentNode)" id="addrLabel"  />
                             <label>Label</label>
                         </div>
                         <button onclick="closeAdd()">Cancel</button>
@@ -1887,7 +1883,7 @@
                             <h4 id="showBalance"></h4>
                         </div>
                         <div class="input">
-                            <input aria-label="Label" autocomplete="new-password" type="text"
+                            <input autocomplete="off" aria-label="Label"  type="text"
                                 onfocus="animateInput(this.parentNode)" onblur="revertBack(this.parentNode)"
                                 id="newAddrLabel" />
                             <label>Label</label>
@@ -1956,7 +1952,7 @@
                         <h5>To send FLO data, make sure you have enough balance.</h5>
                     </div>
                     <div class="input">
-                        <input aria-label="FLO address" autocomplete="new-password"
+                        <input autocomplete="off" aria-label="FLO address" 
                             onfocus="animateInput(this.parentNode)" onblur="revertBack(this.parentNode)" type="text"
                             id="getBal_addr" oninput="checkBalAddress(this)" />
                         <label>FLO address</label>
@@ -1965,13 +1961,13 @@
                 </div>
                 <div id="sdright">
                     <div class="input">
-                        <input aria-label="Receiver's address" oninput="validateInfo(this)" autocomplete="new-password"
+                        <input autocomplete="off" aria-label="Receiver's address" oninput="validateInfo(this)" 
                             type="text" onfocus="animateInput(this.parentNode)" onblur="revertBack(this.parentNode)"
                             id="receiver" />
                         <label>Receiver's address</label>
                     </div>
                     <div class="input">
-                        <input aria-label="Amount" autocomplete="new-password" type="number"
+                        <input autocomplete="off" aria-label="Amount"  type="number"
                             onfocus="animateInput(this.parentNode)" onblur="revertBack(this.parentNode)" id="amount" />
                         <label>Amount</label>
                     </div>
@@ -1998,7 +1994,7 @@
                 </div>
                 <div id="enterPrivKey">
                     <div class="input">
-                        <input aria-label="private key" autocomplete="new-password" type="text"
+                        <input autocomplete="off" aria-label="private key"  type="text"
                             onfocus="animateInput(this.parentNode)" onblur="revertBack(this.parentNode)" id="privKey" />
                         <label>Private key</label>
                     </div>
@@ -2034,7 +2030,7 @@
                             <span>Dark mode active : 6pm - 6am</span>
                         </span>
                         <label class="switch">
-                            <input aria-label="Toggle automatic dark theme" autocomplete="new-password" type="checkbox"
+                            <input autocomplete="off" aria-label="Toggle automatic dark theme"  type="checkbox"
                                 id="auto-mode" type="checkbox" onclick="autoMode()" />
                             <span class="slider round"></span>
                         </label>
@@ -2044,7 +2040,7 @@
                             <span>Dark mode</span>
                         </span>
                         <label class="switch">
-                            <input aria-label="Toggle manual dark theme" autocomplete="new-password" type="checkbox"
+                            <input autocomplete="off" aria-label="Toggle manual dark theme"  type="checkbox"
                                 id="manual-mode" type="checkbox" onclick="theme()" />
                             <span class="slider round"></span>
                         </label>
@@ -2059,7 +2055,7 @@
                 </section>
                 <section>
                     <h4>About</h4>
-                    <h5>Version 2.7.2</h5>
+                    <h5>Version 2.7.3</h5>
                     <a class="border-card" href="https://flo.cash/" target="_blank" rel="noopener noreferrer">
                         <h5>Powered by</h5>
                         <svg viewBox="0 0 108 48" style="enable-background:new 0 0 107.65 47.07;" xml:space="preserve">
@@ -2101,7 +2097,7 @@
             <h4>Recover FLO address</h4>
             <h5>Please enter your private key.</h5>
             <div class="input">
-                <input aria-label="Private key" autocomplete="new-password" type="text"
+                <input autocomplete="off" aria-label="Private key"  type="text"
                     onfocus="animateInput(this.parentNode)" onblur="revertBack(this.parentNode)" id="pop"
                     oninput="checkPrivateKey(this)" />
                 <label>Private key</label>
