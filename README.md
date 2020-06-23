@@ -609,9 +609,9 @@ Parameters while resetting or updating
 ## 5. Application Data
 
 #### Philosophy
-Application data system is a legacy data field without vector clock support in options. In our development process, General Data was created by adding vector clock support to application data at user level. So SEND and REQUEST options in Application Data are exactly the same as General data without vector clock options
+Application data system is original data field system that we created  for our cloud. It does not integrate with local IDB storage and synchronization in the browser. In our development process, General Data was created by adding vector clock support to application data at browser level to synchronize cloud  and local IDB. SEND and REQUEST options in Application Data are exactly the same as General data without vector clock IDB local storage support at browser level. 
 
-Even ObjectData was created over Application Data. ObjectData is a special construction provided by framework so that Javacript objects can directly be stored and retrieved from the cloud
+Even ObjectData was created on top of Application Data. ObjectData is a special construction provided by framework so that Javacript objects can directly be stored and retrieved from the cloud
 
 #### Vector Clock issues in Application Data
 Application data supports Vector clock in REQUEST option, but it is not mandatory. Since Application Data system has no mandatory vector clock requirement in REQUEST OPTIONS, it will always give the entire data set stored in the cloud since start if invoked without vectorClock, and user will have to custom handle the request output himself at client end. Our client side framework will not store it for the user.
