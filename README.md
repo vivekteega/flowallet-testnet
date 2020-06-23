@@ -287,7 +287,7 @@ Note: If passed as Array, then ratio of the balance of the senders are preserved
 ## Compact IndexedDB operations
 `compactIDB` operations can be used to perform basic IndexedDB operations such as add, read/write, modify and remove.Contains following operations.
 
-#### Important: Compact IndexedDB operations have all been promisified. All output needs to be handled using .then These operations do not return function return values. Once again, they resolve do not return. 
+#### Important: Compact IndexedDB operations have all been promisified. All output needs to be handled using .then These operations do not return function return values. Once again, they resolve: they do not return. 
 
 #### setDefaultDB 
 	compactIDB.setDefaultDB(dbName)
@@ -358,7 +358,7 @@ This module contains functions that interact with the supernode to send and retr
 ## FLO Cloud API operations
 `floCloudAPI` operations can interact with floSupernode cloud to send and retrieve data for applications. floCloudAPI uses floSupernode module for backend interactions.
 
-#### Important: FLO Cloud API operations have all been promisified. All output needs to be handled using .then These operations do not return function return values. Once again, they resolve do not return. 
+#### Important: FLO Cloud API operations have all been promisified. All output needs to be handled using .then These operations do not return function return values. Once again, they resolve: they do not return. 
 
 #### sendApplicationData
 	floCloudAPI.sendApplicationData(message, type, options = {})
