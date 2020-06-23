@@ -569,19 +569,22 @@ Parameters while sending
  * `receiverID` - receiver of the data 
  * `application` - application using the data
  * `comment` - user comment of the data
+ 
+##### Important: Never use senderIDs in SEND DATA options. The system automatically picks the FLO ID of the sender from FLO Globals. Its a common mistake developers make.
+ 
 
 ### REQUEST DATA
 
 #### request options
- * `receiverID` - receiver of the data
- * `type` - type of the data ( a free user field)
+ * `receiverID` - receiver FLO ID of the data
+ * `type` - type of the data ( a free user field that sender might have used in SEND DATA phase)
  * `senderIDs` - array of senderIDs
  * `application` - application of the data
  * `comment` - comment of the data
  * `lowerVectorClock` - VC from which the data is to be requested
  * `upperVectorClock` - VC till which the data is to be requested
  * `atVectorClock` - VC at which the data is to requested
- * `mostRecent` - boolean (true: request only the recent data matching the pattern)
+ * `mostRecent` - boolean (true: request only the recent data matching the pattern. Just the last one)
 
 ## 5. ObjectData
 
@@ -590,14 +593,15 @@ Parameters while resetting or updating
  * `Object Data`
 
 #### Options
- * `receiverID` - receiver of the data 
+ * `receiverID` - receiver FLO ID of the data 
  * `application` - application using the data
  * `comment` - comment of the data
+##### Important: Never use senderIDs in RESET and UPDATE. The system automatically picks the FLO ID of the sender from FLO Globals. Its a common mistake developers make.
 
 ### REQUEST DATA
 
 #### request options
- * `receiverID` - receiver of the data
+ * `receiverID` - receiver FLO ID of the data
  * `senderIDs` - array of senderIDs
  * `application` - application of the data
  * `comment` - comment of the data
