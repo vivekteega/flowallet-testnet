@@ -432,6 +432,11 @@ Note: value of objectData is taken from floGlobals
 2. addList - Array of subAdmins to add
 3. rmList - Array of subAdmins to remove
 
+
+* Example: floDapps.manageSubAdmins(adminPrivKey, [addr1, addr2..]) to add addr1 and addr2 as subAdmin
+* Example: floDapps.manageSubAdmins(adminPrivKey, null,  [addr1, addr2..]) to remove addr1 and addr2 as subAdmin
+
+
 #### clearCredentials
 	floDapps.clearCredentials()
 `clearCredentials` removes the login credentials stored in IDB.
