@@ -621,7 +621,7 @@ Usually ObjectData and GeneralData systems will support most of user needs. But 
 If lower vectorClock is specified, it will give all cloud stored application data after that vectorClock.
 If upper vectorClock is specified, it will give all cloud stored application data before that vectorClock.
 If at vectorClock is specified, it will give cloud stored application data exactly at that vectorClock.
-If most recent vectorClock is specified, it will give just the last stored application data.
+If most recent vectorClock is set as true, it will give just the last stored application data.
 
 #### No local IDB storage
 Application Data results are not stored in local IndexedDB  by Standard Operations Framework. 
