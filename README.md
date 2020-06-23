@@ -608,8 +608,9 @@ Parameters while resetting or updating
 
 ## 5. Application Data
 
-### DEPRECATED
-
 Application data system is a legacy data field without vector clock support in options. In our development process, General Data was created by adding vector clock support to application data at user level. So SEND and REQUEST options in Application Data are exactly the same as General data without vector clock options
 
+However, since Application Data system has no vector clock support in SEND and REQUEST OPTIONS, it will always give the entire data set stored in the cloud since start, and user will have to custom handle the output of it himself. Our client side framework will not stoe it for the user.
+
+Usually ObjectData and GeneralData systems will support most of user needs. But for cases when the user wants the entire cloud data set, and no client side framework handling, he should use ApplicationData 
 
