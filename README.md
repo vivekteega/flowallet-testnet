@@ -610,6 +610,8 @@ Parameters while resetting or updating
  * `atVectorClock` - VC at which the data is to requested
  * `mostRecent` - boolean (true: request only the recent data matching the pattern. Just the last one.)
 
+##### Important: Type field is never used while RESET, UPDATE or REQUEST operations in Object Data. Type field is internally blocked for Object Data.
+
 ## 5. Application Data
 
 #### Philosophy
