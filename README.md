@@ -604,7 +604,7 @@ Parameters while resetting or updating
  * `lowerVectorClock` - VC from which the data is to be requested
  * `upperVectorClock` - VC till which the data is to be requested
  * `atVectorClock` - VC at which the data is to requested
- * `mostRecent` - boolean (true: request only the recent data matching the pattern)
+ * `mostRecent` - boolean (true: request only the recent data matching the pattern. Just the last one.)
 
 ## 5. Application Data
 
