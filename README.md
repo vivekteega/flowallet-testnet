@@ -95,6 +95,8 @@ This template contains standard operations that can be used for the following:
 ## FLO Crypto Operations
 `floCrypto` operations can be used to perform blockchain-cryptography methods. `floCrypto` operations are synchronized and return a value. Contains the following Operations.
 
+#### Important: FLO Crypto operations are all functions. They have not been promisified 
+
 #### Generate New FLO ID pair
 	floCrypto.generateNewID()
  `generateNewID`  generates a new flo ID and returns private-key, public-key and floID 
@@ -193,6 +195,8 @@ This template contains standard operations that can be used for the following:
 ## FLO Blockchain API Operations
 `floBlockchainAPI` object method can be used to send/recieve data to/from blockchain. These functions are asynchronous and return a promise. Contains the following functions.
 
+#### Important: FLO Blockchain API operations have all been promisified. All output needs to be handled using .then These operations do not return function return values. Once again, they resolve do not return. 
+
 #### promisedAJAX
 	floBlockchainAPI.promisedAJAX(method, uri)
 `promisedAJAX` requests data using API
@@ -283,6 +287,8 @@ Note: If passed as Array, then ratio of the balance of the senders are preserved
 ## Compact IndexedDB operations
 `compactIDB` operations can be used to perform basic IndexedDB operations such as add, read/write, modify and remove.Contains following operations.
 
+#### Important: Compact IndexedDB operations have all been promisified. All output needs to be handled using .then These operations do not return function return values. Once again, they resolve do not return. 
+
 #### setDefaultDB 
 	compactIDB.setDefaultDB(dbName)
 `setDefaultDB` sets the database on which further operations will be performed.
@@ -351,6 +357,8 @@ This module contains functions that interact with the supernode to send and retr
 
 ## FLO Cloud API operations
 `floCloudAPI` operations can interact with floSupernode cloud to send and retrieve data for applications. floCloudAPI uses floSupernode module for backend interactions.
+
+#### Important: FLO Cloud API operations have all been promisified. All output needs to be handled using .then These operations do not return function return values. Once again, they resolve do not return. 
 
 #### sendApplicationData
 	floCloudAPI.sendApplicationData(message, type, options = {})
