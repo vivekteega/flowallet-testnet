@@ -618,10 +618,11 @@ Application data supports Vector clock in REQUEST option, but it is not mandator
 
 Usually ObjectData and GeneralData systems will support most of user needs. But for cases when the user wants the entire cloud data set, and no client side framework handling, he should use ApplicationData. Although Application Data system supports lower vectorClock, upper vectorClock, at vectorClock and mostRecentvectorClock as a REQUEST option. 
 
-If lower vectorClock is specified, it will give all cloud stored application data after that vectorClock.
-If upper vectorClock is specified, it will give all cloud stored application data before that vectorClock.
-If at vectorClock is specified, it will give cloud stored application data exactly at that vectorClock.
-If most recent vectorClock is set as true, it will give just the last stored application data.
+* If lower vectorClock is specified, it will give all cloud stored application data after that vectorClock.
+* If upper vectorClock is specified, it will give all cloud stored application data before that vectorClock.
+* If at vectorClock is specified, it will give cloud stored application data exactly at that vectorClock.
+* If most recent vectorClock is set as true, it will give just the last stored application data.
+* If no vectorClock is specified, it will give all the data stored in cloud
 
 #### No local IDB storage
 Application Data results are not stored in local IndexedDB  by Standard Operations Framework. 
