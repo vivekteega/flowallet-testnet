@@ -534,7 +534,7 @@ Parameters while requesting
 
 ### RESET or UPDATE operations 
 Parameters while resetting or updating
- * `Object Data`
+ * `Object Name` The object data with Object Name must be defined   
 
 #### Options
  * `receiverID` - receiver FLO ID of the data 
