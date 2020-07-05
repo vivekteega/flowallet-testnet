@@ -422,80 +422,7 @@ Note: value of objectData is taken from floGlobals
 	* atVectorClock - VC at which the data is to requested
 	* mostRecent - boolean (true: request only the recent data matching the pattern)
 
-## FLO Decentralised Applications (Dapps)
-`floDapps` module contains methods for basic Dapp. floDapps uses all of the above modules.
-
-
-
-#### setCustomPrivKeyInput
-	floDapps.setCustomPrivKeyInput(customFn)
-`setCustomPrivKeyInput` adds a startup funtion to the Dapp
-1. customFn - custom function to get login credentials (privateKey)
-
-
-#### manageSubAdmins
-	floDapps.manageSubAdmins(adminPrivKey, addList, rmList)
-`manageSubAdmins` adds and/or removes subAdmins by sending transaction to blockchain.
-1. adminPrivKey - private key of the adminID
-2. addList - Array of subAdmins to add
-3. rmList - Array of subAdmins to remove
-
-
-* Example: floDapps.manageSubAdmins(adminPrivKey, [addr1, addr2..]) to add addr1 and addr2 as subAdmin
-* Example: floDapps.manageSubAdmins(adminPrivKey, null,  [addr1, addr2..]) to remove addr1 and addr2 as subAdmin
-
-
-#### clearCredentials
-	floDapps.clearCredentials()
-`clearCredentials` removes the login credentials stored in IDB.
-
-#### securePrivKey
-	floDapps.securePrivKey(pwd)
-`securePrivKey` replaces the stored private key with an encrypted variant
-1. pwd - password for the encryption
-Note: if securePrivKey is used, then password must be requested during customPrivKeyInput (in setCustomPrivKeyInput).
-
-#### getNextGeneralData
-	floDapps.getNextGeneralData(type, vectorClock, options = {})
-`getNextGeneralData` return the next generaldata
-1. type - type of the general data
-2. vectorClock - current known VC, from which next data to be retrived
-3. options - (optional, {comment, application} of the data)
-
-#### launchStartUp
-	floDapps.launchStartUp()
-`launchStartUp` launchs the Dapp startup functions
-
-#####  reactorEvents
-* startUpSuccessLog - called when a startup funtion is successfully completed
-* startUpErrorLog - called when a startup funtion encounters an error
-
-##### onLoadStartUp 
-Sample startup is defined in onLoadStartUp function
-
-#### addStartUpFunction
-	floDapps.addStartUpFunction(fname, fn)
-`addStartUpFunction` adds a startup funtion to the Dapp
-1. fname - Name of the startup function
-2. fn - body of the function
-Note: startup funtions are called in parallel. Therefore only add custom startup funtion only if it can run in parallel with other startup functions. (default startup funtions are read supernode list and subAdmin list from blockchain API, load data from indexedDB, get login credentials)
-
-### Advanced Dapp functions usually not needed for users
-
-#### setAppObjectStores
-	floDapps.setAppObjectStores(appObs)
-`setAppObjectStores` adds additionals objectstores for the app
-1. appObs - additionals objects for the app
-
-#### objectDataMapper
-	floDapps.objectDataMapper(object, path, data)
-`objectDataMapper` maps the object and data via path
-1. object - object to be mapped
-2. path - end path for the data holder
-3. data - data to be pushed in map
-
-
-# Repeat of Basic Concepts of RanchiMall Blockchain Cloud for developers
+# Basic Concepts of RanchiMall Blockchain Cloud for developers
 
 * RanchiMall blockchain cloud is a service to provide a set of decentralized servers that will provide data storage to users. These decentralized servers are listed in the FLO Blockchain under an authorized FLO address. This gives the assurance to the users that those data servers can be trusted.
 
@@ -570,7 +497,7 @@ Note:
  * `Object Data:` Type field has been consumed to create object functionality
 
 
-## 4. General Data
+## 4. GENERAL DATA
 
 ### SEND DATA
 Parameters while sending
@@ -603,7 +530,7 @@ Parameters while requesting
  * `atVectorClock` - VC at which the data is to requested
  * `mostRecent` - boolean (true: request only the recent data matching the pattern. Just the last one)
 
-## 5. ObjectData
+## 5. OBJECT DATA
 
 ### RESET or UPDATE operations 
 Parameters while resetting or updating
@@ -649,3 +576,78 @@ Usually ObjectData and GeneralData systems will support most of user needs. But 
 
 #### No local IDB storage
 Application Data results are not stored in local IndexedDB  by Standard Operations Framework. 
+
+## FLO Decentralised Applications (Dapps)
+`floDapps` module contains methods for basic Dapp. floDapps uses all of the above modules.
+
+
+
+#### setCustomPrivKeyInput
+	floDapps.setCustomPrivKeyInput(customFn)
+`setCustomPrivKeyInput` adds a startup funtion to the Dapp
+1. customFn - custom function to get login credentials (privateKey)
+
+
+#### manageSubAdmins
+	floDapps.manageSubAdmins(adminPrivKey, addList, rmList)
+`manageSubAdmins` adds and/or removes subAdmins by sending transaction to blockchain.
+1. adminPrivKey - private key of the adminID
+2. addList - Array of subAdmins to add
+3. rmList - Array of subAdmins to remove
+
+
+* Example: floDapps.manageSubAdmins(adminPrivKey, [addr1, addr2..]) to add addr1 and addr2 as subAdmin
+* Example: floDapps.manageSubAdmins(adminPrivKey, null,  [addr1, addr2..]) to remove addr1 and addr2 as subAdmin
+
+
+#### clearCredentials
+	floDapps.clearCredentials()
+`clearCredentials` removes the login credentials stored in IDB.
+
+#### securePrivKey
+	floDapps.securePrivKey(pwd)
+`securePrivKey` replaces the stored private key with an encrypted variant
+1. pwd - password for the encryption
+Note: if securePrivKey is used, then password must be requested during customPrivKeyInput (in setCustomPrivKeyInput).
+
+#### getNextGeneralData
+	floDapps.getNextGeneralData(type, vectorClock, options = {})
+`getNextGeneralData` return the next generaldata
+1. type - type of the general data
+2. vectorClock - current known VC, from which next data to be retrived
+3. options - (optional, {comment, application} of the data)
+
+#### launchStartUp
+	floDapps.launchStartUp()
+`launchStartUp` launchs the Dapp startup functions
+
+#####  reactorEvents
+* startUpSuccessLog - called when a startup funtion is successfully completed
+* startUpErrorLog - called when a startup funtion encounters an error
+
+##### onLoadStartUp 
+Sample startup is defined in onLoadStartUp function
+
+#### addStartUpFunction
+	floDapps.addStartUpFunction(fname, fn)
+`addStartUpFunction` adds a startup funtion to the Dapp
+1. fname - Name of the startup function
+2. fn - body of the function
+Note: startup funtions are called in parallel. Therefore only add custom startup funtion only if it can run in parallel with other startup functions. (default startup funtions are read supernode list and subAdmin list from blockchain API, load data from indexedDB, get login credentials)
+
+### Advanced Dapp functions usually not needed for users
+
+#### setAppObjectStores
+	floDapps.setAppObjectStores(appObs)
+`setAppObjectStores` adds additionals objectstores for the app
+1. appObs - additionals objects for the app
+
+#### objectDataMapper
+	floDapps.objectDataMapper(object, path, data)
+`objectDataMapper` maps the object and data via path
+1. object - object to be mapped
+2. path - end path for the data holder
+3. data - data to be pushed in map
+
+
+
