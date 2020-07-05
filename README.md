@@ -358,7 +358,7 @@ This module contains functions that interact with the supernode to send and retr
 ## FLO Cloud API operations
 `floCloudAPI` operations can interact with floSupernode cloud to send and retrieve data for applications. floCloudAPI uses floSupernode module for backend interactions.
 
-#### Important: FLO Cloud API operations have all been promisified. All output needs to be handled using .then These operations do not return function return values. Once again, they resolve: they do not return. 
+FLO Cloud API operations have all been promisified. All output needs to be handled using .then These operations do not return function return values. Once again, they resolve: they do not return. 
 
 #### sendGeneralData
 	floCloudAPI.sendGeneralData(message, type, options = {})
@@ -378,7 +378,9 @@ This module contains functions that interact with the supernode to send and retr
 `resetObjectData` resets the objectData to cloud.
 1. objectName - Name of the objectData to be reset
 2. options - (optional, options detailed at end of module)
+
 Note: value of objectData is taken from floGlobals.appObjects[objectName]
+
 The object data corresponding with Object Name must be defined in floGlobals.appObjects[objectName] before a reset can be done 
 
 #### updateObjectData
@@ -386,7 +388,9 @@ The object data corresponding with Object Name must be defined in floGlobals.app
 `updateObjectData` updates the objectData to cloud.
 1. objectName - Name of the objectData to be updated
 2. options - (optional, options detailed at end of module)
+
 Note: value of objectData is taken from floGlobals.appObjects[objectName]
+
 The object data corresponding with Object Name must be defined in floGlobals.appObjects[objectName] before an update can be done 
 
 #### requestObjectData
@@ -394,6 +398,7 @@ The object data corresponding with Object Name must be defined in floGlobals.app
 `requestObjectData` requests application data from the cloud.
 1. objectName - Name of the objectData to be requested
 2. options - (optional, options detailed at end of module)
+
 Note: The output is available at floGlobals.appObjects[objectName] after the promise is resolved
 
 #### sendApplicationData
