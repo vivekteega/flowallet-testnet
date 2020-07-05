@@ -396,6 +396,8 @@ Note: type is mandatory while sending but optional while requesting in case of A
 1. objectName - Name of the objectData to be reset
 2. options - (optional, options detailed at end of module)
 Note: value of objectData is taken from floGlobals.appObjects[objectName]
+The object data corresponding with Object Name must be defined in floGlobals.appObjects[objectName] before a reset can be done 
+
 
 #### updateObjectData
 	floCloudAPI.updateObjectData(objectName, options = {})
@@ -403,6 +405,8 @@ Note: value of objectData is taken from floGlobals.appObjects[objectName]
 1. objectName - Name of the objectData to be updated
 2. options - (optional, options detailed at end of module)
 Note: value of objectData is taken from floGlobals.appObjects[objectName]
+The object data corresponding with Object Name must be defined in floGlobals.appObjects[objectName] before an update can be done 
+
 
 #### requestObjectData
 	floCloudAPI.requestObjectData(objectName, options = {})
@@ -517,9 +521,9 @@ Parameters while sending
  * `application` - application using the data
  * `comment` - user comment of the data
  
-##### Important: Never use senderIDs in SEND DATA options. The system automatically picks the FLO ID of the sender from FLO Globals. Its a common mistake developers make.
+Important: Never use senderIDs in SEND DATA options. The system automatically picks the FLO ID of the sender from FLO Globals. Its a common mistake developers make.
 
-##### Type is mandatory in SEND DATA because without at least one data identifier like TYPE, the message cannot be retrieved back 
+Type is mandatory in SEND GENERAL DATA because without at least one data identifier like TYPE, the message cannot be retrieved back 
 
 ### REQUEST DATA
 
@@ -536,18 +540,26 @@ Parameters while requesting
  * `upperVectorClock` - VC till which the data is to be requested
  * `atVectorClock` - VC at which the data is to requested
  * `mostRecent` - boolean (true: request only the recent data matching the pattern. Just the last one)
+ 
+The results are available in floGlobals.generalData 
+Type is mandatory in REQUEST GENERAL DATA. So every TYPE of general data must be requested individually and separately. 
+If you want to use requests to give results from all types at one go, use Application Data.      
 
 ## 5. OBJECT DATA
 
 ### RESET or UPDATE operations 
 Parameters while resetting or updating
- * `Object Name` The object data with Object Name must be defined   
+ * `Object Name`: Name of the object with data populated in floGlobals.appObjects[objectName] 
+ 
+Note: The object data corresponding with Object Name must be defined in floGlobals.appObjects[objectName] before a reset or update can be done 
 
 #### Options
  * `receiverID` - receiver FLO ID of the data 
  * `application` - application using the data
  * `comment` - comment of the data
-##### Important: Never use senderIDs in RESET and UPDATE. The system automatically picks the FLO ID of the sender from FLO Globals. Its a common mistake developers make.
+
+Note: Never use senderIDs in RESET and UPDATE. The system automatically picks the FLO ID of the sender from FLO Globals. Its a common mistake developers make.
+Note: Type field is never used while RESET, UPDATE or REQUEST operations in Object Data. Type field is internally blocked for Object Data.
 
 ### REQUEST DATA
 
@@ -561,7 +573,8 @@ Parameters while resetting or updating
  * `atVectorClock` - VC at which the data is to requested
  * `mostRecent` - boolean (true: request only the recent data matching the pattern. Just the last one.)
 
-##### Important: Type field is never used while RESET, UPDATE or REQUEST operations in Object Data. Type field is internally blocked for Object Data.
+Note: The output is available in floGlobals.appObjects[objectName]  
+Note: Type field is never used while RESET, UPDATE or REQUEST operations in Object Data. Type field is internally blocked for Object Data.
 
 ## 5. Application Data
 
