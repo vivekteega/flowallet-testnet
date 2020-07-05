@@ -367,7 +367,8 @@ FLO Cloud API operations have all been promisified. All output needs to be handl
 2. type - type of the data
 3. options - (optional, options detailed at end of module)
 
-Minimal Example: floCloudAPI.sendGeneralData("Hello World", "type1")
+###### Minimal Example: 
+	floCloudAPI.sendGeneralData("Hello World", "type1") 
 Sends "Hello World" message to the cloud with type1 as `type` with `myFloID` as default sender and `floGlobals.adminID` as receiver
 
 #### requestGeneralData
