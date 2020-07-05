@@ -367,6 +367,9 @@ FLO Cloud API operations have all been promisified. All output needs to be handl
 2. type - type of the data
 3. options - (optional, options detailed at end of module)
 
+Minimal Example: floCloudAPI.sendGeneralData("Hello World", "type1")
+Sends "Hello World" message to the cloud with type1 as `type` with `myFloID` as default sender and `floGlobals.adminID` as receiver
+
 #### requestGeneralData
 	floCloudAPI.requestGeneralData(type, options = {})
 `requestGeneralData` requests application data from the cloud.
@@ -539,6 +542,8 @@ Note: We recommend developers to use either objectData or GeneralData as we prov
 Note: Application Data results are not stored in local IndexedDB  by Standard Operations Framework. 
 
 Note: If a blank REQUEST APPLICATION DATA is made, then cloud will give all application data at the admin ID of the application
+
+# Examples for FLO Cloud data operations
 
 
 # Basic Concepts of RanchiMall Blockchain Cloud for developers
