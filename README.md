@@ -415,7 +415,7 @@ Note: Application Data results are not stored in local IndexedDB  by Standard Op
 
 ## 4. GENERAL DATA PARAMETERS AND OPTIONS
 
-### SEND DATA
+### SEND GENERAL DATA
 Parameters while sending
 
  * `Message`: Actual Message to be sent
@@ -430,15 +430,15 @@ Important: Never use senderIDs in SEND DATA options. The system automatically pi
 
 Type is mandatory in SEND GENERAL DATA because without at least one data identifier like TYPE, the message cannot be retrieved back 
 
-### REQUEST DATA
+### REQUEST GENERAL DATA
 
 Parameters while requesting
 
  * `Type`: User defined type (retrieves all data of that type which the sender might have used in SEND DATA phase) 
 
 #### request options
- * `receiverID` - receiver FLO ID of the data
- * `senderIDs` - array of senderIDs
+ * `receiverID` - receiver FLO ID of the data. ReceiverID is always a single value in our cloud design
+ * `senderIDs` - array of senderIDs. This must be in an array even if a single senderID is requested
  * `application` - application of the data
  * `comment` - comment of the data
  * `lowerVectorClock` - VC from which the data is to be requested
@@ -456,7 +456,7 @@ If you want to use requests to give results from all types at one go, use Applic
 
 ## 5. OBJECT DATA PARAMETERS AND OPTIONS
 
-### RESET or UPDATE operations 
+### RESET or UPDATE OBJECT DATA
 Parameters while resetting or updating
  * `Object Name`: Name of the object with data populated in floGlobals.appObjects[objectName] 
  
@@ -471,11 +471,14 @@ Note: Never use senderIDs in RESET and UPDATE. The system automatically picks th
 
 Note: Type field is never used in RESET, UPDATE or REQUEST operations in Object Data. Type field is internally blocked for Object Data.
 
-### REQUEST DATA
+### REQUEST OBJECT DATA
+
+#### Mandatory
+`Object Name` 
 
 #### request options
- * `receiverID` - receiver FLO ID of the data
- * `senderIDs` - array of senderIDs
+ * `receiverID` - receiver FLO ID of the data. ReceiverID is always a single value in our cloud design.
+ * `senderIDs` - array of senderIDs. This must be in an array even if a single senderID is requested
  * `application` - application of the data
  * `comment` - comment of the data
  * `lowerVectorClock` - VC from which the data is to be requested
@@ -488,7 +491,7 @@ Note: Type field is never used while RESET, UPDATE or REQUEST operations in Obje
 
 ## 6. APPLICATION DATA PARAMETERS, OPTIONS AND EXPLANATIONS
 
-### SEND DATA
+### SEND APPLICATION DATA
 Parameters while sending
 
  * `Message`: Actual Message to be sent
@@ -503,7 +506,7 @@ Important: Never use senderIDs in SEND DATA options. The system automatically pi
 
 Type is mandatory in SEND APPLICATION DATA because without at least one data identifier like TYPE, the message cannot be retrieved back 
 
-### REQUEST DATA
+### REQUEST APPLICATION DATA
 
 #### Mandatory Parameters while requesting
 None
