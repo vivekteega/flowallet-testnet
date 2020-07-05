@@ -426,7 +426,7 @@ Parameters while sending
  * `application` - application using the data
  * `comment` - user comment of the data
  
-Important: Never use senderIDs in SEND DATA options. The system automatically picks the FLO ID of the sender from FLO Globals. Its a common mistake developers make.
+Important: Never use senderIDs in SEND GENERAL DATA options. The system automatically picks the FLO ID of the sender from FLO Globals. Its a common mistake developers make.
 
 Type is mandatory in SEND GENERAL DATA because without at least one data identifier like TYPE, the message cannot be retrieved back 
 
@@ -463,7 +463,7 @@ Parameters while resetting or updating
 Note: The object data corresponding with Object Name must be defined in floGlobals.appObjects[objectName] before a reset or update can be done 
 
 #### Options
- * `receiverID` - receiver FLO ID of the data 
+ * `receiverID` - receiver FLO ID of the data.  If this is not specified, the admin ID will be taken as receiverID 
  * `application` - application using the data
  * `comment` - comment of the data
 
@@ -477,7 +477,7 @@ Note: Type field is never used in RESET, UPDATE or REQUEST operations in Object 
 `Object Name` 
 
 #### request options
- * `receiverID` - receiver FLO ID of the data. ReceiverID is always a single value in our cloud design.
+ * `receiverID` - receiver FLO ID of the data. ReceiverID is always a single value in our cloud design.  If this is not specified, the admin ID will be taken as receiverID
  * `senderIDs` - array of senderIDs. This must be in an array even if a single senderID is requested
  * `application` - application of the data
  * `comment` - comment of the data
@@ -498,7 +498,7 @@ Parameters while sending
  * `Type`: User defined type (anything that user wants to classify as type) 
 
 #### Options
- * `receiverID` - receiver of the data 
+ * `receiverID` - receiver of the data. If this is not specified, the admin ID will be taken as receiverID 
  * `application` - application using the data
  * `comment` - user comment of the data
  
@@ -512,9 +512,9 @@ Type is mandatory in SEND APPLICATION DATA because without at least one data ide
 None
 
 #### request options
- * `receiverID` - receiver FLO ID of the data
+ * `receiverID` - receiver FLO ID of the data. If this is not specified, the admin ID will be taken as receiverID. It is always a single value.
  * `Type`: User defined type (retrieves all data of that type which the sender might have used in SEND DATA phase) 
- * `senderIDs` - array of senderIDs
+ * `senderIDs` - array of senderIDs. This must be in an array even if a single senderID is requested.
  * `application` - application of the data
  * `comment` - comment of the data
  * `lowerVectorClock` - VC from which the data is to be requested
@@ -529,6 +529,8 @@ Note: TYPE is mandatory while SEND APPLICATION DATA but not in REQUEST APPLICATI
 Note: We recommend developers to use either objectData or GeneralData as we provide inbuilt data synchronization with cloud in them. If developer wants to receive response across all TYPES, or he is interested in doing request response management of the promise himself, he should use Application Data. Rad more in next section.
 
 Note: Application Data results are not stored in local IndexedDB  by Standard Operations Framework. 
+
+Note: If a blank REQUEST APPLICATION DATA is made, then cloud will give all application data at the admin ID of the application
 
 
 # Basic Concepts of RanchiMall Blockchain Cloud for developers
