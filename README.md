@@ -411,7 +411,10 @@ Note: type is mandatory while sending but optional while requesting in case of A
 1. options - (optional, options detailed at end of module)
 
 Note: type is mandatory while sending but optional while requesting in case of Application Data. This allows ApplicationData to span different types in retrieval.
+
 Note: Application Data results are not stored in local IndexedDB  by Standard Operations Framework. 
+
+Note: If a blank REQUEST APPLICATION DATA is made, then cloud will give all application data at the admin ID of the application
 
 ## 4. GENERAL DATA PARAMETERS AND OPTIONS
 
