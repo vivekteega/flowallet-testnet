@@ -604,7 +604,7 @@ It allows the clients to retrieve messages before and after a certain time, and 
  * `Object Data`: Message field can only be a JavaScript Object
 
 ### System Data Type 
-* `Application Data`: Application data is the base on which General Data system and Object Data system has been created. The formats for  General Data and Application Data are exactly the same. Users will never need to use Application Data. So we have deprecated Application Data. 
+* `Application Data`: Application data is the base on which General Data system and Object Data system has been created. The formats for  General Data and Application Data are exactly the same exfept type is not mandatory in SEND APPLICATION DATA. This should be used if developer wants to do his own response data management, or wants no cloud-client data synchronization.
  
 Note:
  * `General Data:` Type field is mandatory
