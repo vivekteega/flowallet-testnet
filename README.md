@@ -83,7 +83,7 @@ This template contains standard operations that can be used for the following:
 7. `SNStorageID`* : SuperNode Storage adminID.
 8.  `supernodes`⁺ : List of supernodes.
 9. `subAdmins`⁺ : subAdmins of the application.
-10. `appData`⁺ : Application data for the app (data sent by subAdmins).
+10. `appObjects`⁺ : Object Data for the app (data sent by subAdmins).
 11. `generalData`⁺: General Data for the app (data sent by any user).
 12. `vectorClock`⁺ and `generalVC`⁺ : vectorclocks for application data and general data respectively.
 
