@@ -360,23 +360,6 @@ This module contains functions that interact with the supernode to send and retr
 
 #### Important: FLO Cloud API operations have all been promisified. All output needs to be handled using .then These operations do not return function return values. Once again, they resolve: they do not return. 
 
-#### sendApplicationData
-	floCloudAPI.sendApplicationData(message, type, options = {})
-`sendApplicationData` sends application data to the cloud.
-1. message - data to be sent
-2. type - type of the data
-3. options - (optional, options detailed at end of module)
-
-
-Note: type is mandatory while sending but optional while requesting in case of Application Data. This allows ApplicationData to span different types in retrieval.
-
-#### requestApplicationData
-	floCloudAPI.requestApplicationData(options = {})
-`requestApplicationData` requests application data from the cloud.
-1. options - (optional, options detailed at end of module)
-
-Note: type is mandatory while sending but optional while requesting in case of Application Data. This allows ApplicationData to span different types in retrieval.
-
 #### sendGeneralData
 	floCloudAPI.sendGeneralData(message, type, options = {})
 `sendGeneralData` sends general data to the cloud.
@@ -398,7 +381,6 @@ Note: type is mandatory while sending but optional while requesting in case of A
 Note: value of objectData is taken from floGlobals.appObjects[objectName]
 The object data corresponding with Object Name must be defined in floGlobals.appObjects[objectName] before a reset can be done 
 
-
 #### updateObjectData
 	floCloudAPI.updateObjectData(objectName, options = {})
 `updateObjectData` updates the objectData to cloud.
@@ -407,31 +389,144 @@ The object data corresponding with Object Name must be defined in floGlobals.app
 Note: value of objectData is taken from floGlobals.appObjects[objectName]
 The object data corresponding with Object Name must be defined in floGlobals.appObjects[objectName] before an update can be done 
 
-
 #### requestObjectData
 	floCloudAPI.requestObjectData(objectName, options = {})
 `requestObjectData` requests application data from the cloud.
 1. objectName - Name of the objectData to be requested
 2. options - (optional, options detailed at end of module)
-Note: The resolved output is available at floGlobals.appObjects[objectName]
+Note: The output is available at floGlobals.appObjects[objectName] after the promise is resolved
 
-#### options:
-* send options:
-	* receiverID - received of the data
-	* application - application of the data 
-	* comment - comment of the data
-	
+#### sendApplicationData
+	floCloudAPI.sendApplicationData(message, type, options = {})
+`sendApplicationData` sends application data to the cloud.
+1. message - data to be sent
+2. type - type of the data
+3. options - (optional, options detailed at end of module)
 
-* request options
-	* receiverID - received of the data
-	* senderIDs - array of senderIDs
-	* application - application of the data
-	* type - type of the data
-	* comment - comment of the data
-	* lowerVectorClock - VC from which the data is to be requested
-	* upperVectorClock - VC till which the data is to be requested
-	* atVectorClock - VC at which the data is to requested
-	* mostRecent - boolean (true: request only the recent data matching the pattern)
+Note: type is mandatory while sending but optional while requesting in case of Application Data. This allows ApplicationData to span different types in retrieval.
+
+#### requestApplicationData
+	floCloudAPI.requestApplicationData(options = {})
+`requestApplicationData` requests application data from the cloud.
+1. options - (optional, options detailed at end of module)
+
+Note: type is mandatory while sending but optional while requesting in case of Application Data. This allows ApplicationData to span different types in retrieval.
+Note: Application Data results are not stored in local IndexedDB  by Standard Operations Framework. 
+
+## 4. GENERAL DATA PARAMETERS AND OPTIONS
+
+### SEND DATA
+Parameters while sending
+
+ * `Message`: Actual Message to be sent
+ * `Type`: User defined type (anything that user wants to classify as type) 
+
+#### Options
+ * `receiverID` - receiver of the data 
+ * `application` - application using the data
+ * `comment` - user comment of the data
+ 
+Important: Never use senderIDs in SEND DATA options. The system automatically picks the FLO ID of the sender from FLO Globals. Its a common mistake developers make.
+
+Type is mandatory in SEND GENERAL DATA because without at least one data identifier like TYPE, the message cannot be retrieved back 
+
+### REQUEST DATA
+
+Parameters while requesting
+
+ * `Type`: User defined type (retrieves all data of that type which the sender might have used in SEND DATA phase) 
+
+#### request options
+ * `receiverID` - receiver FLO ID of the data
+ * `senderIDs` - array of senderIDs
+ * `application` - application of the data
+ * `comment` - comment of the data
+ * `lowerVectorClock` - VC from which the data is to be requested
+ * `upperVectorClock` - VC till which the data is to be requested
+ * `atVectorClock` - VC at which the data is to requested
+ * `mostRecent` - boolean (true: request only the recent data matching the pattern. Just the last one)
+ 
+The results are available in floGlobals.generalData after the request promise has been resolved
+
+floDapps.getNextGeneralData should be used to retrieve the output in the client browser where the retrieval from floGlobals.generalData has been simplified.
+
+Type is mandatory in REQUEST GENERAL DATA. So every TYPE of general data must be requested individually and separately. 
+
+If you want to use requests to give results from all types at one go, use Application Data.      
+
+## 5. OBJECT DATA PARAMETERS AND OPTIONS
+
+### RESET or UPDATE operations 
+Parameters while resetting or updating
+ * `Object Name`: Name of the object with data populated in floGlobals.appObjects[objectName] 
+ 
+Note: The object data corresponding with Object Name must be defined in floGlobals.appObjects[objectName] before a reset or update can be done 
+
+#### Options
+ * `receiverID` - receiver FLO ID of the data 
+ * `application` - application using the data
+ * `comment` - comment of the data
+
+Note: Never use senderIDs in RESET and UPDATE. The system automatically picks the FLO ID of the sender from FLO Globals. Its a common mistake developers make.
+
+Note: Type field is never used in RESET, UPDATE or REQUEST operations in Object Data. Type field is internally blocked for Object Data.
+
+### REQUEST DATA
+
+#### request options
+ * `receiverID` - receiver FLO ID of the data
+ * `senderIDs` - array of senderIDs
+ * `application` - application of the data
+ * `comment` - comment of the data
+ * `lowerVectorClock` - VC from which the data is to be requested
+ * `upperVectorClock` - VC till which the data is to be requested
+ * `atVectorClock` - VC at which the data is to requested
+ * `mostRecent` - boolean (true: request only the recent data matching the pattern. Just the last one.)
+
+Note: The output is available in floGlobals.appObjects[objectName] after request Object Data promise is resolved 
+Note: Type field is never used while RESET, UPDATE or REQUEST operations in Object Data. Type field is internally blocked for Object Data.
+
+## 6. APPLICATION DATA PARAMETERS, OPTIONS AND EXPLANATIONS
+
+### SEND DATA
+Parameters while sending
+
+ * `Message`: Actual Message to be sent
+ * `Type`: User defined type (anything that user wants to classify as type) 
+
+#### Options
+ * `receiverID` - receiver of the data 
+ * `application` - application using the data
+ * `comment` - user comment of the data
+ 
+Important: Never use senderIDs in SEND DATA options. The system automatically picks the FLO ID of the sender from FLO Globals. Its a common mistake developers make.
+
+Type is mandatory in SEND APPLICATION DATA because without at least one data identifier like TYPE, the message cannot be retrieved back 
+
+### REQUEST DATA
+
+#### Mandatory Parameters while requesting
+None
+
+#### request options
+ * `receiverID` - receiver FLO ID of the data
+ * `Type`: User defined type (retrieves all data of that type which the sender might have used in SEND DATA phase) 
+ * `senderIDs` - array of senderIDs
+ * `application` - application of the data
+ * `comment` - comment of the data
+ * `lowerVectorClock` - VC from which the data is to be requested
+ * `upperVectorClock` - VC till which the data is to be requested
+ * `atVectorClock` - VC at which the data is to requested
+ * `mostRecent` - boolean (true: request only the recent data matching the pattern. Just the last one)
+
+Note: Results will be available in promise.resolve(requestApplicationData(..)), and user will have to handle the response himself.
+
+Note: TYPE is mandatory while SEND APPLICATION DATA but not in REQUEST APPLICATION DATA. This enables a single Application Data request to fetch across all TYPES
+
+Note: We recommend developers to use either objectData or GeneralData as we provide inbuilt data synchronization with cloud in them. If developer wants to receive response across all TYPES, or he is interested in doing request response management of the promise himself, he should use Application Data. Rad more in next section.
+
+Note: Application Data results are not stored in local IndexedDB  by Standard Operations Framework. 
+
 
 # Basic Concepts of RanchiMall Blockchain Cloud for developers
 
@@ -508,81 +603,8 @@ Note:
  * `Object Data:` Type field has been consumed to create object functionality
 
 
-## 4. GENERAL DATA
 
-### SEND DATA
-Parameters while sending
-
- * `Message`: Actual Message to be sent
- * `Type`: User defined type (anything that user wants to classify as type) 
-
-#### Options
- * `receiverID` - receiver of the data 
- * `application` - application using the data
- * `comment` - user comment of the data
- 
-Important: Never use senderIDs in SEND DATA options. The system automatically picks the FLO ID of the sender from FLO Globals. Its a common mistake developers make.
-
-Type is mandatory in SEND GENERAL DATA because without at least one data identifier like TYPE, the message cannot be retrieved back 
-
-### REQUEST DATA
-
-Parameters while requesting
-
- * `Type`: User defined type (retrieves all data of that type which the sender might have used in SEND DATA phase) 
-
-#### request options
- * `receiverID` - receiver FLO ID of the data
- * `senderIDs` - array of senderIDs
- * `application` - application of the data
- * `comment` - comment of the data
- * `lowerVectorClock` - VC from which the data is to be requested
- * `upperVectorClock` - VC till which the data is to be requested
- * `atVectorClock` - VC at which the data is to requested
- * `mostRecent` - boolean (true: request only the recent data matching the pattern. Just the last one)
- 
-The results are available in floGlobals.generalData
-
-floDapps.getNextGeneralData should be used to retrieve the output in the client browser where the retrieval from floGlobals.generalData has been simplified.
-
-Type is mandatory in REQUEST GENERAL DATA. So every TYPE of general data must be requested individually and separately. 
-If you want to use requests to give results from all types at one go, use Application Data.      
-
-## 5. OBJECT DATA
-
-### RESET or UPDATE operations 
-Parameters while resetting or updating
- * `Object Name`: Name of the object with data populated in floGlobals.appObjects[objectName] 
- 
-Note: The object data corresponding with Object Name must be defined in floGlobals.appObjects[objectName] before a reset or update can be done 
-
-#### Options
- * `receiverID` - receiver FLO ID of the data 
- * `application` - application using the data
- * `comment` - comment of the data
-
-Note: Never use senderIDs in RESET and UPDATE. The system automatically picks the FLO ID of the sender from FLO Globals. Its a common mistake developers make.
-
-Note: Type field is never used while RESET, UPDATE or REQUEST operations in Object Data. Type field is internally blocked for Object Data.
-
-### REQUEST DATA
-
-#### request options
- * `receiverID` - receiver FLO ID of the data
- * `senderIDs` - array of senderIDs
- * `application` - application of the data
- * `comment` - comment of the data
- * `lowerVectorClock` - VC from which the data is to be requested
- * `upperVectorClock` - VC till which the data is to be requested
- * `atVectorClock` - VC at which the data is to requested
- * `mostRecent` - boolean (true: request only the recent data matching the pattern. Just the last one.)
-
-Note: The output is available in floGlobals.appObjects[objectName]  
-Note: Type field is never used while RESET, UPDATE or REQUEST operations in Object Data. Type field is internally blocked for Object Data.
-
-## 5. Application Data
-
-#### Philosophy
+#### Philosophy of Application Data
 Application data system is original data field system that we created  for our cloud. It does not integrate with local IDB storage and synchronization in the browser. In our development process, General Data was created by adding vector clock support to application data at browser level to synchronize cloud  and local IDB. SEND and REQUEST options in Application Data are exactly the same as General data without vector clock IDB local storage support at browser level. 
 
 Even ObjectData was created on top of Application Data. ObjectData is a special construction provided by framework so that Javacript objects can directly be stored and retrieved from the cloud
