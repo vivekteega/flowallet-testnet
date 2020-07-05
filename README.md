@@ -367,10 +367,15 @@ This module contains functions that interact with the supernode to send and retr
 2. type - type of the data
 3. options - (optional, options detailed at end of module)
 
+
+Note: type is mandatory while sending but optional while requesting in case of Application Data. This allows ApplicationData to span different types in retrieval.
+
 #### requestApplicationData
 	floCloudAPI.requestApplicationData(options = {})
 `requestApplicationData` requests application data from the cloud.
 1. options - (optional, options detailed at end of module)
+
+Note: type is mandatory while sending but optional while requesting in case of Application Data. This allows ApplicationData to span different types in retrieval.
 
 #### sendGeneralData
 	floCloudAPI.sendGeneralData(message, type, options = {})
@@ -390,26 +395,28 @@ This module contains functions that interact with the supernode to send and retr
 `resetObjectData` resets the objectData to cloud.
 1. objectName - Name of the objectData to be reset
 2. options - (optional, options detailed at end of module)
-Note: value of objectData is taken from floGlobals
+Note: value of objectData is taken from floGlobals.appObjects[objectName]
 
 #### updateObjectData
 	floCloudAPI.updateObjectData(objectName, options = {})
 `updateObjectData` updates the objectData to cloud.
 1. objectName - Name of the objectData to be updated
 2. options - (optional, options detailed at end of module)
-Note: value of objectData is taken from floGlobals
+Note: value of objectData is taken from floGlobals.appObjects[objectName]
 
 #### requestObjectData
 	floCloudAPI.requestObjectData(objectName, options = {})
 `requestObjectData` requests application data from the cloud.
 1. objectName - Name of the objectData to be requested
 2. options - (optional, options detailed at end of module)
+Note: The resolved output is available at floGlobals.appObjects[objectName]
 
 #### options:
 * send options:
 	* receiverID - received of the data
 	* application - application of the data 
 	* comment - comment of the data
+	
 
 * request options
 	* receiverID - received of the data
