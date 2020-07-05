@@ -474,7 +474,7 @@ Important: Never use senderIDs in SEND GENERAL DATA options. The system automati
 
 Type is mandatory in SEND GENERAL DATA because without at least one data identifier like TYPE, the message cannot be retrieved back 
 
-Application field is used by the Cloud to judge whether this message should be deleted after 7 days, or stored permanently. Developers should be careful not to change value of application field if the default value enables the message to be stored permanently. Currently messages sent from subadmins for applications notified by the cloud in the FLO Blockchain are stored permanently. So do not change application field as a caution. Use the comment field. 
+Application field is used by the Cloud to judge whether this message should be deleted after 7 days, or stored permanently. Developers should be careful not to change value of application field if the default value enables the message to be stored permanently. Currently messages sent from subadmins to any receiverID for applications notified by the cloud in the FLO Blockchain are stored permanently. So do not change application field as a caution. Use the comment field. 
 
 ### REQUEST GENERAL DATA
 
@@ -500,7 +500,7 @@ Type is mandatory in REQUEST GENERAL DATA. So every TYPE of general data must be
 
 If you want to use requests to give results from all types at one go, use Application Data.
 
-Application field is used by the Cloud to judge whether this message should be deleted after 7 days, or stored permanently. Developers should be careful not to change value of application field if the default value enables the message to be stored permanently. Currently messages sent from subadmins for applications notified by the cloud in the FLO Blockchain are stored permanently. So do not change application field as a caution. Use the comment field.
+Application field is used by the Cloud to judge whether this message should be deleted after 7 days, or stored permanently. Developers should be careful not to change value of application field if the default value enables the message to be stored permanently. Currently messages sent from subadmins to any receiverID for applications notified by the cloud in the FLO Blockchain are stored permanently. So do not change application field as a caution. Use the comment field.
 
 ## 5. OBJECT DATA PARAMETERS AND OPTIONS
 
@@ -538,7 +538,7 @@ The output is available in floGlobals.appObjects[objectName] after request Objec
 
 Type field is never used while RESET, UPDATE or REQUEST operations in Object Data. Type field is internally blocked for Object Data.
 
-Application field is used by the Cloud to judge whether this message should be deleted after 7 days, or stored permanently. Developers should be careful not to change value of application field if the default value enables the message to be stored permanently. Currently messages sent from subadmins for applications notified by the cloud in the FLO Blockchain are stored permanently. So do not change application field as a caution. Use the comment field.
+Application field is used by the Cloud to judge whether this message should be deleted after 7 days, or stored permanently. Developers should be careful not to change value of application field if the default value enables the message to be stored permanently. Currently messages sent from subadmins to any receiverID for applications notified by the cloud in the FLO Blockchain are stored permanently. So do not change application field as a caution. Use the comment field.
 
 ## 6. APPLICATION DATA PARAMETERS, OPTIONS AND EXPLANATIONS
 
@@ -585,7 +585,7 @@ Note: Application Data results are not stored in local IndexedDB  by Standard Op
 
 Note: If a blank REQUEST APPLICATION DATA is made, then cloud will give all application data at the admin ID of the application
 
-Note: Application field is used by the Cloud to judge whether this message should be deleted after 7 days, or stored permanently. Developers should be careful not to change value of application field if the default value enables the message to be stored permanently. Currently messages sent from subadmins for applications notified by the cloud in the FLO Blockchain are stored permanently. So do not change application field as a caution. Use the comment field.
+Note: Application field is used by the Cloud to judge whether this message should be deleted after 7 days, or stored permanently. Developers should be careful not to change value of application field if the default value enables the message to be stored permanently. Currently messages sent from subadmins to any receiverID for applications notified by the cloud in the FLO Blockchain are stored permanently. So do not change application field as a caution. Use the comment field.
 
 # Examples for FLO Cloud data operations
 
