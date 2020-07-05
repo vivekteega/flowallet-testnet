@@ -439,7 +439,7 @@ Requests the latest value of "myFirstObject" from the cloud. The request is sent
 Note: type is mandatory while sending but optional while requesting in case of Application Data. This allows ApplicationData to span different types in retrieval.
 
 ###### Minimal Example: 
-	floCloudAPI.sendGeneralData("Hello Application World", "typeA") 
+	floCloudAPI.sendApplicationData("Hello Application World", "typeA") 
 Sends "Hello Application World" message to the cloud as Application Data with typeA as `type` with `myFloID` as default sender and `floGlobals.adminID` as receiver
 
 #### requestApplicationData
