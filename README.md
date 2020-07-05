@@ -541,7 +541,10 @@ Parameters while requesting
  * `atVectorClock` - VC at which the data is to requested
  * `mostRecent` - boolean (true: request only the recent data matching the pattern. Just the last one)
  
-The results are available in floGlobals.generalData 
+The results are available in floGlobals.generalData
+
+floDapps.getNextGeneralData should be used to retrieve the output in the client browser where the retrieval from floGlobals.generalData has been simplified.
+
 Type is mandatory in REQUEST GENERAL DATA. So every TYPE of general data must be requested individually and separately. 
 If you want to use requests to give results from all types at one go, use Application Data.      
 
@@ -559,6 +562,7 @@ Note: The object data corresponding with Object Name must be defined in floGloba
  * `comment` - comment of the data
 
 Note: Never use senderIDs in RESET and UPDATE. The system automatically picks the FLO ID of the sender from FLO Globals. Its a common mistake developers make.
+
 Note: Type field is never used while RESET, UPDATE or REQUEST operations in Object Data. Type field is internally blocked for Object Data.
 
 ### REQUEST DATA
@@ -586,7 +590,7 @@ Even ObjectData was created on top of Application Data. ObjectData is a special 
 #### Vector Clock issues in Application Data
 Application data supports Vector clock in REQUEST option, but it is not mandatory. Since Application Data system has no mandatory vector clock requirement in REQUEST OPTIONS, it will always give the entire data set stored in the cloud since start if invoked without vectorClock, and user will have to custom handle the request output himself at client end. Our client side framework will not store it for the user.
 
-Usually ObjectData and GeneralData systems will support most of user needs. But for cases when the user wants the entire cloud data set, and no client side framework handling, he should use ApplicationData. Although Application Data system supports lower vectorClock, upper vectorClock, at vectorClock and mostRecentvectorClock as a REQUEST option. 
+Usually ObjectData and GeneralData systems will support most of user needs. But for cases when the user wants the entire cloud data set, and no client side framework handling, he should use ApplicationData. Although Application Data system supports lower vectorClock, upper vectorClock, at vectorClock and mostRecentvectorClock as a REQUEST option, but the processing of these have to be done by user. Unlike in case of ObjectData and GeneralData, the output of Request Application Data is not available in floGlobals. 
 
 * If lower vectorClock is specified, it will give all cloud stored application data after that vectorClock.
 * If upper vectorClock is specified, it will give all cloud stored application data before that vectorClock.
