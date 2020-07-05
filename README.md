@@ -92,6 +92,12 @@ This template contains standard operations that can be used for the following:
 1-8 : Required for all applications.
 9-12: Required for applications based on floClouldAPI and floDapps module.
 
+In addition, we have these system variables outside FLO Globals but used globally
+1. `myFloID` : FLO ID with which user has logged in
+2. `myPubKey` : Public Key attached to the user FLO ID
+3. `myPrivKey` : Private Key corresponding to the user FLO ID
+
+
 ## FLO Crypto Operations
 `floCrypto` operations can be used to perform blockchain-cryptography methods. `floCrypto` operations are synchronized and return a value. Contains the following Operations.
 
@@ -369,7 +375,7 @@ FLO Cloud API operations have all been promisified. All output needs to be handl
 
 ###### Minimal Example: 
 	floCloudAPI.sendGeneralData("Hello World", "type1") 
-Sends "Hello World" message to the cloud with type1 as `type` with `myFloID` as default sender and `floGlobals.adminID` as receiver
+Sends "Hello World" message to the cloud as General Data with type1 as `type` with `myFloID` as default sender and `floGlobals.adminID` as receiver
 
 #### requestGeneralData
 	floCloudAPI.requestGeneralData(type, options = {})
@@ -377,33 +383,51 @@ Sends "Hello World" message to the cloud with type1 as `type` with `myFloID` as 
 1. type - type of the data
 2. options - (optional, options detailed at end of module)
 
+###### Minimal Example: 
+	floCloudAPI.requestGeneralData("type1") 
+Requests all messages of General Data nature from the cloud with type1 as `type` sent by anyone and `floGlobals.adminID` as default receiverID
+
 #### resetObjectData
-	floCloudAPI.resetObjectData(objectName, options = {})
+	floCloudAPI.resetObjectData("objectName", options = {})
 `resetObjectData` resets the objectData to cloud.
-1. objectName - Name of the objectData to be reset
+1. "objectName" - Name of the objectData to be reset. Quotes are must
 2. options - (optional, options detailed at end of module)
 
-Note: value of objectData is taken from floGlobals.appObjects[objectName]
+Note: value of objectData is taken from floGlobals.appObjects["objectName"]
 
-The object data corresponding with Object Name must be defined in floGlobals.appObjects[objectName] before a reset can be done 
+The object data corresponding with Object Name must be defined in floGlobals.appObjects["objectName"] before a reset can be done 
+
+###### Minimal Example: 
+	floGlobals.appObjects["myFirstObject"] = {a:1,b:2}
+	floCloudAPI.resetObjectData("myFirstObject") 
+Initiates "myFirstObject" with {a:1,b:2}, and sends to cloud with `myFloID` as default sender and `floGlobals.adminID` as receiver
 
 #### updateObjectData
-	floCloudAPI.updateObjectData(objectName, options = {})
+	floCloudAPI.updateObjectData("objectName", options = {})
 `updateObjectData` updates the objectData to cloud.
-1. objectName - Name of the objectData to be updated
+1. "objectName" - Name of the objectData to be updated. Quotes are must.
 2. options - (optional, options detailed at end of module)
 
-Note: value of objectData is taken from floGlobals.appObjects[objectName]
+Note: value of objectData is taken from floGlobals.appObjects["objectName"]
 
-The object data corresponding with Object Name must be defined in floGlobals.appObjects[objectName] before an update can be done 
+The object data corresponding with Object Name must be defined in floGlobals.appObjects["objectName"] before an update can be done 
+
+###### Minimal Example: 
+	floGlobals.appObjects["myFirstObject"] = {a:1,c:3,d:4}
+	floCloudAPI.updateObjectData("myFirstObject") 
+Updates "myFirstObject" with {a:1,c:3,d:4}, and sends to cloud with `myFloID` as default sender and `floGlobals.adminID` as receiver. 
 
 #### requestObjectData
-	floCloudAPI.requestObjectData(objectName, options = {})
+	floCloudAPI.requestObjectData("objectName", options = {})
 `requestObjectData` requests application data from the cloud.
-1. objectName - Name of the objectData to be requested
+1. "objectName" - Name of the objectData to be requested. Quotes are must.
 2. options - (optional, options detailed at end of module)
 
-Note: The output is available at floGlobals.appObjects[objectName] after the promise is resolved
+Note: The output is available at floGlobals.appObjects["objectName"] after the promise is resolved
+
+###### Minimal Example: 
+	floCloudAPI.requestObjectData("myFirstObject") 
+Requests the latest value of "myFirstObject" from the cloud. The request is sent to cloud with `myFloID` as sender and `floGlobals.adminID` as receiver. The output is available at floGlobals.appObjects["myFirstObject"]
 
 #### sendApplicationData
 	floCloudAPI.sendApplicationData(message, type, options = {})
@@ -413,6 +437,10 @@ Note: The output is available at floGlobals.appObjects[objectName] after the pro
 3. options - (optional, options detailed at end of module)
 
 Note: type is mandatory while sending but optional while requesting in case of Application Data. This allows ApplicationData to span different types in retrieval.
+
+###### Minimal Example: 
+	floCloudAPI.sendGeneralData("Hello Application World", "typeA") 
+Sends "Hello Application World" message to the cloud as Application Data with typeA as `type` with `myFloID` as default sender and `floGlobals.adminID` as receiver
 
 #### requestApplicationData
 	floCloudAPI.requestApplicationData(options = {})
@@ -424,6 +452,10 @@ Note: type is mandatory while sending but optional while requesting in case of A
 Note: Application Data results are not stored in local IndexedDB  by Standard Operations Framework. 
 
 Note: If a blank REQUEST APPLICATION DATA is made, then cloud will give all application data at the admin ID of the application
+
+###### Minimal Example: 
+	floCloudAPI.requestApplicationData() 
+Requests all messages of Apllication Data nature from the cloud with any `type` sent by anyone and `floGlobals.adminID` as receiverID
 
 ## 4. GENERAL DATA PARAMETERS AND OPTIONS
 
