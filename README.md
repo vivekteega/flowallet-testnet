@@ -557,7 +557,7 @@ Important: Never use senderIDs in SEND DATA options. The system automatically pi
 
 Type is mandatory in SEND APPLICATION DATA because without at least one data identifier like TYPE, the message cannot be retrieved back 
 
-Application field is used by the Cloud to judge whether this message should be deleted after 7 days, or stored permanently. Developers should be careful not to change value of application field if the default value enables the message to be stored permanently. Currently messages sent from subadmins for applications notified by the cloud in the FLO Blockchain are stored permanently. So do not change application field as a caution. Use the comment field.
+Application field is used by the Cloud to judge whether this message should be deleted after 7 days, or stored permanently. Developers should be careful not to change value of application field if the default value enables the message to be stored permanently. Currently messages sent from subadmins to any receiverID for applications notified by the cloud in the FLO Blockchain are stored permanently. So do not change application field as a caution. Use the comment field.
 
 ### REQUEST APPLICATION DATA
 
