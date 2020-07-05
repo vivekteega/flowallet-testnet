@@ -584,13 +584,17 @@ Parameters while sending
  * `comment` - user comment of the data
  
 ##### Important: Never use senderIDs in SEND DATA options. The system automatically picks the FLO ID of the sender from FLO Globals. Its a common mistake developers make.
- 
+
+##### Type is mandatory in SEND DATA because without at least one data identifier like TYPE, the message cannot be retrieved back 
 
 ### REQUEST DATA
 
+Parameters while requesting
+
+ * `Type`: User defined type (retrieves all data of that type which the sender might have used in SEND DATA phase) 
+
 #### request options
  * `receiverID` - receiver FLO ID of the data
- * `type` - type of the data ( a free user field that sender might have used in SEND DATA phase)
  * `senderIDs` - array of senderIDs
  * `application` - application of the data
  * `comment` - comment of the data
