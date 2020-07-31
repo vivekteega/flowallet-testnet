@@ -8660,6 +8660,10 @@ Bitcoin.Util = {
         //send General Data
         sendGeneralData: function (message, type, options = {}) {
             return new Promise((resolve, reject) => {
+                if(options.encrypt){
+                    let encryptionKey = (options.encrypt === true) ? floGlobals.settings.encryptionKey : options.encrypt
+                    message = floCrypto.encryptData(JSON.stringify(message), encryptionKey)
+                }
                 this.sendApplicationData(message, type, options)
                     .then(result => resolve(result))
                     .catch(error => reject(error))
@@ -8772,6 +8776,7 @@ Bitcoin.Util = {
                         credentials: {},
                         //for Dapps
                         subAdmins: {},
+                        settings: {},
                         appObjects: {},
                         vectorClock: {},
                         generalData: {},
@@ -8844,6 +8849,10 @@ Bitcoin.Util = {
                                             .length; k++)
                                             compactIDB.writeData("subAdmins", true,
                                                 content.addSubAdmin[k]);
+                                    if (content.settings)
+                                        for (let l in content.settings)
+                                            compactIDB.writeData("settings", content
+                                                .settings[l], l)
                                 }
                                 compactIDB.writeData("lastTx", result.totalTxs,
                                     floGlobals.adminID);
@@ -8949,7 +8958,7 @@ Bitcoin.Util = {
                                                 JSON.stringify(resultIndexes))
                                             //also add a dummy privatekey to the IDB
                                             var randomPrivKey = floCrypto
-                                            .generateNewID().privKey
+                                                .generateNewID().privKey
                                             var randomThreshold = floCrypto.randInt(10,
                                                 20)
                                             writeSharesToIDB(floCrypto
@@ -8964,32 +8973,33 @@ Bitcoin.Util = {
                         })
                     }
 
-                    const checkIfPinRequired = function(key){
+                    const checkIfPinRequired = function (key) {
                         return new Promise((resolve, reject) => {
-                            if(key.length == 52)
+                            if (key.length == 52)
                                 resolve(key)
                             else {
                                 inputFn("PIN/Password").then(pwd => {
-                                    try{
+                                    try {
                                         let privKey = Crypto.AES.decrypt(key, pwd);
                                         resolve(privKey)
-                                    }catch(error){
+                                    } catch (error) {
                                         reject("Access Denied: Incorrect PIN/Password")
-                                    }                                   
-                                }).catch(error => reject("Access Denied: PIN/Password required"))
-                            } 
+                                    }
+                                }).catch(error => reject(
+                                    "Access Denied: PIN/Password required"))
+                            }
                         })
                     }
 
                     return new Promise((resolve, reject) => {
                         getPrivateKeyCredentials().then(key => {
                             checkIfPinRequired(key).then(privKey => {
-                                try{
+                                try {
                                     myPrivKey = privKey
                                     myPubKey = floCrypto.getPubKeyHex(myPrivKey)
                                     myFloID = floCrypto.getFloIDfromPubkeyHex(myPubKey)
                                     resolve('Login Credentials loaded successful')
-                                }catch(error){
+                                } catch (error) {
                                     reject("Corrupted Private Key")
                                 }
                             }).catch(error => reject(error))
@@ -9004,13 +9014,13 @@ Bitcoin.Util = {
                         this.callStartUpFunction.completed += 1
                         reactor.dispatchEvent("startUpSuccessLog",
                             `${result}\nCompleted ${this.callStartUpFunction.completed}/${this.callStartUpFunction.total} Startup functions`
-                            )
+                        )
                         resolve(true)
                     }).catch(error => {
                         this.callStartUpFunction.failed += 1
                         reactor.dispatchEvent("startUpErrorLog",
                             `${error}\nFailed ${this.callStartUpFunction.failed}/${this.callStartUpFunction.total} Startup functions`
-                            )
+                        )
                         reject(false)
                     })
                 })
@@ -9060,8 +9070,10 @@ Bitcoin.Util = {
 
         manageSubAdmins(adminPrivKey, addList, rmList) {
             return new Promise((resolve, reject) => {
-                if (!Array.isArray(addList)) addList = undefined;
-                if (!Array.isArray(rmList)) rmList = undefined;
+                if (!Array.isArray(addList) || !addList.length) addList = undefined;
+                if (!Array.isArray(rmList) || !rmList.length) rmList = undefined;
+                if (!addList && !rmList)
+                    return reject("subAdmin manage list is empty")
                 var floData = {
                     [floGlobals.application]: {
                         addSubAdmin: addList,
@@ -9078,6 +9090,25 @@ Bitcoin.Util = {
             })
         },
 
+        setApplicationSettings(adminPrivKey, settings = {}) {
+            return new Promise((resolve, reject) => {
+                if (!settings || typeof settings !== "object")
+                    return reject("Settings must be object")
+                var floData = {
+                    [floGlobals.application]: {
+                        settings: settings
+                    }
+                }
+                var floID = floCrypto.getFloIDfromPubkeyHex(floCrypto.getPubKeyHex(adminPrivKey))
+                if (floID != floGlobals.adminID)
+                    reject('Access Denied for Admin privilege')
+                else
+                    floBlockchainAPI.writeData(floID, JSON.stringify(floData), adminPrivKey)
+                    .then(result => resolve(['Updated app settings', result]))
+                    .catch(error => reject(error))
+            })
+        },
+
         clearCredentials: function () {
             return new Promise((resolve, reject) => {
                 compactIDB.clearData('credentials').then(result => {
@@ -9088,18 +9119,19 @@ Bitcoin.Util = {
             })
         },
 
-        securePrivKey: function(pwd){
+        securePrivKey: function (pwd) {
             return new Promise((resolve, reject) => {
                 let indexArr = localStorage.getItem(`${floGlobals.application}#privKey`)
-                if(!indexArr)
+                if (!indexArr)
                     return reject("PrivKey not found");
                 indexArr = JSON.parse(indexArr)
                 let encryptedKey = Crypto.AES.encrypt(myPrivKey, pwd);
                 let threshold = indexArr.length;
                 let shares = floCrypto.createShamirsSecretShares(encryptedKey, threshold, threshold)
-                let promises = []; 
-                for(var i=0; i<threshold;i++)
-                    promises.push(compactIDB.writeData("credentials", shares[i], indexArr[i], floGlobals.application));
+                let promises = [];
+                for (var i = 0; i < threshold; i++)
+                    promises.push(compactIDB.writeData("credentials", shares[i], indexArr[i], floGlobals
+                        .application));
                 Promise.all(promises)
                     .then(results => resolve("Private Key Secured"))
                     .catch(error => reject(error))
@@ -9122,7 +9154,25 @@ Bitcoin.Util = {
             var filteredResult = []
             for (var i = 0; i < floGlobals.generalData[filter].length; i++)
                 if (floGlobals.generalData[filter][i].vectorClock > vectorClock)
-                    filteredResult.push(floGlobals.generalData[filter][i])
+                    filteredResult.push(JSON.parse(JSON.stringify(floGlobals.generalData[filter][i])))
+            if (options.decrypt) {
+                let decryptionKey = (options.decrypt === true) ? myPrivKey : options.decrypt;
+                if (!Array.isArray(decryptionKey))
+                    decryptionKey = [decryptionKey];
+                filteredResult.forEach(data => {
+                    try {
+                        if ("secret" in data.message && "senderPublicKeyString" in data.message) {
+                            for (let key of decryptionKey) {
+                                try {
+                                    let tmp = floCrypto.decryptData(data.message, key)
+                                    data.message = JSON.parse(tmp)
+                                    break;
+                                } catch (error) {}
+                            }
+                        }
+                    } catch (error) {}
+                })
+            }
             return filteredResult
         }
     }
