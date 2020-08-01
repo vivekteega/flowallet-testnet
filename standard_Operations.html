@@ -8606,7 +8606,9 @@ Bitcoin.Util = {
                         floGlobals.generalData[filterStr].push({
                             sender: dataSet[vc].senderID,
                             vectorClock: vc,
-                            message: dataSet[vc].message
+                            message: dataSet[vc].message,
+                            sign: dataSet[vc].sign,
+                            pubKey: dataSet[vc].pubKey
                         })
                         compactIDB.writeData("generalData", floGlobals.generalData[filterStr], filterStr)
                         floGlobals.generalVC[filterStr] = vc
@@ -8828,7 +8830,7 @@ Bitcoin.Util = {
                     })
                 },
 
-                readSubAdminListFromAPI: function () {
+                readAppConfigFromAPI: function () {
                     return new Promise((resolve, reject) => {
                         compactIDB.readData("lastTx", floGlobals.adminID).then(lastTx => {
                             floBlockchainAPI.readData(floGlobals.adminID, {
@@ -8858,7 +8860,10 @@ Bitcoin.Util = {
                                     floGlobals.adminID);
                                 compactIDB.readAllData("subAdmins").then(result => {
                                     floGlobals.subAdmins = Object.keys(result);
-                                    resolve("Read subAdmins from blockchain");
+                                    compactIDB.readAllData("settings").then(result => {
+                                        floGlobals.settings = result;
+                                        resolve("Read app configuration from blockchain");
+                                    })
                                 })
                             })
                         }).catch(error => reject(error))
