@@ -706,7 +706,7 @@ Application Data results are not stored in local IndexedDB  by Standard Operatio
 
 * Example: floDapps.manageSubAdmins(adminPrivKey, [addr1, addr2..]) to add addr1 and addr2 as subAdmin
 * Example: floDapps.manageSubAdmins(adminPrivKey, null,  [addr1, addr2..]) to remove addr1 and addr2 as subAdmin
-
+* This command must be run from the console of app page only.
 
 #### clearCredentials
 	floDapps.clearCredentials()
