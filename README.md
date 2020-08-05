@@ -1,4 +1,4 @@
-# Standard_Operations
+# FLO Standard Operations
 RanchiMall is releasing FLO Standard Operations in order to make it easier for  everyone in community to access common functions that any developer would need in a standardized way for JavaScript based development around FLO Blockchain ecosystem. 
 
 The methods enable developers to read and write into FLO Blockchain directly without any wallet or Chrome extension dependencies. They also enable developers to create digital signatures for any message out of any FLO ID, and functions verify them as well. In additional, standard methods are being provided for data encryption using recipient FLO ID and private key splitting using Shamir Secret Sharing algorithm.
@@ -83,7 +83,7 @@ This template contains standard operations that can be used for the following:
 7. `SNStorageID`* : SuperNode Storage adminID.
 8.  `supernodes`⁺ : List of supernodes.
 9. `subAdmins`⁺ : subAdmins of the application.
-10. `appData`⁺ : Application data for the app (data sent by subAdmins).
+10. `appObjects`⁺ : Object Data for the app (data sent by subAdmins).
 11. `generalData`⁺: General Data for the app (data sent by any user).
 12. `vectorClock`⁺ and `generalVC`⁺ : vectorclocks for application data and general data respectively.
 
@@ -92,8 +92,16 @@ This template contains standard operations that can be used for the following:
 1-8 : Required for all applications.
 9-12: Required for applications based on floClouldAPI and floDapps module.
 
+In addition, we have these system variables outside FLO Globals but used globally
+1. `myFloID` : FLO ID with which user has logged in
+2. `myPubKey` : Public Key attached to the user FLO ID
+3. `myPrivKey` : Private Key corresponding to the user FLO ID
+
+
 ## FLO Crypto Operations
 `floCrypto` operations can be used to perform blockchain-cryptography methods. `floCrypto` operations are synchronized and return a value. Contains the following Operations.
+
+#### Important: FLO Crypto operations are all functions. They have not been promisified 
 
 #### Generate New FLO ID pair
 	floCrypto.generateNewID()
@@ -193,6 +201,8 @@ This template contains standard operations that can be used for the following:
 ## FLO Blockchain API Operations
 `floBlockchainAPI` object method can be used to send/recieve data to/from blockchain. These functions are asynchronous and return a promise. Contains the following functions.
 
+#### Important: FLO Blockchain API operations have all been promisified. All output needs to be handled using .then These operations do not return function return values. Once again, they resolve do not return. 
+
 #### promisedAJAX
 	floBlockchainAPI.promisedAJAX(method, uri)
 `promisedAJAX` requests data using API
@@ -283,6 +293,8 @@ Note: If passed as Array, then ratio of the balance of the senders are preserved
 ## Compact IndexedDB operations
 `compactIDB` operations can be used to perform basic IndexedDB operations such as add, read/write, modify and remove.Contains following operations.
 
+#### Important: Compact IndexedDB operations have all been promisified. All output needs to be handled using .then These operations do not return function return values. Once again, they resolve: they do not return. 
+
 #### setDefaultDB 
 	compactIDB.setDefaultDB(dbName)
 `setDefaultDB` sets the database on which further operations will be performed.
@@ -352,17 +364,7 @@ This module contains functions that interact with the supernode to send and retr
 ## FLO Cloud API operations
 `floCloudAPI` operations can interact with floSupernode cloud to send and retrieve data for applications. floCloudAPI uses floSupernode module for backend interactions.
 
-#### sendApplicationData
-	floCloudAPI.sendApplicationData(message, type, options = {})
-`sendApplicationData` sends application data to the cloud.
-1. message - data to be sent
-2. type - type of the data
-3. options - (optional, options detailed at end of module)
-
-#### requestApplicationData
-	floCloudAPI.requestApplicationData(options = {})
-`requestApplicationData` requests application data from the cloud.
-1. options - (optional, options detailed at end of module)
+FLO Cloud API operations have all been promisified. All output needs to be handled using .then These operations do not return function return values. Once again, they resolve: they do not return. 
 
 #### sendGeneralData
 	floCloudAPI.sendGeneralData(message, type, options = {})
@@ -371,118 +373,224 @@ This module contains functions that interact with the supernode to send and retr
 2. type - type of the data
 3. options - (optional, options detailed at end of module)
 
+###### Minimal Example: 
+	floCloudAPI.sendGeneralData("Hello World", "type1") 
+Sends "Hello World" message to the cloud as General Data with type1 as `type` with `myFloID` as default sender and `floGlobals.adminID` as receiver
+
 #### requestGeneralData
 	floCloudAPI.requestGeneralData(type, options = {})
 `requestGeneralData` requests application data from the cloud.
 1. type - type of the data
 2. options - (optional, options detailed at end of module)
 
+###### Minimal Example: 
+	floCloudAPI.requestGeneralData("type1") 
+Requests all messages of General Data nature from the cloud with type1 as `type` sent by anyone and `floGlobals.adminID` as default receiverID
+
 #### resetObjectData
-	floCloudAPI.resetObjectData(objectName, options = {})
+	floCloudAPI.resetObjectData("objectName", options = {})
 `resetObjectData` resets the objectData to cloud.
-1. objectName - Name of the objectData to be reset
+1. "objectName" - Name of the objectData to be reset. Quotes are must
 2. options - (optional, options detailed at end of module)
-Note: value of objectData is taken from floGlobals
+
+Note: value of objectData is taken from floGlobals.appObjects["objectName"]
+
+The object data corresponding with Object Name must be defined in floGlobals.appObjects["objectName"] before a reset can be done 
+
+###### Minimal Example: 
+	floGlobals.appObjects["myFirstObject"] = {a:1,b:2}
+	floCloudAPI.resetObjectData("myFirstObject") 
+Initiates "myFirstObject" with {a:1,b:2}, and sends to cloud with `myFloID` as default sender and `floGlobals.adminID` as receiver
 
 #### updateObjectData
-	floCloudAPI.updateObjectData(objectName, options = {})
+	floCloudAPI.updateObjectData("objectName", options = {})
 `updateObjectData` updates the objectData to cloud.
-1. objectName - Name of the objectData to be updated
+1. "objectName" - Name of the objectData to be updated. Quotes are must.
 2. options - (optional, options detailed at end of module)
-Note: value of objectData is taken from floGlobals
+
+Note: value of objectData is taken from floGlobals.appObjects["objectName"]
+
+The object data corresponding with Object Name must be defined in floGlobals.appObjects["objectName"] before an update can be done 
+
+###### Minimal Example: 
+	floGlobals.appObjects["myFirstObject"] = {a:1,c:3,d:4}
+	floCloudAPI.updateObjectData("myFirstObject") 
+Updates "myFirstObject" with {a:1,c:3,d:4}, and sends to cloud with `myFloID` as default sender and `floGlobals.adminID` as receiver. 
 
 #### requestObjectData
-	floCloudAPI.requestObjectData(objectName, options = {})
+	floCloudAPI.requestObjectData("objectName", options = {})
 `requestObjectData` requests application data from the cloud.
-1. objectName - Name of the objectData to be requested
+1. "objectName" - Name of the objectData to be requested. Quotes are must.
 2. options - (optional, options detailed at end of module)
 
-#### options:
-* send options:
-	* receiverID - received of the data
-	* application - application of the data 
-	* comment - comment of the data
+Note: The output is available at floGlobals.appObjects["objectName"] after the promise is resolved
 
-* request options
-	* receiverID - received of the data
-	* senderIDs - array of senderIDs
-	* application - application of the data
-	* type - type of the data
-	* comment - comment of the data
-	* lowerVectorClock - VC from which the data is to be requested
-	* upperVectorClock - VC till which the data is to be requested
-	* atVectorClock - VC at which the data is to requested
-	* mostRecent - boolean (true: request only the recent data matching the pattern)
+###### Minimal Example: 
+	floCloudAPI.requestObjectData("myFirstObject") 
+Requests the latest value of "myFirstObject" from the cloud. The request is sent to cloud with `myFloID` as sender and `floGlobals.adminID` as receiver. The output is available at floGlobals.appObjects["myFirstObject"]
 
-## FLO Decentralised Applications (Dapps)
-`floDapps` module contains methods for basic Dapp. floDapps uses all of the above modules.
+#### sendApplicationData
+	floCloudAPI.sendApplicationData(message, type, options = {})
+`sendApplicationData` sends application data to the cloud.
+1. message - data to be sent
+2. type - type of the data
+3. options - (optional, options detailed at end of module)
+
+Note: type is mandatory while sending but optional while requesting in case of Application Data. This allows ApplicationData to span different types in retrieval.
+
+###### Minimal Example: 
+	floCloudAPI.sendApplicationData("Hello Application World", "typeA") 
+Sends "Hello Application World" message to the cloud as Application Data with typeA as `type` with `myFloID` as default sender and `floGlobals.adminID` as receiver
+
+#### requestApplicationData
+	floCloudAPI.requestApplicationData(options = {})
+`requestApplicationData` requests application data from the cloud.
+1. options - (optional, options detailed at end of module)
+
+Note: type is mandatory while sending but optional while requesting in case of Application Data. This allows ApplicationData to span different types in retrieval.
+
+Note: Application Data results are not stored in local IndexedDB  by Standard Operations Framework. 
+
+Note: If a blank REQUEST APPLICATION DATA is made, then cloud will give all application data at the admin ID of the application
+
+###### Minimal Example: 
+	floCloudAPI.requestApplicationData() 
+Requests all messages of Apllication Data nature from the cloud with any `type` sent by anyone and `floGlobals.adminID` as receiverID
+
+## 4. GENERAL DATA PARAMETERS AND OPTIONS
+
+### SEND GENERAL DATA
+Parameters while sending
+
+ * `Message`: Actual Message to be sent
+ * `Type`: User defined type (anything that user wants to classify as type) 
+
+#### Options
+ * `receiverID` - receiver of the data 
+ * `application` - name of the application sending the general data
+ * `comment` - user comment for the data
+ 
+Important: Never use senderIDs in SEND GENERAL DATA options. The system automatically picks the FLO ID of the sender from FLO Globals. Its a common mistake developers make.
+
+Type is mandatory in SEND GENERAL DATA because without at least one data identifier like TYPE, the message cannot be retrieved back 
+
+Application field is used by the Cloud to judge whether this message should be deleted after 7 days, or stored permanently. Developers should be careful not to change value of application field if the default value enables the message to be stored permanently. Currently messages sent from subadmins to any receiverID for applications notified by the cloud in the FLO Blockchain are stored permanently. So do not change application field as a caution. Use the comment field. 
+
+### REQUEST GENERAL DATA
+
+Parameters while requesting
+
+ * `Type`: User defined type (retrieves all data of that type which the sender might have used in SEND DATA phase) 
+
+#### request options
+ * `receiverID` - receiver FLO ID of the data. ReceiverID is always a single value in our cloud design
+ * `senderIDs` - array of senderIDs. This must be in an array even if a single senderID is requested
+ * `application` - name of the application that sent the general data 
+ * `comment` - comments for the data
+ * `lowerVectorClock` - VC from which the data is to be requested
+ * `upperVectorClock` - VC till which the data is to be requested
+ * `atVectorClock` - VC at which the data is to requested
+ * `mostRecent` - boolean (true: request only the recent data matching the pattern. Just the last one)
+ 
+The results are available in floGlobals.generalData after the request promise has been resolved
+
+floDapps.getNextGeneralData should be used to retrieve the output in the client browser where the retrieval from floGlobals.generalData has been simplified.
+
+Type is mandatory in REQUEST GENERAL DATA. So every TYPE of general data must be requested individually and separately. 
+
+If you want to use requests to give results from all types at one go, use Application Data.
+
+Application field is used by the Cloud to judge whether this message should be deleted after 7 days, or stored permanently. Developers should be careful not to change value of application field if the default value enables the message to be stored permanently. Currently messages sent from subadmins to any receiverID for applications notified by the cloud in the FLO Blockchain are stored permanently. So do not change application field as a caution. Use the comment field.
+
+## 5. OBJECT DATA PARAMETERS AND OPTIONS
+
+### RESET or UPDATE OBJECT DATA
+Parameters while resetting or updating
+ * `Object Name`: Name of the object with data populated in floGlobals.appObjects[objectName] 
+ 
+Note: The object data corresponding with Object Name must be defined in floGlobals.appObjects[objectName] before a reset or update can be done 
+
+#### Options
+ * `receiverID` - receiver FLO ID of the data.  If this is not specified, the admin ID will be taken as receiverID 
+ * `application` - name of the application for sending the object data
+ * `comment` - comment for the object data
+
+Note: Never use senderIDs in RESET and UPDATE. The system automatically picks the FLO ID of the sender from FLO Globals. Its a common mistake developers make.
+
+Note: Type field is never used in RESET, UPDATE or REQUEST operations in Object Data. Type field is internally blocked for Object Data.
+
+### REQUEST OBJECT DATA
+
+#### Mandatory
+`Object Name` 
+
+#### request options
+ * `receiverID` - receiver FLO ID of the data. ReceiverID is always a single value in our cloud design.  If this is not specified, the admin ID will be taken as receiverID
+ * `senderIDs` - array of senderIDs. This must be in an array even if a single senderID is requested
+ * `application` - name of the application for which the object data is intended
+ * `comment` - comment for the object data
+ * `lowerVectorClock` - VC from which the data is to be requested
+ * `upperVectorClock` - VC till which the data is to be requested
+ * `atVectorClock` - VC at which the data is to requested
+ * `mostRecent` - boolean (true: request only the recent data matching the pattern. Just the last one.)
+
+The output is available in floGlobals.appObjects[objectName] after request Object Data promise is resolved 
+
+Type field is never used while RESET, UPDATE or REQUEST operations in Object Data. Type field is internally blocked for Object Data.
+
+Application field is used by the Cloud to judge whether this message should be deleted after 7 days, or stored permanently. Developers should be careful not to change value of application field if the default value enables the message to be stored permanently. Currently messages sent from subadmins to any receiverID for applications notified by the cloud in the FLO Blockchain are stored permanently. So do not change application field as a caution. Use the comment field.
+
+## 6. APPLICATION DATA PARAMETERS, OPTIONS AND EXPLANATIONS
+
+### SEND APPLICATION DATA
+Parameters while sending
+
+ * `Message`: Actual Message to be sent
+ * `Type`: User defined type (anything that user wants to classify as type) 
+
+#### Options
+ * `receiverID` - receiver of the data. If this is not specified, the admin ID will be taken as receiverID 
+ * `application` - name of the application sending the data
+ * `comment` - user comment for the data
+ 
+Important: Never use senderIDs in SEND DATA options. The system automatically picks the FLO ID of the sender from FLO Globals. Its a common mistake developers make.
+
+Type is mandatory in SEND APPLICATION DATA because without at least one data identifier like TYPE, the message cannot be retrieved back 
+
+Application field is used by the Cloud to judge whether this message should be deleted after 7 days, or stored permanently. Developers should be careful not to change value of application field if the default value enables the message to be stored permanently. Currently messages sent from subadmins to any receiverID for applications notified by the cloud in the FLO Blockchain are stored permanently. So do not change application field as a caution. Use the comment field.
+
+### REQUEST APPLICATION DATA
+
+#### Mandatory Parameters while requesting
+None
+
+#### request options
+ * `receiverID` - receiver FLO ID of the data. If this is not specified, the admin ID will be taken as receiverID. It is always a single value.
+ * `Type`: User defined type (retrieves all data of that type which the sender might have used in SEND DATA phase) 
+ * `senderIDs` - array of senderIDs. This must be in an array even if a single senderID is requested.
+ * `application` - application of the data
+ * `comment` - comment of the data
+ * `lowerVectorClock` - VC from which the data is to be requested
+ * `upperVectorClock` - VC till which the data is to be requested
+ * `atVectorClock` - VC at which the data is to requested
+ * `mostRecent` - boolean (true: request only the recent data matching the pattern. Just the last one)
+
+Note: Results will be available in promise.resolve(requestApplicationData(..)), and user will have to handle the response himself.
+
+Note: TYPE is mandatory while SEND APPLICATION DATA but not in REQUEST APPLICATION DATA. This enables a single Application Data request to fetch across all TYPES
+
+Note: We recommend developers to use either objectData or GeneralData as we provide inbuilt data synchronization with cloud in them. If developer wants to receive response across all TYPES, or he is interested in doing request response management of the promise himself, he should use Application Data. Rad more in next section.
+
+Note: Application Data results are not stored in local IndexedDB  by Standard Operations Framework. 
+
+Note: If a blank REQUEST APPLICATION DATA is made, then cloud will give all application data at the admin ID of the application
+
+Note: Application field is used by the Cloud to judge whether this message should be deleted after 7 days, or stored permanently. Developers should be careful not to change value of application field if the default value enables the message to be stored permanently. Currently messages sent from subadmins to any receiverID for applications notified by the cloud in the FLO Blockchain are stored permanently. So do not change application field as a caution. Use the comment field.
+
+# Examples for FLO Cloud data operations
 
 
-
-#### setCustomPrivKeyInput
-	floDapps.setCustomPrivKeyInput(customFn)
-`setCustomPrivKeyInput` adds a startup funtion to the Dapp
-1. customFn - custom function to get login credentials (privateKey)
-
-
-#### manageSubAdmins
-	floDapps.manageSubAdmins(adminPrivKey, addList, rmList)
-`manageSubAdmins` adds and/or removes subAdmins by sending transaction to blockchain.
-1. adminPrivKey - private key of the adminID
-2. addList - Array of subAdmins to add
-3. rmList - Array of subAdmins to remove
-
-#### clearCredentials
-	floDapps.clearCredentials()
-`clearCredentials` removes the login credentials stored in IDB.
-
-#### securePrivKey
-	floDapps.securePrivKey(pwd)
-`securePrivKey` replaces the stored private key with an encrypted variant
-1. pwd - password for the encryption
-Note: if securePrivKey is used, then password must be requested during customPrivKeyInput (in setCustomPrivKeyInput).
-
-#### getNextGeneralData
-	floDapps.getNextGeneralData(type, vectorClock, options = {})
-`getNextGeneralData` return the next generaldata
-1. type - type of the general data
-2. vectorClock - current known VC, from which next data to be retrived
-3. options - (optional, {comment, application} of the data)
-
-#### launchStartUp
-	floDapps.launchStartUp()
-`launchStartUp` launchs the Dapp startup functions
-
-#####  reactorEvents
-* startUpSuccessLog - called when a startup funtion is successfully completed
-* startUpErrorLog - called when a startup funtion encounters an error
-
-##### onLoadStartUp 
-Sample startup is defined in onLoadStartUp function
-
-#### addStartUpFunction
-	floDapps.addStartUpFunction(fname, fn)
-`addStartUpFunction` adds a startup funtion to the Dapp
-1. fname - Name of the startup function
-2. fn - body of the function
-Note: startup funtions are called in parallel. Therefore only add custom startup funtion only if it can run in parallel with other startup functions. (default startup funtions are read supernode list and subAdmin list from blockchain API, load data from indexedDB, get login credentials)
-
-### Advanced Dapp functions usually not needed for users
-
-#### setAppObjectStores
-	floDapps.setAppObjectStores(appObs)
-`setAppObjectStores` adds additionals objectstores for the app
-1. appObs - additionals objects for the app
-
-#### objectDataMapper
-	floDapps.objectDataMapper(object, path, data)
-`objectDataMapper` maps the object and data via path
-1. object - object to be mapped
-2. path - end path for the data holder
-3. data - data to be pushed in map
-
-
-# Repeat of Basic Concepts of RanchiMall Blockchain Cloud for developers
+# Basic Concepts of RanchiMall Blockchain Cloud for developers
 
 * RanchiMall blockchain cloud is a service to provide a set of decentralized servers that will provide data storage to users. These decentralized servers are listed in the FLO Blockchain under an authorized FLO address. This gives the assurance to the users that those data servers can be trusted.
 
@@ -550,66 +658,104 @@ It allows the clients to retrieve messages before and after a certain time, and 
  * `Object Data`: Message field can only be a JavaScript Object
 
 ### System Data Type 
-* `Application Data`: Application data is the base on which General Data system and Object Data system has been created. The formats for  General Data and Application Data are exactly the same. Users will never need to use Application Data. So we have deprecated Application Data. 
+* `Application Data`: Application data is the base on which General Data system and Object Data system has been created. The formats for  General Data and Application Data are exactly the same exfept type is not mandatory in SEND APPLICATION DATA. This should be used if developer wants to do his own response data management, or wants no cloud-client data synchronization.
  
 Note:
  * `General Data:` Type field is mandatory
  * `Object Data:` Type field has been consumed to create object functionality
 
 
-## 4. General Data
 
-### SEND DATA
-Parameters while sending
+#### Philosophy of Application Data
+Application data system is original data field system that we created  for our cloud. It does not integrate with local IDB storage and synchronization in the browser. In our development process, General Data was created by adding vector clock support to application data at browser level to synchronize cloud  and local IDB. SEND and REQUEST options in Application Data are exactly the same as General data without vector clock IDB local storage support at browser level. 
 
- * `Message`: Actual Message to be sent
- * `Type`: User defined type (anything that user wants to classify as type) 
+Even ObjectData was created on top of Application Data. ObjectData is a special construction provided by framework so that Javacript objects can directly be stored and retrieved from the cloud
 
-#### Options
- * `receiverID` - receiver of the data 
- * `application` - application using the data
- * `comment` - user comment of the data
+#### Vector Clock issues in Application Data
+Application data supports Vector clock in REQUEST option, but it is not mandatory. Since Application Data system has no mandatory vector clock requirement in REQUEST OPTIONS, it will always give the entire data set stored in the cloud since start if invoked without vectorClock, and user will have to custom handle the request output himself at client end. Our client side framework will not store it for the user.
 
-### REQUEST DATA
+Usually ObjectData and GeneralData systems will support most of user needs. But for cases when the user wants the entire cloud data set, and no client side framework handling, he should use ApplicationData. Although Application Data system supports lower vectorClock, upper vectorClock, at vectorClock and mostRecentvectorClock as a REQUEST option, but the processing of these have to be done by user. Unlike in case of ObjectData and GeneralData, the output of Request Application Data is not available in floGlobals. 
 
-#### request options
- * `receiverID` - receiver of the data
- * `type` - type of the data ( a free user field)
- * `senderIDs` - array of senderIDs
- * `application` - application of the data
- * `comment` - comment of the data
- * `lowerVectorClock` - VC from which the data is to be requested
- * `upperVectorClock` - VC till which the data is to be requested
- * `atVectorClock` - VC at which the data is to requested
- * `mostRecent` - boolean (true: request only the recent data matching the pattern)
+* If lower vectorClock is specified, it will give all cloud stored application data after that vectorClock.
+* If upper vectorClock is specified, it will give all cloud stored application data before that vectorClock.
+* If at vectorClock is specified, it will give cloud stored application data exactly at that vectorClock.
+* If most recent vectorClock is set as true, it will give just the last stored application data.
+* If no vectorClock is specified, it will give all the data stored in cloud
 
-## 5. ObjectData
+#### No local IDB storage
+Application Data results are not stored in local IndexedDB  by Standard Operations Framework. 
 
-### RESET or UPDATE operations 
-Parameters while resetting or updating
- * `Object Data`
+## FLO Decentralised Applications (Dapps)
+`floDapps` module contains methods for basic Dapp. floDapps uses all of the above modules.
 
-#### Options
- * `receiverID` - receiver of the data 
- * `application` - application using the data
- * `comment` - comment of the data
 
-### REQUEST DATA
 
-#### request options
- * `receiverID` - receiver of the data
- * `senderIDs` - array of senderIDs
- * `application` - application of the data
- * `comment` - comment of the data
- * `lowerVectorClock` - VC from which the data is to be requested
- * `upperVectorClock` - VC till which the data is to be requested
- * `atVectorClock` - VC at which the data is to requested
- * `mostRecent` - boolean (true: request only the recent data matching the pattern)
+#### setCustomPrivKeyInput
+	floDapps.setCustomPrivKeyInput(customFn)
+`setCustomPrivKeyInput` adds a startup funtion to the Dapp
+1. customFn - custom function to get login credentials (privateKey)
 
-## 5. Application Data
 
-### DEPRECATED
+#### manageSubAdmins
+	floDapps.manageSubAdmins(adminPrivKey, addList, rmList)
+`manageSubAdmins` adds and/or removes subAdmins by sending transaction to blockchain.
+1. adminPrivKey - private key of the adminID
+2. addList - Array of subAdmins to add
+3. rmList - Array of subAdmins to remove
 
-Application data system is a legacy data field without vector clock support in options. In our development process, General Data was created by adding vector clock support to application data at user level. So SEND and REQUEST options in Application Data are exactly the same as General data without vector clock options
+
+* Example: floDapps.manageSubAdmins(adminPrivKey, [addr1, addr2..]) to add addr1 and addr2 as subAdmin
+* Example: floDapps.manageSubAdmins(adminPrivKey, null,  [addr1, addr2..]) to remove addr1 and addr2 as subAdmin
+* This command must be run from the console of app page only.
+
+#### clearCredentials
+	floDapps.clearCredentials()
+`clearCredentials` removes the login credentials stored in IDB.
+
+#### securePrivKey
+	floDapps.securePrivKey(pwd)
+`securePrivKey` replaces the stored private key with an encrypted variant
+1. pwd - password for the encryption
+Note: if securePrivKey is used, then password must be requested during customPrivKeyInput (in setCustomPrivKeyInput).
+
+#### getNextGeneralData
+	floDapps.getNextGeneralData(type, vectorClock, options = {})
+`getNextGeneralData` return the next generaldata
+1. type - type of the general data
+2. vectorClock - current known VC, from which next data to be retrived
+3. options - (optional, {comment, application} of the data)
+
+#### launchStartUp
+	floDapps.launchStartUp()
+`launchStartUp` launchs the Dapp startup functions
+
+#####  reactorEvents
+* startUpSuccessLog - called when a startup funtion is successfully completed
+* startUpErrorLog - called when a startup funtion encounters an error
+
+##### onLoadStartUp 
+Sample startup is defined in onLoadStartUp function
+
+#### addStartUpFunction
+	floDapps.addStartUpFunction(fname, fn)
+`addStartUpFunction` adds a startup funtion to the Dapp
+1. fname - Name of the startup function
+2. fn - body of the function
+Note: startup funtions are called in parallel. Therefore only add custom startup funtion only if it can run in parallel with other startup functions. (default startup funtions are read supernode list and subAdmin list from blockchain API, load data from indexedDB, get login credentials)
+
+### Advanced Dapp functions usually not needed for users
+
+#### setAppObjectStores
+	floDapps.setAppObjectStores(appObs)
+`setAppObjectStores` adds additionals objectstores for the app
+1. appObs - additionals objects for the app
+
+#### objectDataMapper
+	floDapps.objectDataMapper(object, path, data)
+`objectDataMapper` maps the object and data via path
+1. object - object to be mapped
+2. path - end path for the data holder
+3. data - data to be pushed in map
+
 
 
