@@ -282,11 +282,10 @@ Note: If passed as Array, then ratio of the balance of the senders are preserved
 `readData` reads FLO data from transactions of specified address
 1. addr - FLO address for which the transactions data has to be read.
 2. options - Contains options for filter data from transactions.
-   - limit       : maximum number of filtered data (default = 1000, negative  = no limit)
+   - limit       : maximum number of filtered data (default = no limit)
    - ignoreOld   : ignore old transactions (default = 0)
    - sentOnly    : filters only sent data
-   - pattern     : filters data that starts with a pattern
-   - contains    : filters data that contains a string
+   - pattern     : filters data that contains pattern as an object key in the JSON string
    - filter      : custom filter funtion for floData (eg . filter: d => {return d[0] == '$'})
 * Resolves: Object {totalTxs, floData (Array)}
 
