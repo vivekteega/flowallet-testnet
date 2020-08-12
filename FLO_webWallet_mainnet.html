@@ -1785,7 +1785,30 @@
                 </svg>
                 <span></span>
             </div>
-            <div class="icons tabs activeButton" title='Monitor FLO data' id="getDataBtn"
+            <div class="icons tabs activeButton" title='Generate or recover FLO address' id="addrGenBtn" onclick="showPage(this.id, 'addrGen')">
+                <svg role="img" viewBox="0 0 20 16">
+                    <g>
+                        <circle cx="9" cy="9" r="3" />
+                        <path
+                            d="M12,14v1c0,0.6-0.4,1-1,1H3c-0.6,0-1-0.4-1-1V3c0-0.6,0.4-1,1-1h8c0.6,0,1,0.4,1,1v1c0,0.6,0.4,1,1,1h0c0.6,0,1-0.4,1-1V2
+                                                c0-1.1-0.9-2-2-2H2C0.9,0,0,0.9,0,2v14c0,1.1,0.9,2,2,2h10c1.1,0,2-0.9,2-2v-2c0-0.6-0.4-1-1-1h0C12.4,13,12,13.4,12,14z" />
+                        <circle cx="17" cy="9" r="3" />
+                    </g>
+                </svg>
+                <h6>Generate</h6>
+                <span>Generate address</span>
+            </div>
+            <div class="icons tabs" title='Send FLO data' id="sendDataBtn" onclick="showPage(this.id, 'sendData')">
+                <svg role="img" viewBox="0 0 20 16">
+                    <g>
+                        <path d="M0.3,9.1l6.2,2.2c0.2,0.1,0.4,0,0.5-0.1L19.1,0L0.3,8.2C-0.1,8.4-0.1,9,0.3,9.1z" />
+                        <path d="M10,18.8l-2.2-6.2c-0.1-0.2,0-0.4,0.1-0.5L19.1,0l-8.2,18.8C10.7,19.2,10.1,19.2,10,18.8z" />
+                    </g>
+                </svg>
+                <h6>Send</h6>
+                <span>Send FLO data</span>
+            </div>
+            <div class="icons tabs" title='Monitor FLO data' id="getDataBtn"
                 onclick="showPage(this.id, 'getData')">
                 <svg role="img" viewBox="0 0 20 16">
                     <path d="M18,0H2C0.9,0,0,0.9,0,2v14c0,1.1,0.9,2,2,2h16c1.1,0,2-0.9,2-2V2C20,0.9,19.1,0,18,0z M16.4,6.9l-4.2,4.2
@@ -1794,32 +1817,6 @@
                 </svg>
                 <h6>Monitor</h6>
                 <span>Monitor FLO data</span>
-            </div>
-
-            <div class="icons tabs" title='Send FLO data' id="sendDataBtn" onclick="showPage(this.id, 'sendData')">
-                <svg role="img" viewBox="0 0 20 16">
-                    <g>
-                        <path d="M0.3,9.1l6.2,2.2c0.2,0.1,0.4,0,0.5-0.1L19.1,0L0.3,8.2C-0.1,8.4-0.1,9,0.3,9.1z" />
-                        <path
-                            d="M10,18.8l-2.2-6.2c-0.1-0.2,0-0.4,0.1-0.5L19.1,0l-8.2,18.8C10.7,19.2,10.1,19.2,10,18.8z" />
-                    </g>
-                </svg>
-                <h6>Send</h6>
-                <span>Send FLO data</span>
-            </div>
-            <div class="icons tabs" title='Generate or recover FLO address' id="addrGenBtn"
-                onclick="showPage(this.id, 'addrGen')">
-                <svg role="img" viewBox="0 0 20 16">
-                    <g>
-                        <circle cx="9" cy="9" r="3" />
-                        <path
-                            d="M12,14v1c0,0.6-0.4,1-1,1H3c-0.6,0-1-0.4-1-1V3c0-0.6,0.4-1,1-1h8c0.6,0,1,0.4,1,1v1c0,0.6,0.4,1,1,1h0c0.6,0,1-0.4,1-1V2
-                                    c0-1.1-0.9-2-2-2H2C0.9,0,0,0.9,0,2v14c0,1.1,0.9,2,2,2h10c1.1,0,2-0.9,2-2v-2c0-0.6-0.4-1-1-1h0C12.4,13,12,13.4,12,14z" />
-                        <circle cx="17" cy="9" r="3" />
-                    </g>
-                </svg>
-                <h6>Generate</h6>
-                <span>Generate address</span>
             </div>
             <div class="icons tabs" title="Settings" id="settingsBtn" onclick="showPage(this.id, 'settings-page')">
                 <svg role="img" x='0' y='0' viewBox="0 0 20 16">
@@ -2055,7 +2052,7 @@
                 </section>
                 <section>
                     <h4>About</h4>
-                    <h5>Version 2.7.3</h5>
+                    <h5>Version 2.7.4</h5>
                     <a class="border-card" href="https://flo.cash/" target="_blank" rel="noopener noreferrer">
                         <h5>Powered by</h5>
                         <svg viewBox="0 0 108 48" style="enable-background:new 0 0 107.65 47.07;" xml:space="preserve">
@@ -2113,7 +2110,7 @@
             floAddr = document.getElementById('floAddr'),
             addrLabel = document.getElementById('addrLabel'),
             newAddrLabel = document.getElementById('newAddrLabel'),
-            recentPage = 'getDataBtn',
+            recentPage = 'addrGenBtn',
             mode, activeAddress, initial = 0,
             limit = 10,
             scrollingEvent;
@@ -2781,7 +2778,6 @@
         }
 
         function backToTop() {
-            console.log('hey')
             document.getElementById('transactions-container').scrollTop = 0;
         }
     </script>
