@@ -282,16 +282,15 @@ Note: If passed as Array, then ratio of the balance of the senders are preserved
 `readData` reads FLO data from transactions of specified address
 1. addr - FLO address for which the transactions data has to be read.
 2. options - Contains options for filter data from transactions.
-   - limit       : maximum number of filtered data (default = 1000, negative  = no limit)
+   - limit       : maximum number of filtered data (default = no limit)
    - ignoreOld   : ignore old transactions (default = 0)
    - sentOnly    : filters only sent data
-   - pattern     : filters data that starts with a pattern
-   - contains    : filters data that contains a string
+   - pattern     : filters data that contains pattern as an object key in the JSON string
    - filter      : custom filter funtion for floData (eg . filter: d => {return d[0] == '$'})
 * Resolves: Object {totalTxs, floData (Array)}
 
 ## Compact IndexedDB operations
-`compactIDB` operations can be used to perform basic IndexedDB operations such as add, read/write, modify and remove.Contains following operations.
+`compactIDB` operations can be used to perform basic IndexedDB operations such as add, read/write, modify and remove. These functions are asynchronous and return a promise. Contains the following operations.
 
 #### Important: Compact IndexedDB operations have all been promisified. All output needs to be handled using .then These operations do not return function return values. Once again, they resolve: they do not return. 
 
@@ -299,22 +298,26 @@ Note: If passed as Array, then ratio of the balance of the senders are preserved
 	compactIDB.setDefaultDB(dbName)
 `setDefaultDB` sets the database on which further operations will be performed.
 1. dbName - This is the name of default database to be used.
+* Note: this operation is neither promisified nor returns a value. It just sets the default DB
 
 #### initDB
 	compactIDB.initDB(dbName, objectStores = {})
 `initDB` initializes new IndexedDB.
 1. dbName - Specifies database to be initialized.
 2. objectStores - This is an object containing various objectStores to be initiazed when creating an IDB.
+* Resolves: Status (string) | Rejects: error
 
 #### openDB
 	compactIDB.openDB(dbName = this.defaultDB)
 `openDB` returns a promise that resolves to a default database object.
 1. dbName - Name of the database (optional, uses defaultDB if not specified)
+* Resolves: database (IDB) | Rejects: error
 
 #### deleteDB
 	compactIDB.deleteDB(dbName = this.defaultDB)
 `deleteDB` deletes the specified database.
 1. dbName - Name of the database (optional, uses defaultDB if not specified)
+* Resolves: Status (string) | Rejects: error
 
 #### writeData 
 	compactIDB.writeData(obsName, data, key = false, dbName = this.defaultDB)
@@ -323,6 +326,7 @@ Note: If passed as Array, then ratio of the balance of the senders are preserved
 2. data  - data that has to be written in specified object store.
 3. key - Primary key of the data (optional, false indicates key is autoincremented or passed in data)
 4. dbName - Name of the database (optional, uses defaultDB if not specified)
+* Resolves: Status (string) | Rejects: error
 
 #### addData
 	compactIDB.addData(obsName, data, key = false, dbName = this.defaultDB)
@@ -331,6 +335,7 @@ Note: If passed as Array, then ratio of the balance of the senders are preserved
 2. data - The data which has to be added to obeject store.
 3.  key - Primary key of the data (optional, false indicates key is autoincremented or passed in data)
 4. dbName - Name of the database (optional, uses defaultDB if not specified)
+* Resolves: Status (string) | Rejects: error
 
 #### removeData
 	compactDB.removeData(obsName, key, dbName = this.defaultDB)
@@ -338,12 +343,14 @@ Note: If passed as Array, then ratio of the balance of the senders are preserved
 1. obsName - Name of object store from which the data has to be removed.
 2. key - Primary key of the data.
 3. dbName - Name of the database (optional, uses defaultDB if not specified)
+* Resolves: Status (string) | Rejects: error
 
 #### clearData
 	compactDB.clearData(obsName, dbName = this.defaultDB)
 `clearData` clears all data in the objectStore.
 1. obsName - Name of object store from which the data has to be removed.
 2. dbName - Name of the database (optional, uses defaultDB if not specified)
+* Resolves: Status (string) | Rejects: error
 
 #### readData 
 	compactDB.readData(obsName, key, dbName = this.defaultDB)
@@ -351,20 +358,34 @@ Note: If passed as Array, then ratio of the balance of the senders are preserved
 1. obsName - Name of object store from which the data has to be retrieved.
 2. key - Primary key of the data to read.
 3. dbName - Name of the database (optional, uses defaultDB if not specified)
+* Resolves: data (Object) | Rejects: error
 
 #### readAllData 
 	compactDB.readAllData(obsName, dbName = this.defaultDB)
 `readAllData` reads all the data from specified object store using IndexedDB openCursor method.
 1. obsName - Name of object store from which the data has to be retrieved.
 2. dbName - Name of the database (optional, uses defaultDB if not specified)
+* Resolves: data (Object) | Rejects: error
 
 ## FLO Supernode module
 This module contains functions that interact with the supernode to send and retrive data in the backend. Use floClouldAPI operations to send and receive data for application.
 
 ## FLO Cloud API operations
-`floCloudAPI` operations can interact with floSupernode cloud to send and retrieve data for applications. floCloudAPI uses floSupernode module for backend interactions.
+`floCloudAPI` operations can interact with floSupernode cloud to send and retrieve data for applications. floCloudAPI uses floSupernode module for backend interactions. FLO Cloud API functions are promisified and resolves the data or status.
 
-FLO Cloud API operations have all been promisified. All output needs to be handled using .then These operations do not return function return values. Once again, they resolve: they do not return. 
+#### sendApplicationData
+	floCloudAPI.sendApplicationData(message, type, options = {})
+`sendApplicationData` sends application data to the cloud.
+1. message - data to be sent
+2. type - type of the data
+3. options - (optional, options detailed at end of module)
+* Resolves: Sent-Status (string) | Rejects: error
+
+#### requestApplicationData
+	floCloudAPI.requestApplicationData(options = {})
+`requestApplicationData` requests application data from the cloud.
+1. options - (optional, options detailed at end of module)
+* Resolves: data (Object) | Rejects: error
 
 #### sendGeneralData
 	floCloudAPI.sendGeneralData(message, type, options = {})
@@ -372,6 +393,7 @@ FLO Cloud API operations have all been promisified. All output needs to be handl
 1. message - data to be sent
 2. type - type of the data
 3. options - (optional, options detailed at end of module)
+* Resolves: Sent-Status (string) | Rejects: error
 
 ###### Minimal Example: 
 	floCloudAPI.sendGeneralData("Hello World", "type1") 
@@ -382,6 +404,7 @@ Sends "Hello World" message to the cloud as General Data with type1 as `type` wi
 `requestGeneralData` requests application data from the cloud.
 1. type - type of the data
 2. options - (optional, options detailed at end of module)
+* Resolves: Status (string) | Rejects: error
 
 ###### Minimal Example: 
 	floCloudAPI.requestGeneralData("type1") 
@@ -392,9 +415,9 @@ Requests all messages of General Data nature from the cloud with type1 as `type`
 `resetObjectData` resets the objectData to cloud.
 1. "objectName" - Name of the objectData to be reset. Quotes are must
 2. options - (optional, options detailed at end of module)
+* Resolves: Sent-Status (string) | Rejects: error
 
 Note: value of objectData is taken from floGlobals.appObjects["objectName"]
-
 The object data corresponding with Object Name must be defined in floGlobals.appObjects["objectName"] before a reset can be done 
 
 ###### Minimal Example: 
@@ -407,9 +430,9 @@ Initiates "myFirstObject" with {a:1,b:2}, and sends to cloud with `myFloID` as d
 `updateObjectData` updates the objectData to cloud.
 1. "objectName" - Name of the objectData to be updated. Quotes are must.
 2. options - (optional, options detailed at end of module)
+* Resolves: Sent-Status (string) | Rejects: error
 
 Note: value of objectData is taken from floGlobals.appObjects["objectName"]
-
 The object data corresponding with Object Name must be defined in floGlobals.appObjects["objectName"] before an update can be done 
 
 ###### Minimal Example: 
@@ -422,6 +445,7 @@ Updates "myFirstObject" with {a:1,c:3,d:4}, and sends to cloud with `myFloID` as
 `requestObjectData` requests application data from the cloud.
 1. "objectName" - Name of the objectData to be requested. Quotes are must.
 2. options - (optional, options detailed at end of module)
+* Resolves: Status (string) | Rejects: error
 
 Note: The output is available at floGlobals.appObjects["objectName"] after the promise is resolved
 
