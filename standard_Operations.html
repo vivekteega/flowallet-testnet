@@ -7234,7 +7234,7 @@ Bitcoin.Util = {
                 var floID = key.getBitcoinAddress();
                 return floID;
             } catch (e) {
-                console.error(e);
+                return null;
             }
         },
 
@@ -8957,16 +8957,15 @@ Bitcoin.Util = {
                             } else {
                                 var privKey;
                                 inputFn("PRIVATE_KEY").then(result => {
-                                    try {
-                                        if (!result)
-                                            return reject("Empty Private Key")
-                                        var floID = floCrypto.getFloIDfromPubkeyHex(
-                                            floCrypto.getPubKeyHex(result))
-                                        privKey = result
-                                    } catch (error) {
-                                        console.error(error)
+                                    if (!result)
+                                        return reject("Empty Private Key")
+                                    var pubKey = floCrypto.getPubKeyHex(result)
+                                    if(!pubKey)
                                         return reject("Invalid Private Key")
-                                    }
+                                    var floID = floCrypto.getFloIDfromPubkeyHex(pubKey)
+                                    if(!floID || !floCrypto.validateAddr(floID))
+                                        return reject("Invalid Private Key")
+                                    privKey = result;
                                 }).catch(error => {
                                     console.log(error, "Generating Random Keys")
                                     privKey = floCrypto.generateNewID().privKey
