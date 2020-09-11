@@ -205,8 +205,6 @@
             margin: 0.4rem 0.8rem;
         }
 
-
-
         #overlay {
             opacity: 0;
             pointer-events: none;
@@ -2797,10 +2795,12 @@
             document.getElementById('transactions-container').scrollTop = 0;
         }
 
-        let showCharacterCount = document.getElementById('show_character_count')
-        document.getElementById('flotextdata').addEventListener('input', function () {
-            if (1040 - this.value.length) {
-                showCharacterCount.textContent = `${1040 - this.value.length}/1040`
+        let showCharacterCount = document.getElementById('show_character_count') 
+        document.getElementById('flotextdata').addEventListener('input', function(e){
+            if(this.value.length > 1040)
+                e.preventDefault()
+            if(1040 - this.value.length){
+                showCharacterCount.textContent = `${1040 - this.value.length}/1040` 
             }
             else
                 showCharacterCount.textContent = `You can only add FLO data upto 1040 characters.`

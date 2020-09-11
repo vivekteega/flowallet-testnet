@@ -125,6 +125,18 @@
             clear: both;
         }
 
+        textarea {
+            margin-bottom: 2rem;
+        }
+
+        #show_character_count {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            font-size: 0.8rem;
+            margin: 0.4rem 0.8rem;
+        }
+
         @media screen and (max-width: 800px) {
             .col-50 {
                 width: 100%;
@@ -601,6 +613,7 @@
                     <textarea id="flotextdata" placeholder="&nbsp;"></textarea>
                     <span class="label">FLO Data</span>
                     <span class="border"></span>
+                    <div id="show_character_count">1040/1040</div>
                 </label>
                 <nav class="btn-bar nav-light">
                     <button class="btn btn-glass btn-green" id="sendBtn" onclick="sendTransaction()"
@@ -1079,6 +1092,16 @@
             });
 
         }
+        let showCharacterCount = document.getElementById('show_character_count') 
+        document.getElementById('flotextdata').addEventListener('input', function(e){
+            if(this.value.length > 1040)
+                e.preventDefault()
+            if(1040 - this.value.length){
+                showCharacterCount.textContent = `${1040 - this.value.length}/1040` 
+            }
+            else
+                showCharacterCount.textContent = `You can only add FLO data upto 1040 characters.`
+        })
     </script>
     <script>
         function refreshdata(param) {
