@@ -6363,12 +6363,12 @@
                         floDataCount = this.floData.length;
   
                         //flochange -- creating unique data character count logic for floData. This string is prefixed before actual floData string in Raw Transaction
-                        if (floDataCount <= 16) {
+                        if (floDataCount < 16) {
                                       floDataCountString = floDataCount.toString(16);
                                       floDataCountString = "0"+ floDataCountString;
                         } else if (floDataCount < 253) {
                                       floDataCountString = floDataCount.toString(16);
-                        } else if (floDataCount <= 1023) {
+                        } else if (floDataCount <= 1040) {
                                       floDataCountAdjusted = (floDataCount - 253) +  parseInt("0xfd00fd");
                                       floDataCountStringAdjusted = floDataCountAdjusted.toString(16);
                                       floDataCountString = floDataCountStringAdjusted.substr(0,2)+ floDataCountStringAdjusted.substr(4,2)+ floDataCountStringAdjusted.substr(2,2);
