@@ -193,6 +193,20 @@
             transition: border 0.2s ease;
         }
 
+        textarea{
+            margin-bottom: 2rem;
+        }
+
+        #show_character_count{
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            font-size: 0.8rem;
+            margin: 0.4rem 0.8rem;
+        }
+
+
+
         #overlay {
             opacity: 0;
             pointer-events: none;
@@ -1969,10 +1983,11 @@
                         <label>Amount</label>
                     </div>
                     <div class="text-area">
-                        <textarea aria-label="FLO data" data-gramm_editor="false"
+                        <textarea maxlength="1040" aria-label="FLO data" data-gramm_editor="false"
                             onfocus="animateInput(this.parentNode)" onblur="revertBack(this.parentNode)" rows="8"
                             id="flotextdata"></textarea>
                         <label>FLO data</label>
+                        <div id="show_character_count">1040/1040</div>
                     </div>
                     <button class="primaryButton" id="sendBtn" onclick="showPrivKeyPage()" disabled>Send</button>
                 </div>
@@ -2780,6 +2795,15 @@
         function backToTop() {
             document.getElementById('transactions-container').scrollTop = 0;
         }
+
+        let showCharacterCount = document.getElementById('show_character_count') 
+        document.getElementById('flotextdata').addEventListener('input', function(){
+            if(1040 - this.value.length){
+                showCharacterCount.textContent = `${1040 - this.value.length}/1040` 
+            }
+            else
+                showCharacterCount.textContent = `You can only add FLO data upto 1040 characters.` 
+        })
     </script>
 
 <script>
