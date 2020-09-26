@@ -8252,8 +8252,42 @@ Bitcoin.Util = {
                 this.util.singleRequest(delreq.requestorID, delreq).then(result => {
                     let success = [],
                         failed = [];
-                    result.forEach(r => r.status === 'fulfilled' ? 
-                        success.push(r.value): failed.push(r.reason));
+                    result.forEach(r => r.status === 'fulfilled' ?
+                        success.push(r.value) : failed.push(r.reason));
+                    resolve({
+                        success,
+                        failed
+                    })
+                }).catch(error => reject(error))
+            })
+        },
+
+        markApplicationData: function (mark, options = {}) {
+            return new Promise((resolve, reject) => {
+                if (!floGlobals.subAdmins.includes(myFloID))
+                    return reject("Only subAdmins can mark data")
+                if (typeof mark !== "object") {
+                    if (!Array.isArray(mark)) mark = [mark];
+                    let tmp = {}
+                    mark.forEach(vc => tmp[vc] = true)
+                    mark = tmp;
+                }
+                var markreq = {
+                    receiverID: options.receiverID || floGlobals.adminID,
+                    requestorID: myFloID,
+                    pubKey: myPubKey,
+                    time: Date.now(),
+                    mark: mark,
+                    application: options.application || floGlobals.application
+                }
+                let hashcontent = ["time", "application"]
+                    .map(d => markreq[d]).join("|") + JSON.stringify(markreq.mark)
+                markreq.sign = floCrypto.signData(hashcontent, myPrivKey)
+                this.util.singleRequest(markreq.requestorID, markreq).then(result => {
+                    let success = [],
+                        failed = [];
+                    result.forEach(r => r.status === 'fulfilled' ?
+                        success.push(r.value) : failed.push(r.reason));
                     resolve({
                         success,
                         failed
