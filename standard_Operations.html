@@ -22,7 +22,7 @@
         fee: 0.0005,
 
         //Required for Supernode operations
-        SNStorageID: "FR876VRTna3DremwQKZ421xPGMTREzctRB",
+        SNStorageID: "FNaN9McoBAEFUjkRmNQRYLmBF8SpS7Tgfk",
         supernodes: {}, //each supnernode must be stored as floID : {uri:<uri>,pubKey:<publicKey>}
 
         //for cloud apps
@@ -8305,6 +8305,7 @@ Bitcoin.Util = {
                     message = floCrypto.encryptData(JSON.stringify(message), encryptionKey)
                 }
                 this.sendApplicationData(message, type, options).then(result => {
+                    options.comment = null;
                     var fk = this.util.filterKey(type, options)
                     this.util.storeGeneral(fk, result)
                     resolve(result)
@@ -8671,9 +8672,9 @@ Bitcoin.Util = {
                                         for (sn in content.removeNodes)
                                             compactIDB.removeData("supernodes", sn,
                                                 "floDapps");
-                                        for (sn in content.addNodes)
+                                        for (sn in content.newNodes)
                                             compactIDB.writeData("supernodes", content
-                                                .addNodes[sn], sn, "floDapps");
+                                                .newNodes[sn], sn, "floDapps");
                                     }
                                     compactIDB.writeData("lastTx", result.totalTxs,
                                         floGlobals.SNStorageID, "floDapps");
