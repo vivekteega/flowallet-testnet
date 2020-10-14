@@ -63,12 +63,14 @@ This approach decentralizes the trust process totally and extends the capacity o
 # Technical Details of standard operations 
 
 This template contains standard operations that can be used for the following:
-1. FLO Globals for system variables and data objects users must configure
-2. FLO Crypto Operations 
-3. FLO Blockchain API Operations
-4. Compact IndexedDB Operations
-5. FLO Cloud API Operations
-6. FLO Decentralized app (Dapp) Operations
+| index |
+| --- |
+| [FLO Globals](#flo-globals) |
+| [FLO Crypto Operations](#flo-crypto-operations) |
+| [FLO Blockchain API Operations](#flo-blockchain-api-operations) |
+| [Compact IndexedDB Operations](#compact-indexeddb-operations) | 
+| [FLO Cloud API Operations](#flo-cloud-api-operations) | 
+| [FLO Decentralized app (Dapp) Operations](#flo-decentralised-applications-dapps) |
 
 ## FLO Globals 
 `floGlobals` object contains the global variables and constants required for the operations.  Make sure to add this object before any other scripts.
@@ -87,7 +89,7 @@ This template contains standard operations that can be used for the following:
 11. `generalData`⁺: General Data for the app (data sent by any user).
 12. `vectorClock`⁺ and `generalVC`⁺ : vectorclocks for application data and general data respectively.
 
-\* Values that shoult NOT be edited.
+\* Values that should NOT be edited.
 ⁺ Values that updates in runtime.
 1-8 : Required for all applications.
 9-12: Required for applications based on floClouldAPI and floDapps module.
