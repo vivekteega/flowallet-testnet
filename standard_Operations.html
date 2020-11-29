@@ -40,7 +40,7 @@
     TEST_MODE
   (use console)
 
-<script id="init_lib">
+<script id="init_lib" version="1.0.1">
     //All util libraries required for Standard operations (DO NOT EDIT ANY)
 
       /* Reactor Event handling */
@@ -6942,7 +6942,7 @@ Bitcoin.Util = {
 })();
 </script>
 
-<script id="floCrypto">
+<script id="floCrypto" version="2.0.0">
     /* FLO Crypto Operators*/
     const floCrypto = {
 
@@ -7231,7 +7231,7 @@ Bitcoin.Util = {
         }
     }
 </script>
-<script id="floBlockchainAPI">
+<script id="floBlockchainAPI" version="2.0.0">
     /* FLO Blockchain Operator to send/receive data from blockchain using API calls*/
     const floBlockchainAPI = {
 
@@ -7667,7 +7667,7 @@ Bitcoin.Util = {
         }
     }
 </script>
-<script id="compactIDB">
+<script id="compactIDB" version="2.0.0">
     /* Compact IndexedDB operations */
 
     window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
@@ -7867,7 +7867,7 @@ Bitcoin.Util = {
         }
     }
 </script>
-<script id="floCloudAPI">
+<script id="floCloudAPI" version="2.0.2a">
     /* FLO Cloud operations to send/request application data*/
     const floCloudAPI = {
 
@@ -8237,14 +8237,15 @@ Bitcoin.Util = {
             })
         },
 
-        deleteApplicationData: function (vectorClocks, application) {
+        //delete data from supernode cloud (received only)
+        deleteApplicationData: function (vectorClocks, options = {}) {
             return new Promise((resolve, reject) => {
                 var delreq = {
                     requestorID: myFloID,
                     pubKey: myPubKey,
                     time: Date.now(),
                     delete: (Array.isArray(vectorClocks) ? vectorClocks : [vectorClocks]),
-                    application: application || floGlobals.application
+                    application: options.application || floGlobals.application
                 }
                 let hashcontent = ["time", "application", "delete"]
                     .map(d => delreq[d]).join("|")
@@ -8262,6 +8263,49 @@ Bitcoin.Util = {
             })
         },
 
+        //edit comment of data in supernode cloud (mutable comments only)
+        editApplicationData: function (vectorClock, newComment, oldData, options = {}) {
+            return new Promise((resolve, reject) => {
+                let p0
+                if (!oldData) {
+                    options.atVectorClock = vectorClock;
+                    options.callback = false;
+                    p0 = this.requestApplicationData(false, options)
+                } else
+                    p0 = Promise.resolve({
+                        vectorClock: {
+                            ...oldData
+                        }
+                    })
+                p0.then(d => {
+                    if (d.senderID != myFloID)
+                        return reject("Invalid requestorID")
+                    else if (!d.comment.startsWith("EDIT:"))
+                        return reject("Data immutable")
+                    let data = {
+                        requestorID: myFloID,
+                        receiverID: d.receiverID,
+                        time: Date.now(),
+                        application: d.application,
+                        edit: {
+                            vectorClock: vectorClock,
+                            comment: newComment
+                        }
+                    }
+                    d.comment = data.edit.comment;
+                    let hashcontent = ["receiverID", "time", "application", "type", "message",
+                            "comment"
+                        ]
+                        .map(x => d[x]).join("|")
+                    data.edit.sign = floCrypto.signData(hashcontent, myPrivKey)
+                    this.util.singleRequest(data.receiverID, data)
+                        .then(result => resolve("Data comment updated"))
+                        .catch(error => reject(error))
+                })
+            })
+        },
+
+        //mark data in supernode cloud (subAdmin access only)
         markApplicationData: function (mark, options = {}) {
             return new Promise((resolve, reject) => {
                 if (!floGlobals.subAdmins.includes(myFloID))
@@ -8305,9 +8349,9 @@ Bitcoin.Util = {
                     message = floCrypto.encryptData(JSON.stringify(message), encryptionKey)
                 }
                 this.sendApplicationData(message, type, options).then(result => {
-                    options.comment = null;
-                    var fk = this.util.filterKey(type, options)
-                    this.util.storeGeneral(fk, result)
+                    //options.comment = null;
+                    //var fk = this.util.filterKey(type, options)
+                    //this.util.storeGeneral(fk, result)
                     resolve(result)
                 }).catch(error => reject(error))
             })
@@ -8319,11 +8363,12 @@ Bitcoin.Util = {
                 var fk = this.util.filterKey(type, options)
                 options.lowerVectorClock = options.lowerVectorClock || floGlobals.lastVC[fk] + 1;
                 if (options.callback instanceof Function) {
-                    options.callback = (d, e) => {
+                    let new_options = Object.create(options)
+                    new_options.callback = (d, e) => {
                         this.util.storeGeneral(fk, d);
                         options.callback(d, e)
                     }
-                    this.requestApplicationData(type, options)
+                    this.requestApplicationData(type, new_options)
                         .then(result => resolve(result))
                         .catch(error => reject(error))
                 } else {
@@ -8358,8 +8403,9 @@ Bitcoin.Util = {
                     options.lowerVectorClock = floGlobals.lastVC[objectName] + 1
                     delete options.mostRecent;
                     if (callback) {
-                        options.callback = callback;
-                        this.requestApplicationData(objectName, options)
+                        let new_options = Object.create(options)
+                        new_options.callback = callback;
+                        this.requestApplicationData(objectName, new_options)
                             .then(result => resolve(result))
                             .catch(error => reject(error))
                     } else {
@@ -8515,9 +8561,8 @@ Bitcoin.Util = {
             if ((id.length <= bytesDescribedByBitIndex) && (bitIndexWithinByte !== 0))
                 return node.left
             const byteUnderConsideration = id[bytesDescribedByBitIndex]
-            if (byteUnderConsideration & (1 << (7 - bitIndexWithinByte))) {
+            if (byteUnderConsideration & (1 << (7 - bitIndexWithinByte)))
                 return node.right
-            }
             return node.left
         }
 
@@ -8584,12 +8629,11 @@ Bitcoin.Util = {
         }
     }
 </script>
-<script id="floDapps">
+<script id="floDapps" version="2.0.1">
     /* General functions for FLO Dapps*/
     const floDapps = {
 
         util: {
-            appObs: {},
 
             initIndexedDB: function () {
                 return new Promise((resolve, reject) => {
@@ -8615,9 +8659,10 @@ Bitcoin.Util = {
                         lastVC: {}
                     }
                     //add other given objectStores
-                    for (o in this.appObs)
+                    this.initIndexedDB.appObs = this.initIndexedDB.appObs || {}
+                    for (o in this.initIndexedDB.appObs)
                         if (!(o in obs_a))
-                            obs_a[o] = this.appObs[o]
+                            obs_a[o] = this.initIndexedDB.appObs[o]
                     Promise.all([
                         compactIDB.initDB(floGlobals.application, obs_a),
                         compactIDB.initDB("floDapps", obs_g)
@@ -8637,7 +8682,7 @@ Bitcoin.Util = {
                     }
                     compactIDB.initDB(`floDapps#${floID}`, obs).then(result => {
                         resolve("UserDB Initated Successfully")
-                    }).catch(error => reject(error));
+                    }).catch(error => reject('Init userDB failed'));
                 })
             },
 
@@ -8651,7 +8696,7 @@ Bitcoin.Util = {
                         for (var i = 0; i < loadData.length; i++)
                             floGlobals[loadData[i]] = results[i]
                         resolve("Loaded Data from userDB")
-                    }).catch(error => reject(error))
+                    }).catch(error => reject('Load userDB failed'))
                 })
             },
 
@@ -8748,147 +8793,154 @@ Bitcoin.Util = {
                             resolve("Loaded Data from app IDB")
                         }).catch(error => reject(error))
                     })
-                },
+                }
+            },
 
-                getCredentials: function () {
+            getCredentials: function () {
 
-                    const defaultInput = function (type) {
-                        return new Promise((resolve, reject) => {
-                            let inputVal = prompt(`Enter ${type}: `)
-                            if (inputVal === null)
-                                reject(null)
-                            else
-                                resolve(inputVal)
-                        })
-                    }
-
-                    const inputFn = this.getCredentials.privKeyInput || defaultInput;
-
-                    const readSharesFromIDB = function (indexArr) {
-                        return new Promise((resolve, reject) => {
-                            var promises = []
-                            for (var i = 0; i < indexArr.length; i++)
-                                promises.push(compactIDB.readData('credentials', indexArr[i]))
-                            Promise.all(promises).then(shares => {
-                                var secret = floCrypto.retrieveShamirSecret(shares)
-                                if (secret)
-                                    resolve(secret)
-                                else
-                                    reject("Shares are insufficient or incorrect")
-                            }).catch(error => reject(error))
-                        })
-                    }
-
-                    const writeSharesToIDB = function (shares, i = 0, resultIndexes = []) {
-                        return new Promise((resolve, reject) => {
-                            if (i >= shares.length)
-                                return resolve(resultIndexes)
-                            var n = floCrypto.randInt(0, 100000)
-                            compactIDB.addData("credentials", shares[i], n).then(res => {
-                                resultIndexes.push(n)
-                                writeSharesToIDB(shares, i + 1, resultIndexes)
-                                    .then(result => resolve(result))
-                            }).catch(error => {
-                                writeSharesToIDB(shares, i, resultIndexes)
-                                    .then(result => resolve(result))
-                            })
-                        })
-                    }
-
-                    const getPrivateKeyCredentials = function () {
-                        return new Promise((resolve, reject) => {
-                            var indexArr = localStorage.getItem(`${floGlobals.application}#privKey`)
-                            if (indexArr) {
-                                readSharesFromIDB(JSON.parse(indexArr))
-                                    .then(result => resolve(result))
-                                    .catch(error => reject(error))
-                            } else {
-                                var privKey;
-                                inputFn("PRIVATE_KEY").then(result => {
-                                    if (!result)
-                                        return reject("Empty Private Key")
-                                    var floID = floCrypto.getFloID(result)
-                                    if (!floID || !floCrypto.validateAddr(floID))
-                                        return reject("Invalid Private Key")
-                                    privKey = result;
-                                }).catch(error => {
-                                    console.log(error, "Generating Random Keys")
-                                    privKey = floCrypto.generateNewID().privKey
-                                }).finally(_ => {
-                                    if (!privKey)
-                                        return;
-                                    var threshold = floCrypto.randInt(10, 20)
-                                    writeSharesToIDB(floCrypto.createShamirsSecretShares(
-                                        privKey, threshold, threshold)).then(
-                                        resultIndexes => {
-                                            //store index keys in localStorage
-                                            localStorage.setItem(
-                                                `${floGlobals.application}#privKey`,
-                                                JSON.stringify(resultIndexes))
-                                            //also add a dummy privatekey to the IDB
-                                            var randomPrivKey = floCrypto
-                                                .generateNewID().privKey
-                                            var randomThreshold = floCrypto.randInt(10,
-                                                20)
-                                            writeSharesToIDB(floCrypto
-                                                .createShamirsSecretShares(
-                                                    randomPrivKey, randomThreshold,
-                                                    randomThreshold))
-                                            //resolve private Key
-                                            resolve(privKey)
-                                        }).catch(error => reject(error))
-                                })
-                            }
-                        })
-                    }
-
-                    const checkIfPinRequired = function (key) {
-                        return new Promise((resolve, reject) => {
-                            if (key.length == 52)
-                                resolve(key)
-                            else {
-                                inputFn("PIN/Password").then(pwd => {
-                                    try {
-                                        let privKey = Crypto.AES.decrypt(key, pwd);
-                                        resolve(privKey)
-                                    } catch (error) {
-                                        reject("Access Denied: Incorrect PIN/Password")
-                                    }
-                                }).catch(error => reject(
-                                    "Access Denied: PIN/Password required"))
-                            }
-                        })
-                    }
-
+                const defaultInput = function (type) {
                     return new Promise((resolve, reject) => {
-                        getPrivateKeyCredentials().then(key => {
-                            checkIfPinRequired(key).then(privKey => {
-                                try {
-                                    myPrivKey = privKey
-                                    myPubKey = floCrypto.getPubKeyHex(myPrivKey)
-                                    myFloID = floCrypto.getFloID(myPubKey)
-                                    resolve('Login Credentials loaded successful')
-                                } catch (error) {
-                                    console.log(error)
-                                    reject("Corrupted Private Key")
-                                }
-                            }).catch(error => reject(error))
+                        let inputVal = prompt(`Enter ${type}: `)
+                        if (inputVal === null)
+                            reject(null)
+                        else
+                            resolve(inputVal)
+                    })
+                }
+
+                const inputFn = this.getCredentials.privKeyInput || defaultInput;
+
+                const readSharesFromIDB = function (indexArr) {
+                    return new Promise((resolve, reject) => {
+                        var promises = []
+                        for (var i = 0; i < indexArr.length; i++)
+                            promises.push(compactIDB.readData('credentials', indexArr[i]))
+                        Promise.all(promises).then(shares => {
+                            var secret = floCrypto.retrieveShamirSecret(shares)
+                            if (secret)
+                                resolve(secret)
+                            else
+                                reject("Shares are insufficient or incorrect")
                         }).catch(error => reject(error))
                     })
                 }
+
+                const writeSharesToIDB = function (shares, i = 0, resultIndexes = []) {
+                    return new Promise((resolve, reject) => {
+                        if (i >= shares.length)
+                            return resolve(resultIndexes)
+                        var n = floCrypto.randInt(0, 100000)
+                        compactIDB.addData("credentials", shares[i], n).then(res => {
+                            resultIndexes.push(n)
+                            writeSharesToIDB(shares, i + 1, resultIndexes)
+                                .then(result => resolve(result))
+                        }).catch(error => {
+                            writeSharesToIDB(shares, i, resultIndexes)
+                                .then(result => resolve(result))
+                        })
+                    })
+                }
+
+                const getPrivateKeyCredentials = function () {
+                    return new Promise((resolve, reject) => {
+                        var indexArr = localStorage.getItem(`${floGlobals.application}#privKey`)
+                        if (indexArr) {
+                            readSharesFromIDB(JSON.parse(indexArr))
+                                .then(result => resolve(result))
+                                .catch(error => reject(error))
+                        } else {
+                            var privKey;
+                            inputFn("PRIVATE_KEY").then(result => {
+                                if (!result)
+                                    return reject("Empty Private Key")
+                                var floID = floCrypto.getFloID(result)
+                                if (!floID || !floCrypto.validateAddr(floID))
+                                    return reject("Invalid Private Key")
+                                privKey = result;
+                            }).catch(error => {
+                                console.log(error, "Generating Random Keys")
+                                privKey = floCrypto.generateNewID().privKey
+                            }).finally(_ => {
+                                if (!privKey)
+                                    return;
+                                var threshold = floCrypto.randInt(10, 20)
+                                writeSharesToIDB(floCrypto.createShamirsSecretShares(
+                                    privKey, threshold, threshold)).then(
+                                    resultIndexes => {
+                                        //store index keys in localStorage
+                                        localStorage.setItem(
+                                            `${floGlobals.application}#privKey`,
+                                            JSON.stringify(resultIndexes))
+                                        //also add a dummy privatekey to the IDB
+                                        var randomPrivKey = floCrypto
+                                            .generateNewID().privKey
+                                        var randomThreshold = floCrypto.randInt(10,
+                                            20)
+                                        writeSharesToIDB(floCrypto
+                                            .createShamirsSecretShares(
+                                                randomPrivKey, randomThreshold,
+                                                randomThreshold))
+                                        //resolve private Key
+                                        resolve(privKey)
+                                    }).catch(error => reject(error))
+                            })
+                        }
+                    })
+                }
+
+                const checkIfPinRequired = function (key) {
+                    return new Promise((resolve, reject) => {
+                        if (key.length == 52)
+                            resolve(key)
+                        else {
+                            inputFn("PIN/Password").then(pwd => {
+                                try {
+                                    let privKey = Crypto.AES.decrypt(key, pwd);
+                                    resolve(privKey)
+                                } catch (error) {
+                                    reject("Access Denied: Incorrect PIN/Password")
+                                }
+                            }).catch(error => reject(
+                                "Access Denied: PIN/Password required"))
+                        }
+                    })
+                }
+
+                return new Promise((resolve, reject) => {
+                    getPrivateKeyCredentials().then(key => {
+                        checkIfPinRequired(key).then(privKey => {
+                            try {
+                                myPrivKey = privKey
+                                myPubKey = floCrypto.getPubKeyHex(myPrivKey)
+                                myFloID = floCrypto.getFloID(myPubKey)
+                                resolve('Login Credentials loaded successful')
+                            } catch (error) {
+                                console.log(error)
+                                reject("Corrupted Private Key")
+                            }
+                        }).catch(error => reject(error))
+                    }).catch(error => reject(error))
+                })
+            },
+
+            startUpLog: function (status, log) {
+                if (status)
+                    console.log(log)
+                else
+                    console.error(log)
             },
 
             callStartUpFunction: function (fname) {
                 return new Promise((resolve, reject) => {
                     this.startUpFunctions[fname]().then(result => {
                         this.callStartUpFunction.completed += 1
-                        reactor.dispatchEvent("startUpSuccessLog",
+                        this.startUpLog(true,
                             `${result}\nCompleted ${this.callStartUpFunction.completed}/${this.callStartUpFunction.total} Startup functions`
                         )
                         resolve(true)
                     }).catch(error => {
                         this.callStartUpFunction.failed += 1
-                        reactor.dispatchEvent("startUpErrorLog",
+                        this.startUpLog(false,
                             `${error}\nFailed ${this.callStartUpFunction.failed}/${this.callStartUpFunction.total} Startup functions`
                         )
                         reject(false)
@@ -8905,18 +8957,46 @@ Bitcoin.Util = {
                         .startUpFunctions).length
                     this.util.callStartUpFunction.completed = 0
                     this.util.callStartUpFunction.failed = 0
-                    var promises = []
+                    var p0 = []
                     for (fn in this.util.startUpFunctions)
-                        promises.push(this.util.callStartUpFunction(fn))
-                    Promise.all(promises).then(results => {
-                        this.util.initUserDB(myFloID).then(result => {
-                            this.util.loadUserDB(myFloID)
-                                .then(result => resolve(
-                                    'App Startup finished successful'))
-                                .catch(error => reject('load userDB failed'))
-                        }).catch(error => reject('init userDB failed'))
-                    }).catch(errors => reject('App StartUp failed'))
-                }).catch(error => reject('init indexedDB failed'))
+                        p0.push(this.util.callStartUpFunction(fn))
+                    const CnL = p => new Promise((res, rej) => {
+                        p.then(r => {
+                            this.util.startUpLog(true, r)
+                            res(r)
+                        }).catch(e => {
+                            this.util.startUpLog(false, e)
+                            rej(e)
+                        })
+                    })
+                    const callMidStartup = () => new Promise((res, rej) => {
+                        if (this.launchStartUp.midFunction instanceof Function) {
+                            this.launchStartUp.midFunction()
+                                .then(r => res("Mid startup function completed"))
+                                .catch(e => rej("Mid startup function failed"))
+                        } else
+                            res("No mid startup function")
+                    })
+                    let p1 = new Promise((res, rej) => {
+                        Promise.all(p0).then(r => {
+                            CnL(callMidStartup())
+                                .then(r => res(true))
+                                .catch(e => rej(false))
+                        })
+                    });
+                    let p2 = new Promise((res, rej) => {
+                        CnL(this.util.getCredentials()).then(r => {
+                            CnL(this.util.initUserDB(myFloID)).then(r => {
+                                CnL(this.util.loadUserDB(myFloID))
+                                    .then(r => res(true))
+                                    .catch(e => rej(false))
+                            }).catch(e => rej(false))
+                        }).catch(e => rej(false))
+                    })
+                    Promise.all([p1, p2])
+                        .then(r => resolve('App Startup finished successful'))
+                        .catch(e => reject('App Startup failed'))
+                }).catch(error => reject("App database initiation failed"))
             })
         },
 
@@ -8926,12 +9006,21 @@ Bitcoin.Util = {
             this.util.startUpFunctions[fname] = fn;
         },
 
+        setMidStartup: function (fn) {
+            if (fn instanceof Function)
+                this.launchStartUp.midFunction = fn;
+        },
+
+        setCustomStartupLogger: function (logger) {
+            this.util.startUpLog = logger;
+        },
+
         setCustomPrivKeyInput: function (customFn) {
-            this.util.startUpFunctions.getCredentials.privKeyInput = customFn
+            this.util.getCredentials.privKeyInput = customFn
         },
 
         setAppObjectStores: function (appObs) {
-            this.util.appObs = appObs
+            this.util.initIndexedDB.appObs = appObs
         },
 
         storeContact(floID, name) {
@@ -9034,6 +9123,28 @@ Bitcoin.Util = {
             })
         },
 
+        deleteUserData: function(credentials = false) {
+            return new Promise((resolve, reject) => {
+                let p = []
+                p.push(compactIDB.deleteDB(`floDapps#${myFloID}`))
+                if(credentials)
+                    p.push(this.clearCredentials())
+                Promise.all(p)
+                    .then(result => resolve('User database(local) deleted'))
+                    .catch(error => reject(error))
+            })
+        },
+
+        deleteAppData: function() {
+            return new Promise((resolve, reject) => {
+                compactIDB.deleteDB().then(result => {
+                    localStorage.removeItem(`${floGlobals.application}#privKey`)
+                    myPrivKey = myPubKey = myFloID = undefined;
+                    resolve("App database(local) deleted")
+                })
+            })
+        },
+
         securePrivKey: function (pwd) {
             return new Promise((resolve, reject) => {
                 let indexArr = localStorage.getItem(`${floGlobals.application}#privKey`)
@@ -9050,17 +9161,6 @@ Bitcoin.Util = {
                     .then(results => resolve("Private Key Secured"))
                     .catch(error => reject(error))
             })
-        },
-
-        objectDataMapper: function (object, path, data) {
-            var resObject = JSON.parse(JSON.stringify(object))
-            var pos = resObject;
-            path.forEach(p => pos = pos[p])
-            if (Array.isArray(pos)) {
-                pos.push(data)
-                return resObject
-            } else
-                throw ('Path is not an Array')
         },
 
         getNextGeneralData: function (type, vectorClock = null, options = {}) {
@@ -9133,18 +9233,14 @@ Bitcoin.Util = {
                         let vc = Object.keys(response).sort().pop()
                         let sync = JSON.parse(Crypto.AES.decrypt(response[vc].message, myPrivKey))
                         let promises = []
-                        for (let i in sync.contacts) {
-                            promises.push(compactIDB.writeData("contacts", sync.contacts[i], i))
-                            floGlobals.contacts[i] = sync.contacts[i]
-                        }
-                        for (let i in sync.pubKeys) {
-                            promises.push(compactIDB.writeData("pubKeys", sync.pubKeys[i], i))
-                            floGlobals.pubKeys[i] = sync.pubKeys[i]
-                        }
-                        for (let i in sync.messages) {
-                            promises.push(compactIDB.writeData("messages", sync.messages[i], i))
-                            floGlobals.messages[i] = sync.messages[i]
-                        }
+                        let store = (key, val, obs) => 
+                            promises.push(compactIDB.writeData(obs, val, key, `floDapps#${floID}`))
+                        ["contacts", "pubKeys", "messages"].forEach(c => {
+                            for (let i in sync[c]) {
+                                store(i, sync[c][i], c)
+                                floGlobals[c][i] = sync[c][i]
+                            }
+                        })
                         Promise.all(promises)
                             .then(results => resolve("Sync data successful"))
                             .catch(error => reject(error))
@@ -9153,12 +9249,6 @@ Bitcoin.Util = {
             }
         }
     }
-
-    reactor.registerEvent("startUpSuccessLog");
-    reactor.addEventListener("startUpSuccessLog", log => console.log(log))
-
-    reactor.registerEvent("startUpErrorLog");
-    reactor.addEventListener("startUpErrorLog", log => console.error(log))
 </script>
 <script id="onLoadStartUp">
     function onLoadStartUp() {
