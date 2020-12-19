@@ -7231,7 +7231,7 @@ Bitcoin.Util = {
         }
     }
 </script>
-<script id="floBlockchainAPI" version="2.0.0">
+<script id="floBlockchainAPI" version="2.0.1">
     /* FLO Blockchain Operator to send/receive data from blockchain using API calls*/
     const floBlockchainAPI = {
 
@@ -7592,6 +7592,14 @@ Bitcoin.Util = {
             })
         },
 
+        getTx: function (txid) {
+            return new Promise((resolve, reject) => {
+                this.promisedAPI(`api/tx/${txid}`)
+                    .then(response => resolve(response))
+                    .catch(error => reject(error))
+            })
+        },
+
         //Read Txs of Address between from and to
         readTxs: function (addr, from, to) {
             return new Promise((resolve, reject) => {
@@ -7697,7 +7705,8 @@ Bitcoin.Util = {
                                 createList = tmp
                             }
                             for (let o in createList) {
-                                let obs = db.createObjectStore(o, createList[o].options || {});
+                                let obs = db.createObjectStore(o, createList[o].options ||
+                                    {});
                                 if (createList[o].indexes instanceof Object)
                                     for (let i in createList[o].indexes)
                                         obs.createIndex(i, i, createList[o].indexes || {});
@@ -7903,7 +7912,7 @@ Bitcoin.Util = {
         }
     }
 </script>
-<script id="floCloudAPI" version="2.0.2b">
+<script id="floCloudAPI" version="2.0.2c">
     /* FLO Cloud operations to send/request application data*/
     const floCloudAPI = {
 
@@ -8047,25 +8056,35 @@ Bitcoin.Util = {
                 }
             },
 
+            inactive: [],
             connect(snID) {
                 return new Promise((resolve, reject) => {
                     if (!(snID in floGlobals.supernodes))
                         return reject(`${snID} is not a supernode`)
+                    let inactive = this.inactive
+                    if (inactive.includes(snID))
+                        return reject(`${snID} is not active`)
                     var wsConn = new WebSocket("wss://" + floGlobals.supernodes[snID].uri + "/ws");
                     wsConn.onmessage = (evt) => {
                         if (evt.data == '$+')
                             resolve(wsConn)
                         else if (evt.data == '$-') {
                             wsConn.close();
+                            inactive.push(snID)
                             reject(`${snID} is not active`)
                         }
                     }
-                    wsConn.onerror = evt => reject(`${snID} is unavailable`)
+                    wsConn.onerror = evt => {
+                        inactive.push(snID)
+                        reject(`${snID} is unavailable`)
+                    }
                 })
             },
 
             connectActive(snID, reverse = false) {
                 return new Promise((resolve, reject) => {
+                    if (this.inactive.length === this.kBucket.SNCO.length)
+                        return reject('Cloud offline')
                     if (!(snID in floGlobals.supernodes))
                         snID = this.kBucket.closestNode(snID);
                     this.connect(snID)
