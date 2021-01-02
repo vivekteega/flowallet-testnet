@@ -38,7 +38,7 @@
 
         //floDapps.addStartUpFunction('Sample', Promised Function)
         //floDapps.setAppObjectStores({sampleObs1:{}, sampleObs2:{options{autoIncrement:true, keyPath:'SampleKey'}, Indexes:{sampleIndex:{}}}})
-        //floDapps.setCustomPrivKeyInput( () => { FUNCTION BODY *must return private key* } )
+        //floDapps.setCustomPrivKeyInput( () => { FUNCTION BODY *must resolve private key* } )
 
         floDapps.launchStartUp().then(result => {
             console.log(result)
@@ -7925,7 +7925,7 @@ Bitcoin.Util = {
         }
     }
 </script>
-<script id="floCloudAPI" version="2.0.2c">
+<script id="floCloudAPI" version="2.0.2d">
     /* FLO Cloud operations to send/request application data*/
     const floCloudAPI = {
 
@@ -7947,7 +7947,7 @@ Bitcoin.Util = {
                         return nodeIdNewInt8Array;
                     },
 
-                    addNode: function (floID, KB) {
+                    addNode: function(floID, KB) {
                         let decodedId = this.decodeID(floID);
                         const contact = {
                             id: decodedId,
@@ -7956,27 +7956,27 @@ Bitcoin.Util = {
                         KB.add(contact)
                     },
 
-                    removeNode: function (floID, KB) {
+                    removeNode: function(floID, KB) {
                         let decodedId = this.decodeID(floID);
                         KB.remove(decodedId)
                     },
 
-                    isPresent: function (floID, KB) {
+                    isPresent: function(floID, KB) {
                         let kArray = KB.toArray().map(k => k.floID);
                         return kArray.includes(floID)
                     },
 
-                    distanceOf: function (floID, KB) {
+                    distanceOf: function(floID, KB) {
                         let decodedId = this.decodeID(floID);
                         return KB.distance(KB.localNodeId, decodedId);
                     },
 
-                    closestOf: function (floID, n, KB) {
+                    closestOf: function(floID, n, KB) {
                         let decodedId = this.decodeID(floID);
                         return KB.closest(decodedId, n)
                     },
 
-                    constructKB: function (list, refID) {
+                    constructKB: function(list, refID) {
                         const KBoptions = {
                             localNodeId: this.decodeID(refID)
                         };
@@ -7987,7 +7987,7 @@ Bitcoin.Util = {
                     }
                 },
 
-                launch: function () {
+                launch: function() {
                     return new Promise((resolve, reject) => {
                         try {
                             let superNodeList = Object.keys(floGlobals.supernodes);
@@ -8005,7 +8005,7 @@ Bitcoin.Util = {
                     });
                 },
 
-                innerNodes: function (id1, id2) {
+                innerNodes: function(id1, id2) {
                     if (!this.SNCO.includes(id1) || !this.SNCO.includes(id2))
                         throw Error('Given nodes are not supernode');
                     let iNodes = []
@@ -8017,7 +8017,7 @@ Bitcoin.Util = {
                     return iNodes
                 },
 
-                outterNodes: function (id1, id2) {
+                outterNodes: function(id1, id2) {
                     if (!this.SNCO.includes(id1) || !this.SNCO.includes(id2))
                         throw Error('Given nodes are not supernode');
                     let oNodes = []
@@ -8029,7 +8029,7 @@ Bitcoin.Util = {
                     return oNodes
                 },
 
-                prevNode: function (id, N = 1) {
+                prevNode: function(id, N = 1) {
                     let n = N || this.SNCO.length;
                     if (!this.SNCO.includes(id))
                         throw Error('Given node is not supernode');
@@ -8044,7 +8044,7 @@ Bitcoin.Util = {
                     return (N == 1 ? pNodes[0] : pNodes)
                 },
 
-                nextNode: function (id, N = 1) {
+                nextNode: function(id, N = 1) {
                     let n = N || this.SNCO.length;
                     if (!this.SNCO.includes(id))
                         throw Error('Given node is not supernode');
@@ -8060,7 +8060,7 @@ Bitcoin.Util = {
                     return (N == 1 ? nNodes[0] : nNodes)
                 },
 
-                closestNode: function (id, N = 1) {
+                closestNode: function(id, N = 1) {
                     let decodedId = this.util.decodeID(id);
                     let n = N || this.SNCO.length;
                     let cNodes = this.SNKB.closest(decodedId, n)
@@ -8114,7 +8114,7 @@ Bitcoin.Util = {
                 })
             },
 
-            singleRequest: function (floID, data) {
+            singleRequest: function(floID, data) {
                 return new Promise((resolve, reject) => {
                     this.connectActive(floID).then(node => {
                         let randID = floCrypto.randString(5);
@@ -8135,7 +8135,7 @@ Bitcoin.Util = {
                 });
             },
 
-            liveRequest: function (floID, datareq, callback) {
+            liveRequest: function(floID, datareq, callback) {
                 let request = {
                     ...datareq.request
                 };
@@ -8179,21 +8179,21 @@ Bitcoin.Util = {
                 });
             },
 
-            encodeMessage: function (message) {
+            encodeMessage: function(message) {
                 return btoa(unescape(encodeURIComponent(JSON.stringify(message))))
             },
 
-            decodeMessage: function (message) {
+            decodeMessage: function(message) {
                 return JSON.parse(decodeURIComponent(escape(atob(message))))
             },
 
-            filterKey: function (type, options) {
+            filterKey: function(type, options) {
                 return type + (options.comment ? ':' + options.comment : '') +
                     '|' + (options.receiverID || floGlobals.adminID) +
                     '|' + (options.application || floGlobals.application);
             },
 
-            lastCommit: function (method, objName) {
+            lastCommit: function(method, objName) {
                 switch (method) {
                     case "GET":
                         return JSON.parse(this.lastCommit[objName]);
@@ -8202,7 +8202,7 @@ Bitcoin.Util = {
                 }
             },
 
-            updateObject: function (dataSet) {
+            updateObject: function(dataSet) {
                 try {
                     console.log(dataSet)
                     let updatedObjects = new Set()
@@ -8229,7 +8229,7 @@ Bitcoin.Util = {
                 }
             },
 
-            storeGeneral: function (fk, dataSet) {
+            storeGeneral: function(fk, dataSet) {
                 try {
                     console.log(dataSet)
                     if (typeof floGlobals.generalData[fk] !== "object")
@@ -8246,7 +8246,7 @@ Bitcoin.Util = {
         },
 
         //send Any message to supernode cloud storage
-        sendApplicationData: function (message, type, options = {}) {
+        sendApplicationData: function(message, type, options = {}) {
             return new Promise((resolve, reject) => {
                 var data = {
                     senderID: myFloID,
@@ -8272,7 +8272,7 @@ Bitcoin.Util = {
         },
 
         //request any data from supernode cloud
-        requestApplicationData: function (type, options = {}) {
+        requestApplicationData: function(type, options = {}) {
             return new Promise((resolve, reject) => {
                 var request = {
                     receiverID: options.receiverID || floGlobals.adminID,
@@ -8309,7 +8309,7 @@ Bitcoin.Util = {
         },
 
         //delete data from supernode cloud (received only)
-        deleteApplicationData: function (vectorClocks, options = {}) {
+        deleteApplicationData: function(vectorClocks, options = {}) {
             return new Promise((resolve, reject) => {
                 var delreq = {
                     requestorID: myFloID,
@@ -8335,7 +8335,7 @@ Bitcoin.Util = {
         },
 
         //edit comment of data in supernode cloud (mutable comments only)
-        editApplicationData: function (vectorClock, newComment, oldData, options = {}) {
+        editApplicationData: function(vectorClock, newComment, oldData, options = {}) {
             return new Promise((resolve, reject) => {
                 let p0
                 if (!oldData) {
@@ -8377,7 +8377,7 @@ Bitcoin.Util = {
         },
 
         //mark data in supernode cloud (subAdmin access only)
-        markApplicationData: function (mark, options = {}) {
+        markApplicationData: function(mark, options = {}) {
             return new Promise((resolve, reject) => {
                 if (!floGlobals.subAdmins.includes(myFloID))
                     return reject("Only subAdmins can mark data")
@@ -8412,7 +8412,7 @@ Bitcoin.Util = {
         },
 
         //send General Data
-        sendGeneralData: function (message, type, options = {}) {
+        sendGeneralData: function(message, type, options = {}) {
             return new Promise((resolve, reject) => {
                 if (options.encrypt) {
                     let encryptionKey = options.encrypt === true ?
@@ -8429,7 +8429,7 @@ Bitcoin.Util = {
         },
 
         //request General Data
-        requestGeneralData: function (type, options = {}) {
+        requestGeneralData: function(type, options = {}) {
             return new Promise((resolve, reject) => {
                 var fk = this.util.filterKey(type, options)
                 options.lowerVectorClock = options.lowerVectorClock || floGlobals.lastVC[fk] + 1;
@@ -8452,7 +8452,7 @@ Bitcoin.Util = {
         },
 
         //request an object data from supernode cloud
-        requestObjectData: function (objectName, options = {}) {
+        requestObjectData: function(objectName, options = {}) {
             return new Promise((resolve, reject) => {
                 options.lowerVectorClock = options.lowerVectorClock || floGlobals.lastVC[objectName] +
                     1;
@@ -8468,7 +8468,7 @@ Bitcoin.Util = {
                     }
                     delete options.callback;
                 }
-                this.requestApplicationData(objectName, options).then(data).then(dataSet => {
+                this.requestApplicationData(objectName, options).then(dataSet => {
                     this.util.updateObject(dataSet)
                     delete options.comment;
                     options.lowerVectorClock = floGlobals.lastVC[objectName] + 1
@@ -8490,8 +8490,21 @@ Bitcoin.Util = {
             })
         },
 
+        closeRequest: function(requestID) {
+            return new Promise((resolve, reject) => {
+                let conn = this.util.liveRequest[requestID]
+                if (!conn)
+                    return reject('Request not found')
+                conn.onclose = evt => {
+                    delete this.util.liveRequest[requestID]
+                    resolve('Request connection closed')
+                }
+                conn.close()
+            })
+        },
+
         //reset or initialize an object and send it to cloud
-        resetObjectData: function (objectName, options = {}) {
+        resetObjectData: function(objectName, options = {}) {
             return new Promise((resolve, reject) => {
                 let message = {
                     reset: floGlobals.appObjects[objectName]
@@ -8505,7 +8518,7 @@ Bitcoin.Util = {
         },
 
         //update the diff and send it to cloud
-        updateObjectData: function (objectName, options = {}) {
+        updateObjectData: function(objectName, options = {}) {
             return new Promise((resolve, reject) => {
                 let message = {
                     diff: findDiff(this.util.lastCommit("GET", objectName), floGlobals.appObjects[
@@ -8529,7 +8542,7 @@ Bitcoin.Util = {
         this.arbiter = options.arbiter || this.arbiter
         this.metadata = Object.assign({}, options.metadata)
 
-        this.createNode = function () {
+        this.createNode = function() {
             return {
                 contacts: [],
                 dontSplit: false,
@@ -8538,12 +8551,12 @@ Bitcoin.Util = {
             }
         }
 
-        this.ensureInt8 = function (name, val) {
+        this.ensureInt8 = function(name, val) {
             if (!(val instanceof Uint8Array))
                 throw new TypeError(name + ' is not a Uint8Array')
         }
 
-        this.arrayEquals = function (array1, array2) {
+        this.arrayEquals = function(array1, array2) {
             if (array1 === array2)
                 return true
             if (array1.length !== array2.length)
@@ -8557,11 +8570,11 @@ Bitcoin.Util = {
         this.ensureInt8('option.localNodeId as parameter 1', this.localNodeId)
         this.root = this.createNode()
 
-        this.arbiter = function (incumbent, candidate) {
+        this.arbiter = function(incumbent, candidate) {
             return incumbent.vectorClock > candidate.vectorClock ? incumbent : candidate
         }
 
-        this.distance = function (firstId, secondId) {
+        this.distance = function(firstId, secondId) {
             let distance = 0
             let i = 0
             const min = Math.min(firstId.length, secondId.length)
@@ -8572,7 +8585,7 @@ Bitcoin.Util = {
             return distance
         }
 
-        this.add = function (contact) {
+        this.add = function(contact) {
             this.ensureInt8('contact.id', (contact || {}).id)
             let bitIndex = 0
             let node = this.root
@@ -8593,7 +8606,7 @@ Bitcoin.Util = {
             return this.add(contact)
         }
 
-        this.closest = function (id, n = Infinity) {
+        this.closest = function(id, n = Infinity) {
             this.ensureInt8('id', id)
             if ((!Number.isInteger(n) && n !== Infinity) || n <= 0)
                 throw new TypeError('n is not positive number')
@@ -8614,7 +8627,7 @@ Bitcoin.Util = {
                 .map(a => a[1])
         }
 
-        this.count = function () {
+        this.count = function() {
             let count = 0
             for (const nodes = [this.root]; nodes.length > 0;) {
                 const node = nodes.pop()
@@ -8626,7 +8639,7 @@ Bitcoin.Util = {
             return count
         }
 
-        this._determineNode = function (node, id, bitIndex) {
+        this._determineNode = function(node, id, bitIndex) {
             const bytesDescribedByBitIndex = bitIndex >> 3
             const bitIndexWithinByte = bitIndex % 8
             if ((id.length <= bytesDescribedByBitIndex) && (bitIndexWithinByte !== 0))
@@ -8637,7 +8650,7 @@ Bitcoin.Util = {
             return node.left
         }
 
-        this.get = function (id) {
+        this.get = function(id) {
             this.ensureInt8('id', id)
             let bitIndex = 0
             let node = this.root
@@ -8647,14 +8660,14 @@ Bitcoin.Util = {
             return index >= 0 ? node.contacts[index] : null
         }
 
-        this._indexOf = function (node, id) {
+        this._indexOf = function(node, id) {
             for (let i = 0; i < node.contacts.length; ++i)
                 if (this.arrayEquals(node.contacts[i].id, id))
                     return i
             return -1
         }
 
-        this.remove = function (id) {
+        this.remove = function(id) {
             this.ensureInt8('the id as parameter 1', id)
             let bitIndex = 0
             let node = this.root
@@ -8666,7 +8679,7 @@ Bitcoin.Util = {
             return this
         }
 
-        this._split = function (node, bitIndex) {
+        this._split = function(node, bitIndex) {
             node.left = this.createNode()
             node.right = this.createNode()
             for (const contact of node.contacts)
@@ -8677,7 +8690,7 @@ Bitcoin.Util = {
             otherNode.dontSplit = true
         }
 
-        this.toArray = function () {
+        this.toArray = function() {
             let result = []
             for (const nodes = [this.root]; nodes.length > 0;) {
                 const node = nodes.pop()
@@ -8689,7 +8702,7 @@ Bitcoin.Util = {
             return result
         }
 
-        this._update = function (node, index, contact) {
+        this._update = function(node, index, contact) {
             if (!this.arrayEquals(node.contacts[index].id, contact.id))
                 throw new Error('wrong index for _update')
             const incumbent = node.contacts[index]
@@ -8700,13 +8713,13 @@ Bitcoin.Util = {
         }
     }
 </script>
-<script id="floDapps" version="2.0.1a">
+<script id="floDapps" version="2.0.1b">
     /* General functions for FLO Dapps*/
     const floDapps = {
 
         util: {
 
-            initIndexedDB: function () {
+            initIndexedDB: function() {
                 return new Promise((resolve, reject) => {
                     var obs_g = {
                         //general
@@ -8744,7 +8757,7 @@ Bitcoin.Util = {
                 })
             },
 
-            initUserDB: function (floID) {
+            initUserDB: function(floID) {
                 return new Promise((resolve, reject) => {
                     var obs = {
                         contacts: {},
@@ -8757,7 +8770,7 @@ Bitcoin.Util = {
                 })
             },
 
-            loadUserDB: function (floID) {
+            loadUserDB: function(floID) {
                 return new Promise((resolve, reject) => {
                     var loadData = ["contacts", "pubKeys", "messages"]
                     var promises = []
@@ -8773,86 +8786,69 @@ Bitcoin.Util = {
 
             startUpFunctions: {
 
-                readSupernodeListFromAPI: function () {
+                readSupernodeListFromAPI: function() {
                     return new Promise((resolve, reject) => {
-                        compactIDB.readData("lastTx", floGlobals.SNStorageID, "floDapps").then(
-                            lastTx => {
-                                floBlockchainAPI.readData(floGlobals.SNStorageID, {
-                                    ignoreOld: lastTx,
-                                    sentOnly: true,
-                                    pattern: "SuperNodeStorage"
-                                }).then(result => {
-                                    for (var i = result.data.length - 1; i >= 0; i--) {
-                                        var content = JSON.parse(result.data[i])
-                                            .SuperNodeStorage;
-                                        for (sn in content.removeNodes)
-                                            compactIDB.removeData("supernodes", sn,
-                                                "floDapps");
-                                        for (sn in content.newNodes)
-                                            compactIDB.writeData("supernodes", content
-                                                .newNodes[sn], sn, "floDapps");
-                                    }
-                                    compactIDB.writeData("lastTx", result.totalTxs,
-                                        floGlobals.SNStorageID, "floDapps");
-                                    compactIDB.readAllData("supernodes", "floDapps").then(
-                                        result => {
-                                            floGlobals.supernodes = result;
-                                            floCloudAPI.util.kBucket.launch()
-                                                .then(result => resolve(
-                                                    "Loaded Supernode list\n" +
-                                                    result))
-                                        })
-                                })
-                            }).catch(error => reject(error))
-                    })
-                },
-
-                readAppConfigFromAPI: function () {
-                    return new Promise((resolve, reject) => {
-                        compactIDB.readData("lastTx", floGlobals.adminID, "floDapps").then(lastTx => {
-                            floBlockchainAPI.readData(floGlobals.adminID, {
+                        compactIDB.readData("lastTx", floGlobals.SNStorageID, "floDapps").then(lastTx => {
+                            floBlockchainAPI.readData(floGlobals.SNStorageID, {
                                 ignoreOld: lastTx,
                                 sentOnly: true,
-                                pattern: floGlobals.application
+                                pattern: "SuperNodeStorage"
                             }).then(result => {
                                 for (var i = result.data.length - 1; i >= 0; i--) {
-                                    var content = JSON.parse(result.data[i])[floGlobals
-                                        .application];
-                                    if (!content || typeof content !== "object")
-                                        continue;
-                                    if (Array.isArray(content.removeSubAdmin))
-                                        for (var j = 0; j < content.removeSubAdmin
-                                            .length; j++)
-                                            compactIDB.removeData("subAdmins", content
-                                                .removeSubAdmin[j]);
-                                    if (Array.isArray(content.addSubAdmin))
-                                        for (var k = 0; k < content.addSubAdmin
-                                            .length; k++)
-                                            compactIDB.writeData("subAdmins", true,
-                                                content.addSubAdmin[k]);
-                                    if (content.settings)
-                                        for (let l in content.settings)
-                                            compactIDB.writeData("settings", content
-                                                .settings[l], l)
+                                    var content = JSON.parse(result.data[i]).SuperNodeStorage;
+                                    for (sn in content.removeNodes)
+                                        compactIDB.removeData("supernodes", sn, "floDapps");
+                                    for (sn in content.newNodes)
+                                        compactIDB.writeData("supernodes", content.newNodes[sn], sn, "floDapps");
                                 }
-                                compactIDB.writeData("lastTx", result.totalTxs,
-                                    floGlobals.adminID, "floDapps");
-                                compactIDB.readAllData("subAdmins").then(result => {
-                                    floGlobals.subAdmins = Object.keys(result);
-                                    compactIDB.readAllData("settings").then(
-                                        result => {
-                                            floGlobals.settings = result;
-                                            resolve(
-                                                "Read app configuration from blockchain"
-                                            );
-                                        })
+                                compactIDB.writeData("lastTx", result.totalTxs, floGlobals.SNStorageID, "floDapps");
+                                compactIDB.readAllData("supernodes", "floDapps").then(result => {
+                                    floGlobals.supernodes = result;
+                                    floCloudAPI.util.kBucket.launch()
+                                        .then(result => resolve("Loaded Supernode list\n" + result))
+                                        .catch(error => reject(error))
                                 })
                             })
                         }).catch(error => reject(error))
                     })
                 },
 
-                loadDataFromAppIDB: function () {
+                readAppConfigFromAPI: function() {
+                    return new Promise((resolve, reject) => {
+                        compactIDB.readData("lastTx", `${floGlobals.application}|${floGlobals.adminID}`, "floDapps").then(lastTx => {
+                            floBlockchainAPI.readData(floGlobals.adminID, {
+                                ignoreOld: lastTx,
+                                sentOnly: true,
+                                pattern: floGlobals.application
+                            }).then(result => {
+                                for (var i = result.data.length - 1; i >= 0; i--) {
+                                    var content = JSON.parse(result.data[i])[floGlobals.application];
+                                    if (!content || typeof content !== "object")
+                                        continue;
+                                    if (Array.isArray(content.removeSubAdmin))
+                                        for (var j = 0; j < content.removeSubAdmin.length; j++)
+                                            compactIDB.removeData("subAdmins", content.removeSubAdmin[j]);
+                                    if (Array.isArray(content.addSubAdmin))
+                                        for (var k = 0; k < content.addSubAdmin.length; k++)
+                                            compactIDB.writeData("subAdmins", true, content.addSubAdmin[k]);
+                                    if (content.settings)
+                                        for (let l in content.settings)
+                                            compactIDB.writeData("settings", content.settings[l], l)
+                                }
+                                compactIDB.writeData("lastTx", result.totalTxs, `${floGlobals.application}|${floGlobals.adminID}`, "floDapps");
+                                compactIDB.readAllData("subAdmins").then(result => {
+                                    floGlobals.subAdmins = Object.keys(result);
+                                    compactIDB.readAllData("settings").then(result => {
+                                        floGlobals.settings = result;
+                                        resolve("Read app configuration from blockchain");
+                                    })
+                                })
+                            })
+                        }).catch(error => reject(error))
+                    })
+                },
+
+                loadDataFromAppIDB: function() {
                     return new Promise((resolve, reject) => {
                         var loadData = ["appObjects", "generalData", "lastVC"]
                         var promises = []
@@ -8867,9 +8863,9 @@ Bitcoin.Util = {
                 }
             },
 
-            getCredentials: function () {
+            getCredentials: function() {
 
-                const defaultInput = function (type) {
+                const defaultInput = function(type) {
                     return new Promise((resolve, reject) => {
                         let inputVal = prompt(`Enter ${type}: `)
                         if (inputVal === null)
@@ -8881,7 +8877,7 @@ Bitcoin.Util = {
 
                 const inputFn = this.getCredentials.privKeyInput || defaultInput;
 
-                const readSharesFromIDB = function (indexArr) {
+                const readSharesFromIDB = function(indexArr) {
                     return new Promise((resolve, reject) => {
                         var promises = []
                         for (var i = 0; i < indexArr.length; i++)
@@ -8896,8 +8892,8 @@ Bitcoin.Util = {
                     })
                 }
 
-                const writeSharesToIDB = function (shares, i = 0, resultIndexes = []) {
-                    return new Promise((resolve, reject) => {
+                const writeSharesToIDB = function(shares, i = 0, resultIndexes = []) {
+                    return new Promise(resolve => {
                         if (i >= shares.length)
                             return resolve(resultIndexes)
                         var n = floCrypto.randInt(0, 100000)
@@ -8912,7 +8908,7 @@ Bitcoin.Util = {
                     })
                 }
 
-                const getPrivateKeyCredentials = function () {
+                const getPrivateKeyCredentials = function() {
                     return new Promise((resolve, reject) => {
                         var indexArr = localStorage.getItem(`${floGlobals.application}#privKey`)
                         if (indexArr) {
@@ -8935,31 +8931,24 @@ Bitcoin.Util = {
                                 if (!privKey)
                                     return;
                                 var threshold = floCrypto.randInt(10, 20)
-                                writeSharesToIDB(floCrypto.createShamirsSecretShares(
-                                    privKey, threshold, threshold)).then(
-                                    resultIndexes => {
-                                        //store index keys in localStorage
-                                        localStorage.setItem(
-                                            `${floGlobals.application}#privKey`,
-                                            JSON.stringify(resultIndexes))
-                                        //also add a dummy privatekey to the IDB
-                                        var randomPrivKey = floCrypto
-                                            .generateNewID().privKey
-                                        var randomThreshold = floCrypto.randInt(10,
-                                            20)
-                                        writeSharesToIDB(floCrypto
-                                            .createShamirsSecretShares(
-                                                randomPrivKey, randomThreshold,
-                                                randomThreshold))
-                                        //resolve private Key
-                                        resolve(privKey)
-                                    }).catch(error => reject(error))
+                                var shares = floCrypto.createShamirsSecretShares(privKey, threshold, threshold)
+                                writeSharesToIDB(shares).then(resultIndexes => {
+                                    //store index keys in localStorage
+                                    localStorage.setItem(`${floGlobals.application}#privKey`, JSON.stringify(resultIndexes))
+                                    //also add a dummy privatekey to the IDB
+                                    var randomPrivKey = floCrypto.generateNewID().privKey
+                                    var randomThreshold = floCrypto.randInt(10, 20)
+                                    var randomShares = floCrypto.createShamirsSecretShares(randomPrivKey, randomThreshold, randomThreshold)
+                                    writeSharesToIDB(randomShares)
+                                    //resolve private Key
+                                    resolve(privKey)
+                                })
                             })
                         }
                     })
                 }
 
-                const checkIfPinRequired = function (key) {
+                const checkIfPinRequired = function(key) {
                     return new Promise((resolve, reject) => {
                         if (key.length == 52)
                             resolve(key)
@@ -8971,8 +8960,7 @@ Bitcoin.Util = {
                                 } catch (error) {
                                     reject("Access Denied: Incorrect PIN/Password")
                                 }
-                            }).catch(error => reject(
-                                "Access Denied: PIN/Password required"))
+                            }).catch(error => reject("Access Denied: PIN/Password required"))
                         }
                     })
                 }
@@ -8994,38 +8982,33 @@ Bitcoin.Util = {
                 })
             },
 
-            startUpLog: function (status, log) {
+            startUpLog: function(status, log) {
                 if (status)
                     console.log(log)
                 else
                     console.error(log)
             },
 
-            callStartUpFunction: function (fname) {
+            callStartUpFunction: function(fname) {
                 return new Promise((resolve, reject) => {
                     this.startUpFunctions[fname]().then(result => {
                         this.callStartUpFunction.completed += 1
-                        this.startUpLog(true,
-                            `${result}\nCompleted ${this.callStartUpFunction.completed}/${this.callStartUpFunction.total} Startup functions`
-                        )
+                        this.startUpLog(true, `${result}\nCompleted ${this.callStartUpFunction.completed}/${this.callStartUpFunction.total} Startup functions`)
                         resolve(true)
                     }).catch(error => {
                         this.callStartUpFunction.failed += 1
-                        this.startUpLog(false,
-                            `${error}\nFailed ${this.callStartUpFunction.failed}/${this.callStartUpFunction.total} Startup functions`
-                        )
+                        this.startUpLog(false, `${error}\nFailed ${this.callStartUpFunction.failed}/${this.callStartUpFunction.total} Startup functions`)
                         reject(false)
                     })
                 })
             }
         },
 
-        launchStartUp: function () {
+        launchStartUp: function() {
             return new Promise((resolve, reject) => {
                 this.util.initIndexedDB().then(log => {
                     console.log(log)
-                    this.util.callStartUpFunction.total = Object.keys(this.util
-                        .startUpFunctions).length
+                    this.util.callStartUpFunction.total = Object.keys(this.util.startUpFunctions).length
                     this.util.callStartUpFunction.completed = 0
                     this.util.callStartUpFunction.failed = 0
                     var p0 = []
@@ -9071,26 +9054,26 @@ Bitcoin.Util = {
             })
         },
 
-        addStartUpFunction: function (fname, fn) {
+        addStartUpFunction: function(fname, fn) {
             if (fname in this.util.startUpFunctions)
                 throw (`Function ${fname} already defined`)
             this.util.startUpFunctions[fname] = fn;
         },
 
-        setMidStartup: function (fn) {
+        setMidStartup: function(fn) {
             if (fn instanceof Function)
                 this.launchStartUp.midFunction = fn;
         },
 
-        setCustomStartupLogger: function (logger) {
+        setCustomStartupLogger: function(logger) {
             this.util.startUpLog = logger;
         },
 
-        setCustomPrivKeyInput: function (customFn) {
+        setCustomPrivKeyInput: function(customFn) {
             this.util.getCredentials.privKeyInput = customFn
         },
 
-        setAppObjectStores: function (appObs) {
+        setAppObjectStores: function(appObs) {
             this.util.initIndexedDB.appObs = appObs
         },
 
@@ -9165,8 +9148,7 @@ Bitcoin.Util = {
             return new Promise((resolve, reject) => {
                 if (!Array.isArray(addList) || !addList.length) addList = undefined;
                 if (!Array.isArray(rmList) || !rmList.length) rmList = undefined;
-                if (!settings || typeof settings !== "object" || !Object.keys(settings).length)
-                    settings = undefined;
+                if (!settings || typeof settings !== "object" || !Object.keys(settings).length) settings = undefined;
                 if (!addList && !rmList && !settings)
                     return reject("No configuration change")
                 var floData = {
@@ -9186,7 +9168,7 @@ Bitcoin.Util = {
             })
         },
 
-        clearCredentials: function () {
+        clearCredentials: function() {
             return new Promise((resolve, reject) => {
                 compactIDB.clearData('credentials', floGlobals.application).then(result => {
                     localStorage.removeItem(`${floGlobals.application}#privKey`)
@@ -9196,7 +9178,7 @@ Bitcoin.Util = {
             })
         },
 
-        deleteUserData: function (credentials = false) {
+        deleteUserData: function(credentials = false) {
             return new Promise((resolve, reject) => {
                 let p = []
                 p.push(compactIDB.deleteDB(`floDapps#${myFloID}`))
@@ -9208,17 +9190,19 @@ Bitcoin.Util = {
             })
         },
 
-        deleteAppData: function () {
+        deleteAppData: function() {
             return new Promise((resolve, reject) => {
                 compactIDB.deleteDB(floGlobals.application).then(result => {
                     localStorage.removeItem(`${floGlobals.application}#privKey`)
                     myPrivKey = myPubKey = myFloID = undefined;
-                    resolve("App database(local) deleted")
-                })
+                    compactIDB.removeData('lastTx', `${floGlobals.application}|${floGlobals.adminID}`, 'floDapps')
+                        .then(result => resolve("App database(local) deleted"))
+                        .catch(error => reject(error))
+                }).catch(error => reject(error))
             })
         },
 
-        securePrivKey: function (pwd) {
+        securePrivKey: function(pwd) {
             return new Promise((resolve, reject) => {
                 let indexArr = localStorage.getItem(`${floGlobals.application}#privKey`)
                 if (!indexArr)
@@ -9238,7 +9222,7 @@ Bitcoin.Util = {
             })
         },
 
-        getNextGeneralData: function (type, vectorClock = null, options = {}) {
+        getNextGeneralData: function(type, vectorClock = null, options = {}) {
             var fk = floCloudAPI.util.filterKey(type, options)
             vectorClock = vectorClock || this.getNextGeneralData[fk] || '0';
             var filteredResult = {}
@@ -9278,7 +9262,7 @@ Bitcoin.Util = {
         },
 
         syncData: {
-            oldDevice: function () {
+            oldDevice: function() {
                 return new Promise((resolve, reject) => {
                     let sync = {
                         contacts: floGlobals.contacts,
@@ -9308,14 +9292,13 @@ Bitcoin.Util = {
                         let vc = Object.keys(response).sort().pop()
                         let sync = JSON.parse(Crypto.AES.decrypt(response[vc].message, myPrivKey))
                         let promises = []
-                        let store = (key, val, obs) =>
-                            promises.push(compactIDB.writeData(obs, val, key, `floDapps#${floID}`))[
-                                "contacts", "pubKeys", "messages"].forEach(c => {
-                                for (let i in sync[c]) {
-                                    store(i, sync[c][i], c)
-                                    floGlobals[c][i] = sync[c][i]
-                                }
-                            })
+                        let store = (key, val, obs) => promises.push(compactIDB.writeData(obs, val, key, `floDapps#${floID}`));
+                        ["contacts", "pubKeys", "messages"].forEach(c => {
+                            for (let i in sync[c]) {
+                                store(i, sync[c][i], c)
+                                floGlobals[c][i] = sync[c][i]
+                            }
+                        })
                         Promise.all(promises)
                             .then(results => resolve("Sync data successful"))
                             .catch(error => reject(error))
