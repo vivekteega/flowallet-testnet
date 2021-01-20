@@ -7925,7 +7925,7 @@ Bitcoin.Util = {
         }
     }
 </script>
-<script id="floCloudAPI" version="2.0.2d">
+<script id="floCloudAPI" version="2.0.2e">
     /* FLO Cloud operations to send/request application data*/
     const floCloudAPI = {
 
@@ -8069,13 +8069,13 @@ Bitcoin.Util = {
                 }
             },
 
-            inactive: [],
+            inactive: new Set(),
             connect(snID) {
                 return new Promise((resolve, reject) => {
                     if (!(snID in floGlobals.supernodes))
                         return reject(`${snID} is not a supernode`)
                     let inactive = this.inactive
-                    if (inactive.includes(snID))
+                    if (inactive.has(snID))
                         return reject(`${snID} is not active`)
                     var wsConn = new WebSocket("wss://" + floGlobals.supernodes[snID].uri + "/ws");
                     wsConn.onmessage = (evt) => {
@@ -8083,12 +8083,12 @@ Bitcoin.Util = {
                             resolve(wsConn)
                         else if (evt.data == '$-') {
                             wsConn.close();
-                            inactive.push(snID)
+                            inactive.add(snID)
                             reject(`${snID} is not active`)
                         }
                     }
                     wsConn.onerror = evt => {
-                        inactive.push(snID)
+                        inactive.add(snID)
                         reject(`${snID} is unavailable`)
                     }
                 })
@@ -8096,7 +8096,7 @@ Bitcoin.Util = {
 
             connectActive(snID, reverse = false) {
                 return new Promise((resolve, reject) => {
-                    if (this.inactive.length === this.kBucket.SNCO.length)
+                    if (this.inactive.size === this.kBucket.SNCO.length)
                         return reject('Cloud offline')
                     if (!(snID in floGlobals.supernodes))
                         snID = this.kBucket.closestNode(snID);
