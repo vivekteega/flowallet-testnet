@@ -8713,7 +8713,7 @@ Bitcoin.Util = {
         }
     }
 </script>
-<script id="floDapps" version="2.0.1b">
+<script id="floDapps" version="2.0.1c">
     /* General functions for FLO Dapps*/
     const floDapps = {
 
@@ -9220,6 +9220,49 @@ Bitcoin.Util = {
                     .then(results => resolve("Private Key Secured"))
                     .catch(error => reject(error))
             })
+        },
+
+        verifyPin: function(pin = null) {
+            const readSharesFromIDB = function(indexArr) {
+                return new Promise((resolve, reject) => {
+                    var promises = []
+                    for (var i = 0; i < indexArr.length; i++)
+                        promises.push(compactIDB.readData('credentials', indexArr[i]))
+                    Promise.all(promises).then(shares => {
+                        var secret = floCrypto.retrieveShamirSecret(shares)
+                        console.info(shares, secret)
+                        if (secret)
+                            resolve(secret)
+                        else
+                            reject("Shares are insufficient or incorrect")
+                    }).catch(error => reject(error))
+                })
+            }
+            return new Promise((resolve, reject) => {
+                var indexArr = localStorage.getItem(`${floGlobals.application}#privKey`)
+                console.info(indexArr)
+                if (!indexArr)
+                    reject('No login credentials found')
+                readSharesFromIDB(JSON.parse(indexArr)).then(key => {
+                    if (key.length == 52) {
+                        if (pin === null)
+                            resolve("Private key not secured")
+                        else
+                            reject("Private key not secured")
+                    } else {
+                        if (pin === null)
+                            return reject("PIN/Password required")
+                        try {
+                            let privKey = Crypto.AES.decrypt(key, pin);
+                            resolve("PIN/Password verified")
+                        } catch (error) {
+                            reject("Incorrect PIN/Password")
+                        }
+                    }
+                }).catch(error => reject(error))
+            })
+
+
         },
 
         getNextGeneralData: function(type, vectorClock = null, options = {}) {
