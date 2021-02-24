@@ -568,6 +568,10 @@
             display: none;
         }
 
+        #fix_invalid_button{
+            margin-bottom: 1rem !important;
+        }
+
         #menu {
             display: none;
         }
@@ -2015,10 +2019,7 @@
                         <div id="show_character_count">1040/1040</div>
                     </div>
                     <p id="flo_data_status"></p>
-                    <div id="flo_data_options" class="grid column-grid gap-1 hide-completely">
-                        <button class="primaryButton" id="remove_invalid_button" onclick="removeInvalid()">Fix</button>
-                        <button class="primaryButton" id="check_flo_data_button" onclick="checkFloData()">Check FLO data</button>
-                    </div>
+                    <button class="primaryButton hide-completely" id="fix_invalid_button" onclick="removeInvalid()">Fix</button>
                     <button class="primaryButton" id="sendBtn" onclick="showPrivKeyPage()" disabled>Send</button>
                 </div>
             </div>
@@ -2827,8 +2828,7 @@
 
         let showCharacterCount = document.getElementById('show_character_count') 
         let isFloDataChanged = false
-        const floDataOptions = document.getElementById('flo_data_options')
-        const checkFloDataButton = document.getElementById('check_flo_data_button')
+        const fixFloDataButton = document.getElementById('fix_invalid_button')
         const sendFloDataButton = document.getElementById('sendBtn')
         const sentFloData = document.getElementById('flotextdata')
         const floDataStaus = document.getElementById('flo_data_status')
@@ -2841,17 +2841,18 @@
                 isFloDataChanged = true
             if(this.value.trim() !== ''){
                 sendFloDataButton.classList.add('hide-completely')
-                floDataOptions.classList.remove('hide-completely')
+                fixFloDataButton.classList.remove('hide-completely')
             }
             else{
                 sendFloDataButton.classList.remove('hide-completely')
-                floDataOptions.classList.add('hide-completely')
+                fixFloDataButton.classList.add('hide-completely')
             }
             if(1040 - this.value.length){
                 showCharacterCount.textContent = `${1040 - this.value.length}/1040` 
             }
             else
                 showCharacterCount.textContent = `You can only add FLO data upto 1040 characters.`
+            checkFloData()
         })
         function checkFloData(){
             isFloDataChanged = false
@@ -2866,7 +2867,7 @@
             }
             if(isValid){
                 sendFloDataButton.classList.remove('hide-completely')
-                floDataOptions.classList.add('hide-completely')
+                fixFloDataButton.classList.add('hide-completely')
                 floDataStaus.textContent = ''
             }
             else{
