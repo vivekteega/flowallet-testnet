@@ -81,10 +81,27 @@
             border: 1px transparent solid;
         }
 
+        .flex{
+            display: flex;
+        }
+        .grid{
+            display: grid;
+        }
+        .column-grid{
+            grid-auto-flow: column;
+        }
+        .align-center{
+            align-items: center;
+        }
+        .gap-1{
+            gap: 1rem;
+        }
+
         .primaryButton {
             background: var(--accent-color) !important;
             color: white !important;
             border: 1px solid var(--accent-color);
+            width: 100%;
         }
 
         .primaryButton:hover {
@@ -203,6 +220,11 @@
             right: 0;
             font-size: 0.8rem;
             margin: 0.4rem 0.8rem;
+        }
+
+        #flo_data_status:not(:empty){
+            color: red;
+            padding: 0.5rem 0;
         }
 
         #overlay {
@@ -541,6 +563,9 @@
         .hide {
             opacity: 0;
             pointer-events: none;
+        }
+        .hide-completely{
+            display: none;
         }
 
         #menu {
@@ -1989,6 +2014,11 @@
                         <label>FLO data</label>
                         <div id="show_character_count">1040/1040</div>
                     </div>
+                    <p id="flo_data_status"></p>
+                    <div id="flo_data_options" class="grid column-grid gap-1 hide-completely">
+                        <button class="primaryButton" id="remove_invalid_button" onclick="removeInvalid()">Fix</button>
+                        <button class="primaryButton" id="check_flo_data_button" onclick="checkFloData()">Check FLO data</button>
+                    </div>
                     <button class="primaryButton" id="sendBtn" onclick="showPrivKeyPage()" disabled>Send</button>
                 </div>
             </div>
@@ -2146,7 +2176,6 @@
             mode = setInterval(() => {
                 let d = new Date(),
                     t = d.getHours();
-                console.log(t);
                 if (t > 6 && t < 18) {
                     daylight();
                 } else {
@@ -2761,6 +2790,7 @@
             floWebWallet.sendTransaction(sender, receiver, amount, floData, privKey).then((transactionid) => {
                 document.getElementById('transactionId').textContent = `transaction ID : ${transactionid}`;
                 showInnerPage('transaction-complete');
+                document.getElementById('sdright').querySelectorAll('input, textarea').forEach(field => field.value = '')
             }).catch((error) => {
                 alert(error)
             })
@@ -2796,15 +2826,58 @@
         }
 
         let showCharacterCount = document.getElementById('show_character_count') 
-        document.getElementById('flotextdata').addEventListener('input', function(e){
+        let isFloDataChanged = false
+        const floDataOptions = document.getElementById('flo_data_options')
+        const checkFloDataButton = document.getElementById('check_flo_data_button')
+        const sendFloDataButton = document.getElementById('sendBtn')
+        const sentFloData = document.getElementById('flotextdata')
+        const floDataStaus = document.getElementById('flo_data_status')
+        sentFloData.addEventListener('keydown', function(e){
             if(this.value.length > 1040)
                 e.preventDefault()
+        })
+            
+        sentFloData.addEventListener('input', function(e){
+                isFloDataChanged = true
+            if(this.value.trim() !== ''){
+                sendFloDataButton.classList.add('hide-completely')
+                floDataOptions.classList.remove('hide-completely')
+            }
+            else{
+                sendFloDataButton.classList.remove('hide-completely')
+                floDataOptions.classList.add('hide-completely')
+            }
             if(1040 - this.value.length){
                 showCharacterCount.textContent = `${1040 - this.value.length}/1040` 
             }
             else
                 showCharacterCount.textContent = `You can only add FLO data upto 1040 characters.`
         })
+        function checkFloData(){
+            isFloDataChanged = false
+            const floDataText = sentFloData.value.trim()
+            let isValid = true
+            for(char of floDataText){
+                // if(/^[a-z0-9\s!"#$%&'()*+,.\/:;<=>?@\[\]^_`{|}~-]*$/i.test(char)){
+                if(!/^[\x20-\x7E\s]+/.test(char)){
+                    isValid = false
+                    break;
+                }
+            }
+            if(isValid){
+                sendFloDataButton.classList.remove('hide-completely')
+                floDataOptions.classList.add('hide-completely')
+                floDataStaus.textContent = ''
+            }
+            else{
+                floDataStaus.textContent = 'FLO data contains invalid characters. Use "Fix" to remove invalid characters.'
+            }
+        }
+        function removeInvalid(){
+            const floDataText = sentFloData.value.trim()
+            sentFloData.value = floDataText.replace(/[^\x20-\x7E]*/gm, '')
+            checkFloData()
+        }
     </script>
 
     <script>

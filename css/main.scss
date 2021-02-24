@@ -20,7 +20,7 @@ body{
     --background-color: #efefef;
     --error-color: red;
     color: rgba(var(--text-color), 1);
-    background: url(lighthouse.svg) no-repeat;
+    background: url(lighthouse.svg) no-repeat center;
     background-size: cover;
 }
 body[data-theme='dark']{
@@ -333,7 +333,11 @@ sm-textarea{
     grid-template-columns: 1fr auto;
 }
 .contact-card__more{
-    padding: 0.2rem;
+    padding: 0.4rem;
+}
+.more-icon{
+    height: 1.2rem;
+    width: 1.2rem;
 }
 
 #add_contact_button{

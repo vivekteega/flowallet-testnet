@@ -866,7 +866,7 @@ smCheckbox.innerHTML = `
         pointer-events: none;
     }
 </style>
-<label class="checkbox">
+<label class="checkbox" tabindex="0">
     <input type="checkbox">
     <svg class="icon" viewBox="0 0 64 64">
         <title>checkbox</title>
@@ -4085,12 +4085,15 @@ customElements.define('pin-input',
 		}
 
 		handleKeydown = (e) => {
-			const activeInput = e.target.closest('input')
+            const activeInput = e.target.closest('input')
 			if (/[0-9]/.test(e.key)) {
-				if (activeInput.value.trim().length > 2) {
-					e.preventDefault();
+                if (activeInput.value.trim().length > 2) {
+                    e.preventDefault();
 				}
 				else {
+                    if (activeInput.value.trim().length === 1) {
+                        activeInput.value = e.key
+                    }
 					if (activeInput.nextElementSibling) {
 						setTimeout(() => {
 							activeInput.nextElementSibling.focus();
