@@ -195,6 +195,7 @@ border: none;
     display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
+    --font-size: 1rem;
     --border-radius: 0.3rem;
     --padding: 0.7rem 1rem;
     --background: rgba(var(--text-color), 0.06);
@@ -262,7 +263,7 @@ border: none;
 .label {
     opacity: .7;
     font-weight: 400;
-    font-size: 1rem;
+    font-size: var(--font-size);
     position: absolute;
     top: 0;
     -webkit-transition: -webkit-transform 0.3s;
@@ -300,7 +301,7 @@ border: none;
             flex: 1;
 }    
 input{
-    font-size: 1rem;
+    font-size: var(--font-size);
     border: none;
     background: transparent;
     outline: none;
@@ -510,12 +511,16 @@ customElements.define('sm-input',
                 this.max = parseInt(maxValue)
             }
             if (this.hasAttribute('minlength')) {
-                let minValue = this.getAttribute('minlength')
+                const minValue = this.getAttribute('minlength')
                 this.input.setAttribute('minlength', minValue)
             }
             if (this.hasAttribute('maxlength')) {
-                let maxValue = this.getAttribute('maxlength')
+                const maxValue = this.getAttribute('maxlength')
                 this.input.setAttribute('maxlength', maxValue)
+            }
+            if (this.hasAttribute('step')) {
+                const steps = this.getAttribute('step')
+                this.input.setAttribute('step', steps)
             }
             if (this.hasAttribute('pattern')) {
                 this.input.setAttribute('pattern', this.getAttribute('pattern'))
