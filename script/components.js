@@ -2562,6 +2562,9 @@ smNotifications.innerHTML = `
                 transform: none;
         opacity: 1;
     }
+    .notification-panel:empty{
+        display:none;
+    }
     .notification{
         display: -webkit-box;
         display: -ms-flexbox;
@@ -2678,8 +2681,7 @@ smNotifications.innerHTML = `
         }
     }
 </style>
-<div class="notification-panel">
-</div>
+<div class="notification-panel"></div>
 `
 
 customElements.define('sm-notifications', class extends HTMLElement {

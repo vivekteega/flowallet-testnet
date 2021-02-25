@@ -11,7 +11,7 @@
         <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
         <link rel="stylesheet" href="css/main.min.css">
     </head>
-<body class="grid" data-theme="light">
+<body class="flex" data-theme="light">
     <audio id="notification_sound">
         <source src="https://rmservices.duckdns.org/files/notification-sound.mp3" type="audio/mpeg">
         <source src="https://rmservices.duckdns.org/files/notification-sound.ogg" type="audio/ogg">
@@ -54,11 +54,11 @@
             </button>
         </header>
         <nav id="main_navbar" class="flex">
-            <button id="home_button" class="navbar__item navbar__item--active">
+            <button id="dashboard_page_button" class="navbar__item" data-target-page="dashboard_page">
                 <svg class="icon navbar__item__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
                 <span class="navbar__item__title">Dashboard</span>
             </button>
-            <button id="send_flo_button" class="navbar__item">
+            <button id="send_flo_page_button" class="navbar__item" data-target-page="send_flo_page">
                 <svg class="icon navbar__item__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M1.946 9.315c-.522-.174-.527-.455.01-.634l19.087-6.362c.529-.176.832.12.684.638l-5.454 19.086c-.15.529-.455.547-.679.045L12 14l6-8-8 6-8.054-2.685z"/></svg>
                 <span class="navbar__item__title">Send FLO</span>
             </button>
@@ -66,7 +66,7 @@
                 <svg class="icon navbar__item__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M2 9h19a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V9zm1-6h15v4H2V4a1 1 0 0 1 1-1zm12 11v2h3v-2h-3z"/></svg>               
                 <span class="navbar__item__title">Check balance</span>
             </button>
-            <button id="get_flo_button" class="navbar__item">
+            <button id="get_flo_button" class="navbar__item" data-target-page="get_flo_page">
                 <svg class="icon navbar__item__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M10.313 11.566l7.94-7.94 2.121 2.121-1.414 1.414 2.121 2.121-3.535 3.536-2.121-2.121-2.99 2.99a5.002 5.002 0 0 1-7.97 5.849 5 5 0 0 1 5.848-7.97zm-.899 5.848a2 2 0 1 0-2.828-2.828 2 2 0 0 0 2.828 2.828z"/></svg>                                            
                 <span class="navbar__item__title">Get FLO address</span>
             </button>
@@ -76,15 +76,21 @@
             </button>
         </nav>
         <div id="page_container" class="flex">
-            <section class="page">
-                <header class="page__header flex direction-column">
+            <section id="dashboard_page" class="page hide-completely">
+                <header id="dashboard_page__header" class="page__header flex align-center">
                     <div id="base_header" class="flex space-between align-center">
                         <h4 class="header__title">Saved addresses</h4>
-                        <sm-input id="search_contacts" placeholder="Search" type="search">
-                            <svg slot="icon" class="icon search__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0z"/><path d="M18.031 16.617l4.283 4.282-1.415 1.415-4.282-4.283A8.96 8.96 0 0 1 11 20c-4.968 0-9-4.032-9-9s4.032-9 9-9 9 4.032 9 9a8.96 8.96 0 0 1-1.969 5.617zm-2.006-.742A6.977 6.977 0 0 0 18 11c0-3.868-3.133-7-7-7-3.868 0-7 3.132-7 7 0 3.867 3.132 7 7 7a6.977 6.977 0 0 0 4.875-1.975l.15-.15z"/></svg>
-                        </sm-input>
+                        <button class="back-button">
+                            <svg class="icon search__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0z"/><path d="M18.031 16.617l4.283 4.282-1.415 1.415-4.282-4.283A8.96 8.96 0 0 1 11 20c-4.968 0-9-4.032-9-9s4.032-9 9-9 9 4.032 9 9a8.96 8.96 0 0 1-1.969 5.617zm-2.006-.742A6.977 6.977 0 0 0 18 11c0-3.868-3.133-7-7-7-3.868 0-7 3.132-7 7 0 3.867 3.132 7 7 7a6.977 6.977 0 0 0 4.875-1.975l.15-.15z"/></svg>
+                        </button>                            
+                        <div class="expanding-search flex align-center hide-completely">
+                            <button class="back-button">
+                                <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M7.828 11H20v2H7.828l5.364 5.364-1.414 1.414L4 12l7.778-7.778 1.414 1.414z"/></svg>
+                            </button>                            
+                            <sm-input id="search_contacts" placeholder="Search" type="search"></sm-input>
+                        </div>
                     </div>
-                    <ul id="selected_contact_options" class="flex align-center hide-completely">
+                    <ul id="selected_contact_options" class="flex align-center full-width hide-completely">
                         <li class="contact-option">
                             <button class="contact-option__button" onclick="clearSelection()">
                                 <svg class="icon contact-option__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0z"/><path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-11.414L9.172 7.757 7.757 9.172 10.586 12l-2.829 2.828 1.415 1.415L12 13.414l2.828 2.829 1.415-1.415L13.414 12l2.829-2.828-1.415-1.415L12 10.586z"/></svg>
@@ -538,6 +544,12 @@
         };
     </script>
     <script>
+        const activePage = {}
+
+        window.addEventListener('load', e => {
+            console.log('loaded')
+            showPage('dashboard_page')
+        })
 
         // Animations
         //Fly animation
@@ -657,7 +669,23 @@
                 const card = e.target.closest('.contact-card')
                 createRipple(e, card)
             }
+            else if(e.target.closest('.navbar__item')){
+                showPage(e.target.closest('.navbar__item').dataset.targetPage)
+            }
         })
+
+        function showPage(pageId){
+            if(activePage.pageId === pageId) return
+            if(activePage.pageId){
+                getRef(activePage.pageId).classList.add('hide-completely')
+                activePage.button.classList.remove('navbar__item--active')
+            }
+            getRef(pageId).classList.remove('hide-completely')
+            const activeButton = getRef(`${pageId}_button`)
+            activeButton.classList.add('navbar__item--active')
+            activePage.pageId = pageId
+            activePage.button = activeButton
+        }
         
         const selectedContacts = new Set()
         document.addEventListener('change', e => {
@@ -689,13 +717,22 @@
             }
             if(show){
                 if(!getRef('selected_contact_options').classList.contains('hide-completely')) return
-                getRef('selected_contact_options').classList.remove('hide-completely')
-                getRef('selected_contact_options').animate(slideInDown, options)
+                
+                getRef('base_header').animate(slideOutLeft, options)
+                .onfinish = () => {
+                    getRef('base_header').classList.add('hide-completely')
+                    getRef('selected_contact_options').classList.remove('hide-completely')
+                    getRef('selected_contact_options').animate(slideInLeft, options)
+                }
             }
             else{
                 if(getRef('selected_contact_options').classList.contains('hide-completely')) return
-                getRef('selected_contact_options').animate(slideOutUp, options).onfinish = () => {
+
+                getRef('selected_contact_options').animate(slideOutRight, options)
+                .onfinish = () => {
                     getRef('selected_contact_options').classList.add('hide-completely')
+                    getRef('base_header').classList.remove('hide-completely')
+                    getRef('base_header').animate(slideInRight, options)
                 }
             }
         }
@@ -706,6 +743,7 @@
             })
             selectedContacts.clear()
         }
+
     </script>
     <script>
         //UI for webWallet
