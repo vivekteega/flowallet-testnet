@@ -208,19 +208,14 @@ border: none;
     display: none;
 }
 .icon {
-    fill: none;
-    height: 1.6rem;
-    width: 1.6rem;
-    padding: 0.5rem;
-    stroke: rgba(var(--text-color), 0.7);
-    stroke-width: 10;
-    overflow: visible;
-    stroke-linecap: round;
+    fill: rgba(var(--text-color), 0.6);
+    height: 1.4rem;
+    width: 1.4rem;
     border-radius: 1rem;
-    stroke-linejoin: round;
     cursor: pointer;
     min-width: 0;
 }
+
 :host(.round) .input{
     border-radius: 10rem;
 }
@@ -364,11 +359,7 @@ input{
             <input/>
             <div part="placeholder" class="label"></div>
         </div>
-        <svg class="icon clear hide" viewBox="0 0 64 64">
-            <title>clear</title>
-            <line x1="64" y1="0" x2="0" y2="64"/>
-            <line x1="64" y1="64" x2="0" y2="0"/>
-        </svg>
+        <svg class="icon clear hide" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-11.414L9.172 7.757 7.757 9.172 10.586 12l-2.829 2.828 1.415 1.415L12 13.414l2.828 2.829 1.415-1.415L13.414 12l2.829-2.828-1.415-1.415L12 10.586z"/></svg>
     </label>
     <div class="feedback-text"></div>
 </div>
@@ -3631,22 +3622,20 @@ textField.innerHTML = `
     }
     .icon-container{
         position: relative;
-        margin-left: 0.5rem;
+        margin-left: 0.8rem;
         height: 1.8rem;
         width: 1.8rem;
     }
     .icon{
         position: absolute;
         cursor: pointer;
-        fill: none;
-        stroke-width: 8;
-        stroke: rgba(var(--text-color), 1);
+        fill: rgba(var(--text-color), 0.7);
         height: 1.8rem;
         width: 1.8rem;
-        padding: 0.4rem;
-        overflow: visible;
-        stroke-linecap: round;
-        stroke-linejoin: round;
+        padding: 0.2rem;
+    }
+    .save-button{
+        padding: 0;
     }
     .hide{
         display: none;
@@ -3655,13 +3644,13 @@ textField.innerHTML = `
 <div class="text-field">
     <div class="text" part="text"></div>
     <div class="icon-container">
-        <svg class="edit-button icon" viewBox="0 0 64 64">
+        <svg class="edit-button icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
             <title>Edit</title>
-            <path d="M46.73,14.81l7,7,7.65-7.6A7.15,7.15,0,0,0,61.39,4L60.11,2.77a7.23,7.23,0,0,0-10.19,0L3.87,48.57a5,5,0,0,0-1.39,2.6L.53,61.27a1.74,1.74,0,0,0,2,2l10.15-1.94A5.06,5.06,0,0,0,15.34,60L49.6,25.9"/>
+            <path fill="none" d="M0 0h24v24H0z"/><path d="M12.9 6.858l4.242 4.243L7.242 21H3v-4.243l9.9-9.9zm1.414-1.414l2.121-2.122a1 1 0 0 1 1.414 0l2.829 2.829a1 1 0 0 1 0 1.414l-2.122 2.121-4.242-4.242z"/>
         </svg>
-        <svg class="save-button icon hide" viewBox="0 0 64 64">
+        <svg class="save-button icon hide" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
             <title>Save</title>
-            <polyline points="0.35 31.82 21.45 52.98 63.65 10.66"/>
+            <path fill="none" d="M0 0h24v24H0z"/><path d="M10 15.172l9.192-9.193 1.415 1.414L10 18l-6.364-6.364 1.414-1.414z"/>
         </svg>
     </div>
 </div>

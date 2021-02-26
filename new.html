@@ -36,10 +36,27 @@
     <sm-notifications id="notification_drawer"></sm-notifications>
 
     <sm-popup id="contact_popup">
-        <h3 id="contact_popup__initial">S</h3>
-        <h4 id="contact_popup__name">Sairaj Mote</h4>
+        <h3 id="contact_popup__initial" class="initial">S</h3>
+        <text-field id="contact_popup__name" value="Sairaj mote"></text-field>
+        <div class="grid flo-id-grid align-center">
+            <p id="contact__flo_id" class="overflow-ellipsis">FFS5hFXG7DBtdgzrLwixZLpenAmsCKRddm</p>
+            <button class="flex align-center copy-button" title="Copy FLO address">
+                <svg class="icon button__icon copy-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M7 6V3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-3v3c0 .552-.45 1-1.007 1H4.007A1.001 1.001 0 0 1 3 21l.003-14c0-.552.45-1 1.007-1H7zm2 0h8v10h2V4H9v2zm-2 5v2h6v-2H7zm0 4v2h6v-2H7z"/></svg>
+            </button>
+        </div>
         <ul id="contact_popup__options">
-
+            <li>
+                <button class="contact__option flex align-center full-width">
+                    <svg class="icon button__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M1.946 9.315c-.522-.174-.527-.455.01-.634l19.087-6.362c.529-.176.832.12.684.638l-5.454 19.086c-.15.529-.455.547-.679.045L12 14l6-8-8 6-8.054-2.685z"/></svg>
+                    <span class="button__title">Send FLO</span>
+                </button>
+            </li>
+            <li>
+                <button class="contact__option flex align-center full-width">
+                    <svg class="icon button__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.67,3.25H15.26L14,2H10L8.74,3.25H3.67V4.92H5.33V20.33A1.67,1.67,0,0,0,7,22H17a1.67,1.67,0,0,0,1.67-1.67V4.92h1.66V3.25Z"/></svg>
+                    <span class="button__title">Delete</span>
+                </button>
+            </li>
         </ul>
     </sm-popup>
 
@@ -62,7 +79,7 @@
                 <svg class="icon navbar__item__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M1.946 9.315c-.522-.174-.527-.455.01-.634l19.087-6.362c.529-.176.832.12.684.638l-5.454 19.086c-.15.529-.455.547-.679.045L12 14l6-8-8 6-8.054-2.685z"/></svg>
                 <span class="navbar__item__title">Send FLO</span>
             </button>
-            <button id="check_balance_button" class="navbar__item">    
+            <button id="check_balance_page_button" class="navbar__item"  data-target-page="check_balance_page">    
                 <svg class="icon navbar__item__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M2 9h19a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V9zm1-6h15v4H2V4a1 1 0 0 1 1-1zm12 11v2h3v-2h-3z"/></svg>               
                 <span class="navbar__item__title">Check balance</span>
             </button>
@@ -80,14 +97,16 @@
                 <header id="dashboard_page__header" class="page__header flex align-center">
                     <div id="base_header" class="flex space-between align-center">
                         <h4 class="header__title">Saved addresses</h4>
-                        <button class="back-button">
+                        <button id="search_contacts_button" class="back-button hide-on-desktop" onclick="searchBox('search_contacts', true)">
                             <svg class="icon search__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0z"/><path d="M18.031 16.617l4.283 4.282-1.415 1.415-4.282-4.283A8.96 8.96 0 0 1 11 20c-4.968 0-9-4.032-9-9s4.032-9 9-9 9 4.032 9 9a8.96 8.96 0 0 1-1.969 5.617zm-2.006-.742A6.977 6.977 0 0 0 18 11c0-3.868-3.133-7-7-7-3.868 0-7 3.132-7 7 0 3.867 3.132 7 7 7a6.977 6.977 0 0 0 4.875-1.975l.15-.15z"/></svg>
                         </button>                            
-                        <div class="expanding-search flex align-center hide-completely">
-                            <button class="back-button">
+                        <div id="search_contacts" class="expanding-search flex align-center hide-on-mobile" data-trigger="search_contacts_button">
+                            <button id="hide_search_contacts" class="back-button hide-on-desktop" onclick="searchBox('search_contacts', false)">
                                 <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M7.828 11H20v2H7.828l5.364 5.364-1.414 1.414L4 12l7.778-7.778 1.414 1.414z"/></svg>
                             </button>                            
-                            <sm-input id="search_contacts" placeholder="Search" type="search"></sm-input>
+                            <sm-input id="search_contacts__input" placeholder="Search" type="search">                           
+                                <svg slot="icon" class="icon search__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0z"/><path d="M18.031 16.617l4.283 4.282-1.415 1.415-4.282-4.283A8.96 8.96 0 0 1 11 20c-4.968 0-9-4.032-9-9s4.032-9 9-9 9 4.032 9 9a8.96 8.96 0 0 1-1.969 5.617zm-2.006-.742A6.977 6.977 0 0 0 18 11c0-3.868-3.133-7-7-7-3.868 0-7 3.132-7 7 0 3.867 3.132 7 7 7a6.977 6.977 0 0 0 4.875-1.975l.15-.15z"/></svg>
+                            </sm-input>
                         </div>
                     </div>
                     <ul id="selected_contact_options" class="flex align-center full-width hide-completely">
@@ -99,12 +118,6 @@
                         </li>
                         <li class="contact-option">
                             <button class="contact-option__button">
-                                <svg class="icon contact-option__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0z"/><path d="M12.9 6.858l4.242 4.243L7.242 21H3v-4.243l9.9-9.9zm1.414-1.414l2.121-2.122a1 1 0 0 1 1.414 0l2.829 2.829a1 1 0 0 1 0 1.414l-2.122 2.121-4.242-4.242z"/></svg>
-                                <span class="contact-option__name">Edit</span>
-                            </button>
-                        </li>
-                        <li class="contact-option">
-                            <button class="contact-option__button">
                                 <svg class="icon contact-option__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.67,3.25H15.26L14,2H10L8.74,3.25H3.67V4.92H5.33V20.33A1.67,1.67,0,0,0,7,22H17a1.67,1.67,0,0,0,1.67-1.67V4.92h1.66V3.25Z"/></svg>
                                 <span class="contact-option__name">Delete</span>
                             </button>
@@ -112,14 +125,14 @@
                     </ul>
                 </header>
                 <ul id="contacts_container">
-                    <li class="contact-card" data-flo-id="f1234">
+                    <li class="contact-card overflow-ellipsis" data-flo-id="f1234">
                         <div class="contact-hidden-options flex space-between align-center">
                             <sm-checkbox class="contact-card__checkbox"></sm-checkbox>
                             <button class="contact-card__more" aria-label="Contact details">
                                 <svg class="icon more-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0z"/><path d="M12 3c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 14c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-7c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
                             </button>
                         </div>
-                        <h3 class="contact-card__initial">S</h3>
+                        <h3 class="initial contact-card__initial">S</h3>
                         <h4 class="contact-card__name">Sairaj</h4>
                     </li>
                 </ul>
@@ -140,6 +153,17 @@
                     <sm-textarea id="sent_flo_data" placeholder="FLO data" rows="4" required></sm-textarea>
                     <sm-button variant="primary" disable>Send</sm-button>
                 </form>
+            </section>
+            <section id="check_balance_page" class="page hide-completely">
+                <div id="balance_card" class="flex direction-column">
+                    <h4 class="balance_card__title">Balance</h4>
+                    <p class="balance_card__description">Enter FLO address and check your FLO crypto balance</p>
+                    <h2 id="flo_balance">0</h2>
+                    <form onsubmit="return false">
+                        <sm-input id="balance_card__input" placeholder="FLO address" required></sm-input>
+                        <sm-button variant="primary" disable>Check balance</sm-button>
+                    </form>
+                </div>
             </section>
         </div>
     </main>
@@ -742,6 +766,31 @@
                 checkbox.checked = false
             })
             selectedContacts.clear()
+        }
+
+        function searchBox(inputId, expand){
+            const options = {
+                duration: 150,
+                fill: 'forwards',
+                easing: 'ease'
+            }
+            const triggerButtonID = getRef(inputId).dataset.trigger
+            if(expand){
+                getRef(triggerButtonID).animate(slideOutLeft, options)
+                .onfinish = () => {
+                    getRef(triggerButtonID).classList.add('hide-completely')
+                    getRef(inputId).classList.remove('hide-on-mobile')
+                    getRef(inputId).animate(slideInLeft, options)
+                }
+            }
+            else{
+                getRef(inputId).animate(slideOutRight, options)
+                .onfinish = () => {
+                    getRef(inputId).classList.add('hide-on-mobile')
+                    getRef(triggerButtonID).classList.remove('hide-completely')
+                    getRef(triggerButtonID).animate(slideInRight, options)
+                }
+            }
         }
 
     </script>

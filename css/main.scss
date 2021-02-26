@@ -23,15 +23,11 @@ body{
     height: calc(100%);
 }
 body[data-theme='dark']{
-    --accent-color:#d7b5ff;
+    --accent-color:#c64aff;
     --text-color: 240, 240, 240;
     --text-color-light: 170, 170, 170;
     --foreground-color: 20, 20, 20;
     --error-color: rgb(255, 106, 106);
-    .contact-card{
-        margin: 0.2rem 0;
-        box-shadow: 0 0.1rem 0.5rem rgba(var(--text-color), 0.1);
-    }
 }
 button{
     position: relative;
@@ -49,6 +45,9 @@ button:focus-visible{
 sm-input,
 sm-textarea{
     --border-radius: 0.5rem;
+}
+ul{
+    list-style: none;
 }
 .flex{
     display: flex;
@@ -80,6 +79,12 @@ sm-textarea{
 }
 .no-transformations{
     transform: none !important;
+}
+.overflow-ellipsis{
+    width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 .ripple{
     position: absolute;
@@ -134,8 +139,63 @@ sm-textarea{
     height: 2rem;
     width: 2rem;
 }
+.initial{
+    display: flex;
+    text-align: center;
+    user-select: none;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(var(--text-color), 0.1);
+}
+
+#contact_popup{
+    --body-padding: 0;
+}
+#contact_popup__initial{
+    align-self: center;
+    width: 5rem;
+    height: 5rem;
+    padding: 1rem;
+    margin: 4rem 0 1rem 0;
+    font-size: 2rem;
+    border-radius: 1.5rem;
+}
+#contact_popup__name{
+    align-self: center;
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+.flo-id-grid{
+    gap: 0.5rem;
+    padding: 0 1.5rem;
+    grid-template-columns: 1fr auto;
+    margin-bottom: 1rem;
+}
+#contact__flo_id{
+}
+.copy-button{
+    padding: 0.4rem;
+}
+#contact_popup__options{
+    padding: 1rem 0;
+}
+.contact__option{
+    font-size: 1rem;
+    padding: 0.8rem 1.5rem;
+    font-weight: 500;
+    color: rgba(var(--text-color), 0.8);
+}
+.button__icon{
+    fill: rgba(var(--text-color), 0.7);
+}
+.button__title{
+    margin-left: 1rem;
+}
+
+
 #main_card{
     height: 100%;
+    width: 100%;
     grid-row: 1/3;
     background: rgba(var(--foreground-color), 0.9);
 }
@@ -178,6 +238,7 @@ sm-textarea{
     grid-area: nav;
 }
 .navbar__item{
+    position: relative;
     display: flex;
     align-items: center;
     padding: 0.8rem;
@@ -221,6 +282,7 @@ sm-textarea{
     height: 7.5rem;
 }
 #base_header{
+    position: relative;
     width: 100%;
 }
 .header__title{
@@ -228,22 +290,22 @@ sm-textarea{
     font-weight: 700;
     color: rgba(var(--text-color), 0.8);
 }
-#send_flo_form{
-    padding: 0 1rem;
-    gap: 1rem;
-}
+
+z
 
 
 #search_contacts{
-    width: 14rem;
     --padding: 0.5rem 0.6rem;
     --background: rgba(var(--text-color), 0.1);
 }
 .search__icon{
     height: 1.2rem;
 }
+.expanding-search{
+    width: 14rem;
+}
 #selected_contact_options{
-    list-style: none;
+
 }
 .contact-option{
     &:not(:last-of-type){
@@ -276,9 +338,8 @@ sm-textarea{
     display: flex;
     flex-wrap: wrap;
     height: 100%;
-    min-height: 0;
     overflow-y: auto;
-    list-style: none;
+    min-height: 0;
     align-content: flex-start;
     padding: 0 0 6rem 1rem;
     grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
@@ -288,17 +349,20 @@ sm-textarea{
     overflow: hidden;
     display: flex;
     width: calc(50% - 1rem);
+    aspect-ratio: 1/1;
     flex-direction: column;
     align-items: center;
     margin: 0 1rem 1rem 0;
     padding: 1.5rem 1rem;
     flex-shrink: 0;
     cursor: pointer;
+    user-select: none;
     align-self: flex-start;
     justify-content: center;
     border-radius: 0.5rem;
-    background: rgba(var(--foreground-color), 1);
-    box-shadow: 0 0.2rem 0.4rem rgba(0, 0, 0, 0.06);
+    background: rgba(var(--foreground-color), 0.6);
+    // box-shadow: 0 0.2rem 0.4rem rgba(0, 0, 0, 0.06);
+    box-shadow: 0 0 0 1px rgba(var(--text-color), 0.2) inset;
     -webkit-tap-highlight-color: transparent;
 }
 .contact-hidden-options{
@@ -314,22 +378,13 @@ sm-textarea{
 .contact-card__initial{
     width: 3rem;
     height: 3rem;
-    display: flex;
     padding: 1.5rem;
     font-size: 1.2rem;
-    text-align: center;
-    user-select: none;
     border-radius: 1rem;
     margin: 1.5rem 0;
-    align-items: center;
-    justify-content: center;
-    background-color: rgba(var(--text-color), 0.1);
 }
 .contact-card__name{
     text-align: center;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
     font-weight: 500;
     font-size: 1rem;
     color: rgba(var(--text-color), 0.8);
@@ -355,12 +410,47 @@ sm-textarea{
     font-size: 1.1rem;
 }
 
+#send_flo_form{
+    padding: 0 1rem;
+    gap: 1rem;
+}
+
+
+
+#balance_card{
+    width: min(22rem, calc(100% - 2rem));
+    padding: 1rem;
+    margin: 1rem;
+    border-radius: 0.3rem;
+}
+#balance_card__input{
+    margin-bottom: 1rem;
+}
+.balance_card__title{
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    color: rgba(var(--text-color), 0.8);
+}
+.balance_card__description{
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+    color: rgba(var(--text-color), 0.8);
+}
+#flo_balance{
+    font-size: 3rem;
+    margin: 2rem 0 1rem 0;
+}
+
 // mobile only styles
 @media all and (max-width: 640px){
+    .hide-on-mobile{
+        display: none;
+    }
     #main_card{
         min-height: 100%;
         grid-template-rows: auto 1fr auto;
         grid-template-areas: 'header' 'page' 'nav';
+        background: rgba(var(--foreground-color), 1);
     }
     #main_navbar{
         flex-direction: row;
@@ -375,6 +465,18 @@ sm-textarea{
     .navbar__item__icon{
         margin: 0 0 0.5rem 0;
     }
+    #dashboard_page__header{
+        padding-top: 0;
+    }
+    .expanding-search{
+        background-color: rgba(var(--foreground-color), 1);
+        position: absolute;
+        z-index: 1;
+        width: 100%;
+    }
+    .back-button{
+        margin-right: 1rem;
+    }
 }
 
 // desktop only styles
@@ -387,6 +489,9 @@ sm-textarea{
     }
     sm-popup{
         --width: 24rem;
+    }
+    .hide-on-desktop{
+        display: none;
     }
     .popup__header{
         padding: 1rem 1.5rem 0 1rem;
@@ -441,13 +546,15 @@ sm-textarea{
         margin: 2rem;
     }
 }
+@media all and (min-width: 1080px){
+    .contact-card{
+        width: calc(33.33% - 1rem);
+    }
+}
 @media all and (min-width: 1280px){
     #main_card{
         width: 65vw;
         height: 85vh;
-    }
-    .contact-card{
-        width: calc(33.33% - 1rem);
     }
 }
 @media all and (min-width: 1920px){
