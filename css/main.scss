@@ -44,7 +44,12 @@ button:focus-visible{
 }
 sm-input,
 sm-textarea{
-    --border-radius: 0.5rem;
+    --border-radius: 0.3rem;
+    --background: rgba(var(--text-color), 0.1);
+}
+sm-button[variant="primary"]{
+    --padding: 0.8rem 1.5rem;
+    margin-top: 1rem;
 }
 ul{
     list-style: none;
@@ -90,7 +95,7 @@ ul{
     position: absolute;
     border-radius: 50%;
     transform: scale(0);
-    background: rgba(var(--text-color), 0.2);
+    background: rgba(var(--text-color), 0.16);
     pointer-events: none;
 }
 .interact{
@@ -98,6 +103,12 @@ ul{
     overflow: hidden;
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
+}
+.observe-empty-state:empty{
+    display: none;
+}
+.observe-empty-state:not(:empty) ~ .empty-state{
+    display: none;
 }
 .icon{
     width: 1.5rem;
@@ -135,9 +146,13 @@ ul{
     padding: 0.5rem;
     cursor: pointer;
 }
+.icon-only{
+    height: 2.6rem;
+    width: 2.6rem;
+    padding: 0.6rem;
+}
 .close-icon{
-    height: 2rem;
-    width: 2rem;
+    padding: 0.3rem;
 }
 .initial{
     display: flex;
@@ -145,6 +160,8 @@ ul{
     user-select: none;
     align-items: center;
     justify-content: center;
+    font-weight: 500;
+    color: rgba(var(--foreground-color), 1);
     background-color: rgba(var(--text-color), 0.1);
 }
 
@@ -156,20 +173,26 @@ ul{
     width: 5rem;
     height: 5rem;
     padding: 1rem;
-    margin: 4rem 0 1rem 0;
+    margin: 1rem 0;
     font-size: 2rem;
-    border-radius: 1.5rem;
+    border-radius: 50%;
 }
 #contact_popup__name{
     align-self: center;
     font-weight: 700;
     font-size: 1.2rem;
 }
+.contact__copy-row{
+    padding: 0 1.5rem;
+    margin: 1rem 0;
+}
+.copy-label{
+    font-weight: 500;
+    color: rgba(var(--text-color), 0.8);
+}
 .flo-id-grid{
     gap: 0.5rem;
-    padding: 0 1.5rem;
     grid-template-columns: 1fr auto;
-    margin-bottom: 1rem;
 }
 #contact__flo_id{
 }
@@ -202,10 +225,15 @@ ul{
 #main_header{
     grid-area: header;
     height: max-content;
-    gap: 0.2rem 0.5rem;
-    padding: 1rem 0.7rem 1rem 1rem;
-    grid-template-columns: 1fr auto;
-    grid-template-areas: 'company setting' 'app setting';
+    gap: 0.2rem 1rem;
+    padding: 1rem;
+    grid-template-columns: auto 1fr;
+    grid-template-areas: 'logo company' 'logo app';
+}
+#main_header__logo{
+    width: 1.8rem;
+    height: 1.8rem;
+    grid-area: logo;
 }
 #page_container{
     grid-area: page;
@@ -216,6 +244,8 @@ ul{
     flex-direction: column;
     height: 100%;
     width: 100%;
+    overflow-y: auto;
+    align-content: flex-start;
 }
 .header__company-name{
     grid-area: company;
@@ -229,10 +259,6 @@ ul{
     grid-area: app;
     font-weight: 700;
     color: rgba(var(--text-color), 0.9);
-}
-.header__settings-button{
-    grid-area: setting;
-    padding: 0.8rem;
 }
 #main_navbar{
     grid-area: nav;
@@ -258,7 +284,7 @@ ul{
     fill: rgba(var(--text-color), 0.7);
 }
 .navbar__item__title{
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     font-weight: 500;
     color: rgba(var(--text-color), 0.7);
 }
@@ -279,7 +305,6 @@ ul{
 }
 
 #dashboard_page__header{
-    height: 7.5rem;
 }
 #base_header{
     position: relative;
@@ -291,16 +316,16 @@ ul{
     color: rgba(var(--text-color), 0.8);
 }
 
-z
 
 
 #search_contacts{
     --padding: 0.5rem 0.6rem;
     --background: rgba(var(--text-color), 0.1);
 }
-.search__icon{
-    height: 1.2rem;
+#search_contacts_button{
+    
 }
+
 .expanding-search{
     width: 14rem;
 }
@@ -336,55 +361,44 @@ z
 
 #contacts_container{
     display: flex;
-    flex-wrap: wrap;
-    height: 100%;
+    flex-direction: column;
+    max-height: 100%;
     overflow-y: auto;
-    min-height: 0;
     align-content: flex-start;
     padding: 0 0 6rem 1rem;
-    grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
 }
 .contact-card{
     position: relative;
     overflow: hidden;
-    display: flex;
-    width: calc(50% - 1rem);
-    aspect-ratio: 1/1;
-    flex-direction: column;
+    display: grid;
+    width: 100%;
+    gap: 1rem;
+    grid-template-columns: auto auto 1fr auto;
     align-items: center;
-    margin: 0 1rem 1rem 0;
-    padding: 1.5rem 1rem;
+    padding:  0.5rem 0.6rem;
     flex-shrink: 0;
     cursor: pointer;
     user-select: none;
     align-self: flex-start;
     justify-content: center;
-    border-radius: 0.5rem;
+    border-radius: 0.3rem;
     background: rgba(var(--foreground-color), 0.6);
-    // box-shadow: 0 0.2rem 0.4rem rgba(0, 0, 0, 0.06);
-    box-shadow: 0 0 0 1px rgba(var(--text-color), 0.2) inset;
     -webkit-tap-highlight-color: transparent;
 }
-.contact-hidden-options{
-    position: absolute;
-    width: 100%;
-    top: 0;
-    padding: 0.5rem 0.8rem;
-}
 .contact-card__checkbox{
-    --border-radius: 0.5rem;
+    --height: 1.5rem;
+    --width: 1.5rem;
+    --border-radius: 0.3rem;
     --border-color: rgba(var(--text-color), 0.6);
 }
 .contact-card__initial{
-    width: 3rem;
-    height: 3rem;
-    padding: 1.5rem;
-    font-size: 1.2rem;
-    border-radius: 1rem;
-    margin: 1.5rem 0;
+    width: 2rem;
+    height: 2rem;
+    padding: 1.2rem;
+    font-size: 1.1rem;
+    border-radius: 50%;
 }
 .contact-card__name{
-    text-align: center;
     font-weight: 500;
     font-size: 1rem;
     color: rgba(var(--text-color), 0.8);
@@ -392,27 +406,47 @@ z
 .contact-card__more{
     padding: 0.4rem;
 }
-.more-icon{
-    height: 1.2rem;
-    width: 1.2rem;
+#contacts_empty_state{
+    text-align: center;
+}
+.empty-state__title{
+    font-weight: 400;
+    color: rgba(var(--text-color), 0.8);
 }
 
-#add_contact_button{
+#show_contact_popup_button{
     right: 0;
     bottom: 0;
     margin: 1.5rem;
 }
 
 .page__header{
-    padding: 1rem 1rem 2rem 1rem;
+    padding: 1rem;
 }
 .page__title{
     font-size: 1.1rem;
 }
 
 #send_flo_form{
+    width: min(26rem, 100%);
+    height: 100%;
     padding: 0 1rem;
-    gap: 1rem;
+    gap: 0.3;
+}
+
+.label{
+    font-size: 0.9rem;
+    margin-bottom: 0.3rem;
+    color: rgba(var(--text-color), 0.9);
+    &:not(:first-of-type){
+        margin-top: 0.8rem;
+    }
+}
+#sent_flo_data{
+    --max-height: 12rem;
+}
+#send_flo_button{
+    margin-top: 1.5rem;
 }
 
 
@@ -440,6 +474,28 @@ z
     font-size: 3rem;
     margin: 2rem 0 1rem 0;
 }
+
+
+
+.settings__section{
+    padding: 0 1rem;
+    width: min(50ch, 100%);
+    &:not(:last-of-type){
+        margin-bottom: 1rem;
+    }
+}
+.setting__title{
+    color: rgba(var(--text-color), 0.9);
+}
+.setting__description{
+    font-size: 0.9rem;
+    color: rgba(var(--text-color), 0.8);
+}
+.toggle-grid{
+    gap: 0.3rem;
+    margin-right: 1rem;
+}
+
 
 // mobile only styles
 @media all and (max-width: 640px){
@@ -475,7 +531,7 @@ z
         width: 100%;
     }
     .back-button{
-        margin-right: 1rem;
+
     }
 }
 
@@ -504,12 +560,12 @@ z
         overflow: hidden;
         backdrop-filter: blur(1rem);
         grid-template-columns: 15rem 1fr;
-        grid-template-rows: min-content 1fr;
+        grid-template-rows: auto 1fr;
         grid-template-areas: 'header page' 'nav page';
         box-shadow: 0 1.5rem 1.5rem rgba(0, 0, 0, 0.16);
     }
     #main_header{
-        padding: 1.5rem 1.2rem 1.5rem 2rem;
+        padding: 1.5rem;
     }
     #main_navbar{
         flex-direction: column;
@@ -535,21 +591,21 @@ z
         }
     }
     .page__header{
+        min-height: 6.2rem;
         padding: 1.5rem;
     }
     #contacts_container{
-        padding: 0 1rem 8rem 2rem;
+        padding: 0 1rem 8rem 1.5rem;
     }
-    #add_contact_button{
-        right: 0;
-        bottom: 0;
-        margin: 2rem;
+    #send_flo_form{
+        padding: 0 1.5rem 1.5rem 1.5rem;
+    }
+    .settings__section{
+        padding: 0 1.5rem;
     }
 }
 @media all and (min-width: 1080px){
-    .contact-card{
-        width: calc(33.33% - 1rem);
-    }
+
 }
 @media all and (min-width: 1280px){
     #main_card{
@@ -564,7 +620,22 @@ z
     }
 }
 @media (any-hover: hover){
-    .contact-card__checkbox:not([checked]):not(:focus-within),
+    ::-webkit-scrollbar{
+        width: 0.5rem;
+        height: 0.5rem;
+    }
+    
+    ::-webkit-scrollbar-thumb{
+        background: rgba(var(--text-color), 0.3);
+        border-radius: 1rem;
+        &:hover{
+            background: rgba(var(--text-color), 0.5);
+        }
+    }
+    .contact-card__checkbox:not([checked]):not(:focus-within){
+        opacity: 0.4;
+        transition: opacity 0.3s;
+    }
     .contact-card__more:not(:focus-within){
         opacity: 0;
         transition: opacity 0.3s;

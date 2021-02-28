@@ -11,7 +11,7 @@
         <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
         <link rel="stylesheet" href="css/main.min.css">
     </head>
-<body class="flex" data-theme="light">
+<body class="flex" data-theme="light" onload="onLoadStartUp()">
     <audio id="notification_sound">
         <source src="https://rmservices.duckdns.org/files/notification-sound.mp3" type="audio/mpeg">
         <source src="https://rmservices.duckdns.org/files/notification-sound.ogg" type="audio/ogg">
@@ -36,13 +36,22 @@
     <sm-notifications id="notification_drawer"></sm-notifications>
 
     <sm-popup id="contact_popup">
+        <header class="popup__header" slot="header">
+            <button class="close-button" onclick="hidePopup()">
+                <svg class="icon icon-only close-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M12 10.586l4.95-4.95 1.414 1.414-4.95 4.95 4.95 4.95-1.414 1.414-4.95-4.95-4.95 4.95-1.414-1.414 4.95-4.95-4.95-4.95L7.05 5.636z"/></svg>
+            </button>
+        </header>
         <h3 id="contact_popup__initial" class="initial">S</h3>
         <text-field id="contact_popup__name" value="Sairaj mote"></text-field>
-        <div class="grid flo-id-grid align-center">
-            <p id="contact__flo_id" class="overflow-ellipsis">FFS5hFXG7DBtdgzrLwixZLpenAmsCKRddm</p>
-            <button class="flex align-center copy-button" title="Copy FLO address">
-                <svg class="icon button__icon copy-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M7 6V3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-3v3c0 .552-.45 1-1.007 1H4.007A1.001 1.001 0 0 1 3 21l.003-14c0-.552.45-1 1.007-1H7zm2 0h8v10h2V4H9v2zm-2 5v2h6v-2H7zm0 4v2h6v-2H7z"/></svg>
-            </button>
+        
+        <div class="flex direction-column copy-row contact__copy-row">
+            <h5 class="copy-label">FLO ID</h5>
+            <div class="grid flo-id-grid align-center">
+                <p id="contact__flo_id" class="overflow-ellipsis"></p>
+                <button class="flex align-center copy-button" title="Copy FLO address">
+                    <svg class="icon button__icon copy-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M7 6V3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-3v3c0 .552-.45 1-1.007 1H4.007A1.001 1.001 0 0 1 3 21l.003-14c0-.552.45-1 1.007-1H7zm2 0h8v10h2V4H9v2zm-2 5v2h6v-2H7zm0 4v2h6v-2H7z"/></svg>
+                </button>
+            </div>
         </div>
         <ul id="contact_popup__options">
             <li>
@@ -60,15 +69,26 @@
         </ul>
     </sm-popup>
 
+    <sm-popup id="add_contact_popup">
+        <header class="popup__header" slot="header">
+            <button class="close-button" onclick="hidePopup()">
+                <svg class="icon icon-only close-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M12 10.586l4.95-4.95 1.414 1.414-4.95 4.95 4.95 4.95-1.414 1.414-4.95-4.95-4.95 4.95-1.414-1.414 4.95-4.95-4.95-4.95L7.05 5.636z"/></svg>
+            </button>
+        </header>
+        <label for="address_to_add" class="label">FLO address</label>
+        <sm-input id="address_to_add" floID required></sm-input>
+        <label for="name_to_add" class="label">Name</label>
+        <sm-input id="name_to_add"></sm-input>
+        <sm-button id="add_contact_button" class="full-width" variant="primary" disable>Add address</sm-button>
+    </sm-popup>
+
     <!--  -->
 
     <main id="main_card" class="grid">
         <header id="main_header" class="grid align-center">
+            <svg id="main_header__logo" class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.46,21.32C20,19.78,18.6,18.59,15.3,17a12.67,12.67,0,0,1-2.64-1.56,4.27,4.27,0,0,1-.79-1,2.6,2.6,0,0,1,0-1.41c.24-.68.49-1,2.43-2.85a7.18,7.18,0,0,0,2.09-2.92,4.25,4.25,0,0,0,0-1.77,6.52,6.52,0,0,0-2.85-3.11c-.56-.36-.81-.4-.81-.15a2.33,2.33,0,0,1-.18.45L12.4,3l-.53-.36c-.28-.21-.64-.41-.77-.49s-.46-.11-.46,0a6.21,6.21,0,0,1-.37.83s-.08,0-.17-.08c-1.15-.83-1.64-1-1.64-.73A7.33,7.33,0,0,1,7.7,3.65C6.48,5.68,5.24,6.7,4,6.7c-.56,0-.54,0-.37.64s.2.58.68.43a3.37,3.37,0,0,0,1.09-.54.86.86,0,0,1,.3-.17,1.34,1.34,0,0,1,.13.39.79.79,0,0,0,.17.4A3.5,3.5,0,0,0,7.37,7.3L7.8,7l.09.34c.12.45.19.51.62.39a4.25,4.25,0,0,0,2.17-1.54l.38-.45,0,.39A5.92,5.92,0,0,1,8.89,9.54L7.67,10.71c-2,1.93-1.89,3.51.37,5a27.41,27.41,0,0,0,2.89,1.51c.17.07.62.32,1,.54C14,19,15,20.23,15,21.48a2,2,0,0,0,0,.49h0c0,.05,0,.05.56-.1a1.89,1.89,0,0,0,.53-.21,2.41,2.41,0,0,0-.34-1.15,7.05,7.05,0,0,0-1.68-1.77,21.91,21.91,0,0,0-3.2-1.83A9.53,9.53,0,0,1,8.16,15.2a2.18,2.18,0,0,1-.74-1.55C7.42,12.79,7.86,12,9,11c1.77-1.64,2.45-2.45,2.92-3.55a2.28,2.28,0,0,0,.26-1.26A2,2,0,0,0,12,5.06l-.2-.45L12,4.3l.28-.49.09-.18L12.6,4a3.69,3.69,0,0,1,.61,1.76A3.47,3.47,0,0,1,12.94,7l-.09.25s-.21.37-.41.69A17.78,17.78,0,0,1,9.91,10.6c-1.07,1-1.43,1.62-1.47,2.47a2.05,2.05,0,0,0,.7,1.73,10.47,10.47,0,0,0,3.28,2.08c2.28,1.13,3.26,1.81,4,2.73a2.94,2.94,0,0,1,.74,1.75,1.26,1.26,0,0,0,.09.57.48.48,0,0,0,.26,0l.51-.13.29-.08,0-.28c-.13-1-1-2-2.47-3a25.52,25.52,0,0,0-3.26-1.77,8.59,8.59,0,0,1-2.23-1.43,2.09,2.09,0,0,1-.5-2.62c.26-.53.5-.83,2.35-2.6,1.51-1.45,2.15-2.58,2.15-3.79A3.67,3.67,0,0,0,13,3.48a3,3,0,0,1-.4-.42A1.85,1.85,0,0,1,13,2.33a6.74,6.74,0,0,1,1.83,1.73,2.62,2.62,0,0,1,.47,1.68,3,3,0,0,1-.55,1.84c-.45.78-.79,1.14-2.67,2.93a5.56,5.56,0,0,0-1.3,1.64,1.77,1.77,0,0,0-.21,1,1.76,1.76,0,0,0,.19.92,6.28,6.28,0,0,0,2.9,2.34,21.6,21.6,0,0,1,3.66,2c1.35,1,2,2,2,3a1.06,1.06,0,0,0,.05.47,2.83,2.83,0,0,0,1-.24C20.56,21.68,20.56,21.66,20.46,21.32ZM7.29,6.4h0a2.23,2.23,0,0,1-.9.28L6,6.72l.43-.53a15.22,15.22,0,0,0,1.89-3,3.52,3.52,0,0,1,.38-.67c.07-.08.49.2,1,.64l.39.35L9.66,4A6.7,6.7,0,0,1,7.29,6.4Zm3.58-1.11A5.8,5.8,0,0,1,9.25,6.51h0a3.3,3.3,0,0,1-.74.17l-.35,0,.39-.49a15.64,15.64,0,0,0,1.32-2,4.63,4.63,0,0,1,.28-.49c.06-.08.33.26.57.77l.28.57Zm1-1.4a1.63,1.63,0,0,1-.28.4A6.63,6.63,0,0,1,11,3.72l-.53-.56.12-.29c.2-.49.24-.51.64-.19a5.57,5.57,0,0,1,.85.78A2.78,2.78,0,0,1,11.87,3.89Z"/></svg>
             <h5 class="header__company-name">RanhiMall</h5>
             <h4 class="header__app-name">FLO Web Wallet</h4>
-            <button class="header__settings-button" title="settings">
-                <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M5.334 4.545a9.99 9.99 0 0 1 3.542-2.048A3.993 3.993 0 0 0 12 3.999a3.993 3.993 0 0 0 3.124-1.502 9.99 9.99 0 0 1 3.542 2.048 3.993 3.993 0 0 0 .262 3.454 3.993 3.993 0 0 0 2.863 1.955 10.043 10.043 0 0 1 0 4.09c-1.16.178-2.23.86-2.863 1.955a3.993 3.993 0 0 0-.262 3.455 9.99 9.99 0 0 1-3.542 2.047A3.993 3.993 0 0 0 12 20a3.993 3.993 0 0 0-3.124 1.502 9.99 9.99 0 0 1-3.542-2.047 3.993 3.993 0 0 0-.262-3.455 3.993 3.993 0 0 0-2.863-1.954 10.043 10.043 0 0 1 0-4.091 3.993 3.993 0 0 0 2.863-1.955 3.993 3.993 0 0 0 .262-3.454zM13.5 14.597a3 3 0 1 0-3-5.196 3 3 0 0 0 3 5.196z"/></svg>
-            </button>
         </header>
         <nav id="main_navbar" class="flex">
             <button id="dashboard_page_button" class="navbar__item" data-target-page="dashboard_page">
@@ -79,17 +99,21 @@
                 <svg class="icon navbar__item__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M1.946 9.315c-.522-.174-.527-.455.01-.634l19.087-6.362c.529-.176.832.12.684.638l-5.454 19.086c-.15.529-.455.547-.679.045L12 14l6-8-8 6-8.054-2.685z"/></svg>
                 <span class="navbar__item__title">Send FLO</span>
             </button>
-            <button id="check_balance_page_button" class="navbar__item"  data-target-page="check_balance_page">    
+            <button id="check_balance_page_button" class="navbar__item hide-completely"  data-target-page="check_balance_page">    
                 <svg class="icon navbar__item__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M2 9h19a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V9zm1-6h15v4H2V4a1 1 0 0 1 1-1zm12 11v2h3v-2h-3z"/></svg>               
                 <span class="navbar__item__title">Check balance</span>
             </button>
-            <button id="get_flo_button" class="navbar__item" data-target-page="get_flo_page">
+            <button id="generate_address_page_button" class="navbar__item" data-target-page="generate_address_page">
                 <svg class="icon navbar__item__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M10.313 11.566l7.94-7.94 2.121 2.121-1.414 1.414 2.121 2.121-3.535 3.536-2.121-2.121-2.99 2.99a5.002 5.002 0 0 1-7.97 5.849 5 5 0 0 1 5.848-7.97zm-.899 5.848a2 2 0 1 0-2.828-2.828 2 2 0 0 0 2.828 2.828z"/></svg>                                            
-                <span class="navbar__item__title">Get FLO address</span>
+                <span class="navbar__item__title">Generate address</span>
             </button>
             <button id="recover_flo_button" class="navbar__item hide-completely">
                 <svg class="icon navbar__item__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M10.313 11.566l7.94-7.94 2.121 2.121-1.414 1.414 2.121 2.121-3.535 3.536-2.121-2.121-2.99 2.99a5.002 5.002 0 0 1-7.97 5.849 5 5 0 0 1 5.848-7.97zm-.899 5.848a2 2 0 1 0-2.828-2.828 2 2 0 0 0 2.828 2.828z"/></svg>                                            
                 <span class="navbar__item__title">Recover FLO address</span>
+            </button>
+            <button id="settings_page_button" class="navbar__item" data-target-page="settings_page">
+                <svg class="icon navbar__item__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M5.334 4.545a9.99 9.99 0 0 1 3.542-2.048A3.993 3.993 0 0 0 12 3.999a3.993 3.993 0 0 0 3.124-1.502 9.99 9.99 0 0 1 3.542 2.048 3.993 3.993 0 0 0 .262 3.454 3.993 3.993 0 0 0 2.863 1.955 10.043 10.043 0 0 1 0 4.09c-1.16.178-2.23.86-2.863 1.955a3.993 3.993 0 0 0-.262 3.455 9.99 9.99 0 0 1-3.542 2.047A3.993 3.993 0 0 0 12 20a3.993 3.993 0 0 0-3.124 1.502 9.99 9.99 0 0 1-3.542-2.047 3.993 3.993 0 0 0-.262-3.455 3.993 3.993 0 0 0-2.863-1.954 10.043 10.043 0 0 1 0-4.091 3.993 3.993 0 0 0 2.863-1.955 3.993 3.993 0 0 0 .262-3.454zM13.5 14.597a3 3 0 1 0-3-5.196 3 3 0 0 0 3 5.196z"/></svg>
+                <span class="navbar__item__title">Settings</span>
             </button>
         </nav>
         <div id="page_container" class="flex">
@@ -97,12 +121,12 @@
                 <header id="dashboard_page__header" class="page__header flex align-center">
                     <div id="base_header" class="flex space-between align-center">
                         <h4 class="header__title">Saved addresses</h4>
-                        <button id="search_contacts_button" class="back-button hide-on-desktop" onclick="searchBox('search_contacts', true)">
-                            <svg class="icon search__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0z"/><path d="M18.031 16.617l4.283 4.282-1.415 1.415-4.282-4.283A8.96 8.96 0 0 1 11 20c-4.968 0-9-4.032-9-9s4.032-9 9-9 9 4.032 9 9a8.96 8.96 0 0 1-1.969 5.617zm-2.006-.742A6.977 6.977 0 0 0 18 11c0-3.868-3.133-7-7-7-3.868 0-7 3.132-7 7 0 3.867 3.132 7 7 7a6.977 6.977 0 0 0 4.875-1.975l.15-.15z"/></svg>
+                        <button id="search_contacts_button" class="hide-on-desktop" onclick="searchBox('search_contacts', true)">
+                            <svg class="icon icon-only search__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0z"/><path d="M18.031 16.617l4.283 4.282-1.415 1.415-4.282-4.283A8.96 8.96 0 0 1 11 20c-4.968 0-9-4.032-9-9s4.032-9 9-9 9 4.032 9 9a8.96 8.96 0 0 1-1.969 5.617zm-2.006-.742A6.977 6.977 0 0 0 18 11c0-3.868-3.133-7-7-7-3.868 0-7 3.132-7 7 0 3.867 3.132 7 7 7a6.977 6.977 0 0 0 4.875-1.975l.15-.15z"/></svg>
                         </button>                            
                         <div id="search_contacts" class="expanding-search flex align-center hide-on-mobile" data-trigger="search_contacts_button">
                             <button id="hide_search_contacts" class="back-button hide-on-desktop" onclick="searchBox('search_contacts', false)">
-                                <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M7.828 11H20v2H7.828l5.364 5.364-1.414 1.414L4 12l7.778-7.778 1.414 1.414z"/></svg>
+                                <svg class="icon icon-only" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M7.828 11H20v2H7.828l5.364 5.364-1.414 1.414L4 12l7.778-7.778 1.414 1.414z"/></svg>
                             </button>                            
                             <sm-input id="search_contacts__input" placeholder="Search" type="search">                           
                                 <svg slot="icon" class="icon search__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0z"/><path d="M18.031 16.617l4.283 4.282-1.415 1.415-4.282-4.283A8.96 8.96 0 0 1 11 20c-4.968 0-9-4.032-9-9s4.032-9 9-9 9 4.032 9 9a8.96 8.96 0 0 1-1.969 5.617zm-2.006-.742A6.977 6.977 0 0 0 18 11c0-3.868-3.133-7-7-7-3.868 0-7 3.132-7 7 0 3.867 3.132 7 7 7a6.977 6.977 0 0 0 4.875-1.975l.15-.15z"/></svg>
@@ -117,26 +141,18 @@
                             </button>
                         </li>
                         <li class="contact-option">
-                            <button class="contact-option__button">
+                            <button class="contact-option__button" onclick="deleteSelected()">
                                 <svg class="icon contact-option__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.67,3.25H15.26L14,2H10L8.74,3.25H3.67V4.92H5.33V20.33A1.67,1.67,0,0,0,7,22H17a1.67,1.67,0,0,0,1.67-1.67V4.92h1.66V3.25Z"/></svg>
                                 <span class="contact-option__name">Delete</span>
                             </button>
                         </li>
                     </ul>
                 </header>
-                <ul id="contacts_container">
-                    <li class="contact-card overflow-ellipsis" data-flo-id="f1234">
-                        <div class="contact-hidden-options flex space-between align-center">
-                            <sm-checkbox class="contact-card__checkbox"></sm-checkbox>
-                            <button class="contact-card__more" aria-label="Contact details">
-                                <svg class="icon more-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0z"/><path d="M12 3c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 14c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-7c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
-                            </button>
-                        </div>
-                        <h3 class="initial contact-card__initial">S</h3>
-                        <h4 class="contact-card__name">Sairaj</h4>
-                    </li>
-                </ul>
-                <button id="add_contact_button" class="fab" title="Add FLO address as a contact to monitor">
+                <ul id="contacts_container" class="observe-empty-state"></ul>
+                <div id="contacts_empty_state" class="empty-state">
+                    <h4 class="empty-state__title">No saved FLO addresses</h4>
+                </div>
+                <button id="show_contact_popup_button" class="fab" title="Add FLO address as a contact to monitor" onclick="showPopup('add_contact_popup')">
                     <svg class="icon fab__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                         <g>
                             <path fill="none" d="M0 0h24v24H0z"/>
@@ -146,24 +162,54 @@
                 </button>
             </section>
             <section id="send_flo_page" class="page hide-completely">
+                <header id="send_flo_page__header" class="page__header flex align-center">
+                    <h4 class="header__title">Send FLO</h4>
+                </header>
                 <form id="send_flo_form" class="grid" onsubmit="return false">
-                    <sm-input id="sender_adddress" placeholder="Sender's address" required></sm-input>
-                    <sm-input id="receiver_adddress" placeholder="Receiver's address" required></sm-input>
-                    <sm-input id="sent_amount" class="amount-input" type="number" step="0.0000001" placeholder="Amount" required></sm-input>
-                    <sm-textarea id="sent_flo_data" placeholder="FLO data" rows="4" required></sm-textarea>
-                    <sm-button variant="primary" disable>Send</sm-button>
+                    <label class="label" for="sender_address">Sender's address</label>
+                    <sm-input id="receiver_adddress" floID required></sm-input>
+
+                    <label class="label" for="sender_address">Receiver's address</label>
+                    <sm-input id="receiver_adddress" floID required></sm-input>
+
+                    <label class="label" for="sent_amount">Amount</label>
+                    <sm-input id="sent_amount" class="amount-input" type="number" min="0.0000001" step="0.0000001" required></sm-input>
+
+                    <label class="label" for="sent_flo_data">FLO data</label>
+                    <sm-textarea id="sent_flo_data" rows="4" required></sm-textarea>
+
+                    <sm-button id="send_flo_button" variant="primary" disable>Send</sm-button>
                 </form>
             </section>
             <section id="check_balance_page" class="page hide-completely">
+                <header id="check_balance_page__header" class="page__header flex align-center">
+                    <h4 class="header__title">Balance</h4>
+                </header>
                 <div id="balance_card" class="flex direction-column">
-                    <h4 class="balance_card__title">Balance</h4>
-                    <p class="balance_card__description">Enter FLO address and check your FLO crypto balance</p>
                     <h2 id="flo_balance">0</h2>
                     <form onsubmit="return false">
                         <sm-input id="balance_card__input" placeholder="FLO address" required></sm-input>
                         <sm-button variant="primary" disable>Check balance</sm-button>
                     </form>
                 </div>
+            </section>
+            <section id="generate_address_page" class="page hide-completely">
+                <header id="check_balance_page__header" class="page__header flex align-center">
+                    <h4 class="header__title">Create new FLO address</h4>
+                </header>
+                <p>Use 'Generate pair' to get a new pair of FLO public and private key.</p>
+                <sm-button variant="primary">Generate pair</sm-button>
+            </section>
+            <section id="settings_page" class="grid page hide-completely">
+                <header id="check_balance_page__header" class="page__header flex align-center">
+                    <h4 class="header__title">Settings</h4>
+                </header>
+                <sm-switch id="theme_switcher" class="grid settings__section">
+                    <div slot="left" class="grid toggle-grid">
+                        <h4 class="settings__title">Theme</h4>
+                        <p class="setting__description">Turn dark theme on/off.</p>
+                    </div> 
+                </sm-switch>
             </section>
         </div>
     </main>
@@ -569,9 +615,10 @@
     </script>
     <script>
         const activePage = {}
+        const clickedContact = {}
+        const allContacts = new Map()
 
         window.addEventListener('load', e => {
-            console.log('loaded')
             showPage('dashboard_page')
         })
 
@@ -684,14 +731,45 @@
         const easeInOvershoot = `cubic-bezier(0.6, -0.28, 0.735, 0.045)`;
         const easeOutOvershoot = `cubic-bezier(0.175, 0.885, 0.32, 1.275)`;
         
+        // UI elements rendering 
 
-        document.addEventListener('click', e => {
+        const render = {
+            contactCard(address, name){
+                const card = document.createElement('li')
+                card.classList.add('contact-card')
+                card.setAttribute('data-flo-id', address)
+                const color = contactColor(address)
+                card.innerHTML = `
+                    <sm-checkbox class="contact-card__checkbox"></sm-checkbox>
+                    <h3 class="initial contact-card__initial overflow-ellipsis" style="background-color: ${color}">${name.charAt(0)}</h3>
+                    <h4 class="contact-card__name overflow-ellipsis">${name}</h4>
+                    <button class="contact-card__more" aria-label="Contact details">
+                        <svg class="icon more-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0z"/><path d="M12 3c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 14c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-7c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+                    </button>
+                `
+                return card
+            }
+        }
+
+        //
+
+        document.addEventListener('click', async e => {
             if(e.target.closest('.contact-card__more')){
+                const contact = e.target.closest('.contact-card')
+                const floID = contact.dataset.floId
+                const name = allContacts.get(floID)
+                clickedContact.floID = floID
+                clickedContact.card = contact
+                getRef('contact_popup__initial').textContent = name.charAt(0)
+                getRef('contact_popup__initial').style.backgroundColor = contactColor(floID)
+                getRef('contact_popup__name').value = name
+                getRef('contact__flo_id').textContent = clickedContact.floID
                 showPopup('contact_popup')
             }
             else if(e.target.closest('.contact-card') && !e.target.closest('.contact-card__checkbox')){
-                const card = e.target.closest('.contact-card')
-                createRipple(e, card)
+                const contact = e.target.closest('.contact-card')
+                clickedContact.floID = contact.dataset.floId
+                createRipple(e, contact)
             }
             else if(e.target.closest('.navbar__item')){
                 showPage(e.target.closest('.navbar__item').dataset.targetPage)
@@ -768,6 +846,14 @@
             selectedContacts.clear()
         }
 
+        async function deleteSelected(){
+            if(await confirmation('Delete selected?', 'Are you sure to delete all selected FLO addresses?', 'No', 'Yes')){
+                selectedContacts.forEach(contact => deleteContact(contact))
+                selectedContacts.clear()
+                notify('Deleted selected addresses', 'success')
+            }
+        }
+
         function searchBox(inputId, expand){
             const options = {
                 duration: 150,
@@ -793,8 +879,60 @@
             }
         }
 
-    </script>
-    <script>
+        document.getElementById('search_contacts__input').addEventListener('input', function(e) {
+            const filteredContacts = {}
+            allContacts.forEach((name, address) => {
+                if(name.toLowerCase().includes(this.value.toLowerCase()) || address.toLowerCase().includes(this.value.toLowerCase())){
+                    filteredContacts[address] = name
+                }
+            })
+            renderAllContacts(filteredContacts)
+        })
+
+        document.getElementById('add_contact_button').addEventListener('clicked', addContact)
+
+        function addContact(){
+            const address = getRef('address_to_add').value.trim()
+            let name = getRef('name_to_add').value.trim()
+            if(name === ''){
+                name = 'Unknown'
+            }
+            floWebWallet.addAddress(address, name)
+            .then(res => {
+                allContacts.set(address, name)
+                getRef('contacts_container').prepend(render.contactCard(address, name))
+                notify('Address saved', 'success')
+                hidePopup()
+            })
+            .catch(err => {
+                notify('Address already saved', 'error')
+            })
+        }
+
+        function deleteContact(address){
+            floWebWallet.deleteAddress(address)
+            .then(res => {  
+                allContacts.delete(address)
+                document.querySelector(`[data-flo-id="${address}"]`).remove()
+            })
+        }
+
+        document.getElementById('contact_popup__name').addEventListener('contentchanged', function(e){
+            let newName = e.detail.value.trim()
+            if(newName === ''){
+                newName = 'Unknown'
+                this.value = newName
+            }
+            getRef('contact_popup__initial').textContent = newName.charAt(0)
+            clickedContact.card.querySelector('.contact-card__initial').textContent = newName.charAt(0)
+            clickedContact.card.querySelector('.contact-card__name').textContent = newName
+            floWebWallet.changeLabel(clickedContact.floID, newName)
+            .then(res => {
+                notify('Name changed', 'success')
+            })
+            .catch(err => console.error(err))
+        })
+
         //UI for webWallet
         function clickedAddress(thisCard) {
             monitorData(address, label);
@@ -913,33 +1051,18 @@
                 .textContent);
         }
 
-        function createAddressCards(address, label) {
-        }
-
-        function createAllCards() {
-            floWebWallet.getLabels().then((labelAddr) => {
-                if (Object.entries(labelAddr).length === 0)
-                    document.getElementById('monitor-list').innerHTML =
-                        `<h3 style="text-align: center;width: 100%;">Add a FLO address to start monitoring</h3>`;
-                else
-                    Object.keys(labelAddr).forEach((address) => {
-                        createAddressCards(address, labelAddr[address]);
-                        floWebWallet.syncTransactions(address).then((array) => {
-                            if (array.length > 0) {
-                                let badge = document.createElement('badge'),
-                                    notifications = array.length
-                                if (notifications > 99)
-                                    notifications = '99+'
-                                badge.textContent = notifications
-                                document.getElementById(address).appendChild(badge)
-                            }
-                        }).catch((error) => {
-                            console.log(error)
-                        })
-                    })
-            }).catch((error) => {
-                console.log(error);
-            })
+        async function renderAllContacts(contacts) {
+            try{
+                const frag = document.createDocumentFragment()
+                for(address in contacts){
+                    frag.append(render.contactCard(address, contacts[address]))
+                }
+                getRef('contacts_container').innerHTML = ''
+                getRef('contacts_container').append(frag)
+            }
+            catch(err){
+                console.error(err)
+            }
         }
 
         function deleteDB() {
@@ -7125,7 +7248,7 @@
                         .catch(error => reject(error))
                 })
             },
-            
+
             // Add address to monitoring list
             addAddress(address, label){
                 return new Promise((resolve, reject) => {                
@@ -7154,7 +7277,7 @@
             },
         }
 
-        function onLoadStartUp() {
+        async function onLoadStartUp() {
             let IDBObjects = {
                 lastSync: {},
                 labels: {},
@@ -7164,7 +7287,12 @@
                 .then(result => console.log(result))
                 .catch(error => console.log(error))
 
-            createAllCards();
+            const contacts = await floWebWallet.getLabels()
+            renderAllContacts(contacts)
+            for(address in contacts){
+                allContacts.set(address, contacts[address])
+            }
+            document.getElementById('main_card').animate(flyInZoom, {duration: 600, easing: easeOutOvershoot})
         }
     </script>
 </body>

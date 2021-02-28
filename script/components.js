@@ -339,7 +339,6 @@ input{
     font-size: 0.9rem;
     width: 100%;
     color: var(--error-color);
-    background: rgba(var(--foreground-color), 1);
     padding: 0.6rem 1rem;
     text-align: left;
 }
@@ -366,12 +365,16 @@ input{
 `;
 customElements.define('sm-input',
     class extends HTMLElement {
+
+        static formAssociated = true;
+        
         constructor() {
             super()
             this.attachShadow({
                 mode: 'open'
             }).append(smInput.content.cloneNode(true))
         }
+
         static get observedAttributes() {
             return ['placeholder']
         }
@@ -452,21 +455,24 @@ customElements.define('sm-input',
         }
 
         checkInput = (e) => {
+            if (!this.readonly) {                
+                if (this.input.value !== '') {
+                    this.clearBtn.classList.remove('hide')
+                } else {
+                    this.clearBtn.classList.add('hide')
+                }
+            }
             if (!this.hasAttribute('placeholder') || this.getAttribute('placeholder') === '') return;
             if (this.input.value !== '') {
                 if (this.animate)
                     this.inputParent.classList.add('animate-label')
                 else
                     this.label.classList.add('hide')
-                if (!this.readonly)
-                    this.clearBtn.classList.remove('hide')
             } else {
                 if (this.animate)
                     this.inputParent.classList.remove('animate-label')
                 else
                     this.label.classList.remove('hide')
-                if (!this.readonly)
-                    this.clearBtn.classList.add('hide')
             }
         }
 
@@ -577,6 +583,7 @@ smTextarea.innerHTML = `
     --background: rgba(var(--text-color), 0.06);
     --padding-right: initial;
     --padding-left: initial;
+    --max-height: 8rem;
 }
 :host(.outlined) .textarea {
     box-shadow: 0 0 0 0.1rem rgba(var(--text-color), 0.4) inset;
@@ -591,7 +598,7 @@ smTextarea.innerHTML = `
     overflow: hidden auto;
     grid-template-columns: 1fr;
     align-items: stretch;
-    max-height: 8rem;
+    max-height: var(--max-height);
     background: var(--background);
     border-radius: var(--border-radius);
     padding-left: var(--padding-left);
