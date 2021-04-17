@@ -6955,7 +6955,7 @@ Bitcoin.Util = {
 })();
 </script>
 
-<script id="floCrypto" version="2.0.0">
+<script id="floCrypto" version="2.0.1">
     /* FLO Crypto Operators*/
     const floCrypto = {
 
@@ -6964,17 +6964,19 @@ Bitcoin.Util = {
 
             ecparams: EllipticCurve.getSECCurveByName("secp256k1"),
 
-            exponent1: function () {
+            asciiAlternatives: `‘ '\n’ '\n“ "\n” "\n– --\n— ---\n≥ >=\n≤ <=\n≠ !=\n× *\n÷ /\n← <-\n→ ->\n↔ <->\n⇒ =>\n⇐ <=\n⇔ <=>`,
+
+            exponent1: function() {
                 return this.p.add(BigInteger.ONE).divide(BigInteger("4"))
             },
 
-            calculateY: function (x) {
+            calculateY: function(x) {
                 let p = this.p;
                 let exp = this.exponent1();
                 // x is x value of public key in BigInteger format without 02 or 03 or 04 prefix
                 return x.modPow(BigInteger("3"), p).add(BigInteger("7")).mod(p).modPow(exp, p)
             },
-            getUncompressedPublicKey: function (compressedPublicKey) {
+            getUncompressedPublicKey: function(compressedPublicKey) {
                 const p = this.p;
                 // Fetch x from compressedPublicKey
                 let pubKeyBytes = Crypto.util.hexToBytes(compressedPublicKey);
@@ -6989,16 +6991,15 @@ Bitcoin.Util = {
                 // verify y value
                 let resultBigInt = y.mod(BigInteger("2"));
                 let check = resultBigInt.toString() % 2;
-                if (prefix_modulus !== check) {
+                if (prefix_modulus !== check)
                     yDecimalValue = y.negate().mod(p).toString();
-                }
                 return {
                     x: xDecimalValue,
                     y: yDecimalValue
                 };
             },
 
-            getSenderPublicKeyString: function () {
+            getSenderPublicKeyString: function() {
                 privateKey = ellipticCurveEncryption.senderRandom();
                 senderPublicKeyString = ellipticCurveEncryption.senderPublicString(privateKey);
                 return {
@@ -7007,39 +7008,28 @@ Bitcoin.Util = {
                 }
             },
 
-            deriveSharedKeySender: function (receiverCompressedPublicKey, senderPrivateKey) {
-                try {
-                    let receiverPublicKeyString = this.getUncompressedPublicKey(receiverCompressedPublicKey);
-                    var senderDerivedKey = ellipticCurveEncryption.senderSharedKeyDerivation(
-                        receiverPublicKeyString.x, receiverPublicKeyString.y, senderPrivateKey);
-                    return senderDerivedKey;
-                } catch (error) {
-                    return new Error(error);
-                }
+            deriveSharedKeySender: function(receiverCompressedPublicKey, senderPrivateKey) {
+                let receiverPublicKeyString = this.getUncompressedPublicKey(receiverCompressedPublicKey);
+                var senderDerivedKey = ellipticCurveEncryption.senderSharedKeyDerivation(
+                    receiverPublicKeyString.x, receiverPublicKeyString.y, senderPrivateKey);
+                return senderDerivedKey;
             },
 
-            deriveReceiverSharedKey: function (senderPublicKeyString, receiverPrivateKey) {
+            deriveReceiverSharedKey: function(senderPublicKeyString, receiverPrivateKey) {
                 return ellipticCurveEncryption.receiverSharedKeyDerivation(
-                    senderPublicKeyString.XValuePublicString, senderPublicKeyString.YValuePublicString,
-                    receiverPrivateKey);
+                    senderPublicKeyString.XValuePublicString, senderPublicKeyString.YValuePublicString, receiverPrivateKey);
             },
 
-            getReceiverPublicKeyString: function (privateKey) {
+            getReceiverPublicKeyString: function(privateKey) {
                 return ellipticCurveEncryption.receiverPublicString(privateKey);
             },
 
-            deriveSharedKeyReceiver: function (senderPublicKeyString, receiverPrivateKey) {
-                try {
-                    return ellipticCurveEncryption.receiverSharedKeyDerivation(senderPublicKeyString
-                        .XValuePublicString,
-                        senderPublicKeyString.YValuePublicString, receiverPrivateKey);
-
-                } catch (error) {
-                    return new Error(error);
-                }
+            deriveSharedKeyReceiver: function(senderPublicKeyString, receiverPrivateKey) {
+                return ellipticCurveEncryption.receiverSharedKeyDerivation(
+                    senderPublicKeyString.XValuePublicString, senderPublicKeyString.YValuePublicString, receiverPrivateKey);
             },
 
-            wifToDecimal: function (pk_wif, isPubKeyCompressed = false) {
+            wifToDecimal: function(pk_wif, isPubKeyCompressed = false) {
                 let pk = Bitcoin.Base58.decode(pk_wif)
                 pk.shift()
                 pk.splice(-4, 4)
@@ -7056,14 +7046,14 @@ Bitcoin.Util = {
         },
 
         //generate a random Interger within range
-        randInt: function (min, max) {
+        randInt: function(min, max) {
             min = Math.ceil(min);
             max = Math.floor(max);
             return Math.floor(Math.random() * (max - min + 1)) + min;
         },
 
         //generate a random String within length (options : alphaNumeric chars only)
-        randString: function (length, alphaNumeric = true) {
+        randString: function(length, alphaNumeric = true) {
             var result = '';
             if (alphaNumeric)
                 var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -7076,7 +7066,7 @@ Bitcoin.Util = {
         },
 
         //Encrypt Data using public-key
-        encryptData: function (data, receiverCompressedPublicKey) {
+        encryptData: function(data, receiverCompressedPublicKey) {
             var senderECKeyData = this.util.getSenderPublicKeyString();
             var senderDerivedKey = this.util.deriveSharedKeySender(receiverCompressedPublicKey, senderECKeyData
                 .privateKey);
@@ -7089,7 +7079,7 @@ Bitcoin.Util = {
         },
 
         //Decrypt Data using private-key
-        decryptData: function (data, myPrivateKey) {
+        decryptData: function(data, myPrivateKey) {
             var receiverECKeyData = {};
             if (typeof myPrivateKey !== "string") throw new Error("No private key found.");
 
@@ -7108,7 +7098,7 @@ Bitcoin.Util = {
         },
 
         //Sign data using private-key
-        signData: function (data, privateKeyHex) {
+        signData: function(data, privateKeyHex) {
             var key = new Bitcoin.ECKey(privateKeyHex);
             key.setCompressed(true);
 
@@ -7124,7 +7114,7 @@ Bitcoin.Util = {
         },
 
         //Verify signatue of the data using public-key
-        verifySign: function (data, signatureHex, publicKeyHex) {
+        verifySign: function(data, signatureHex, publicKeyHex) {
             var msgHash = Crypto.SHA256(data);
             var messageHashBigInteger = new BigInteger(msgHash);
 
@@ -7139,7 +7129,7 @@ Bitcoin.Util = {
         },
 
         //Generates a new flo ID and returns private-key, public-key and floID
-        generateNewID: function () {
+        generateNewID: function() {
             try {
                 var key = new Bitcoin.ECKey(false);
                 key.setCompressed(true);
@@ -7154,7 +7144,7 @@ Bitcoin.Util = {
         },
 
         //Returns public-key from private-key
-        getPubKeyHex: function (privateKeyHex) {
+        getPubKeyHex: function(privateKeyHex) {
             if (!privateKeyHex)
                 return null;
             var key = new Bitcoin.ECKey(privateKeyHex);
@@ -7165,7 +7155,7 @@ Bitcoin.Util = {
         },
 
         //Returns flo-ID from public-key or private-key
-        getFloID: function (keyHex) {
+        getFloID: function(keyHex) {
             if (!keyHex)
                 return null;
             try {
@@ -7179,7 +7169,7 @@ Bitcoin.Util = {
         },
 
         //Verify the private-key for the given public-key or flo-ID
-        verifyPrivKey: function (privateKeyHex, pubKey_floID, isfloID = true) {
+        verifyPrivKey: function(privateKeyHex, pubKey_floID, isfloID = true) {
             if (!privateKeyHex || !pubKey_floID)
                 return false;
             try {
@@ -7199,7 +7189,7 @@ Bitcoin.Util = {
         },
 
         //Check if the given Address is valid or not
-        validateAddr: function (inpAddr) {
+        validateAddr: function(inpAddr) {
             if (!inpAddr)
                 return false;
             try {
@@ -7211,7 +7201,7 @@ Bitcoin.Util = {
         },
 
         //Split the str using shamir's Secret and Returns the shares 
-        createShamirsSecretShares: function (str, total_shares, threshold_limit) {
+        createShamirsSecretShares: function(str, total_shares, threshold_limit) {
             try {
                 if (str.length > 0) {
                     var strHex = shamirSecretShare.str2hex(str);
@@ -7225,12 +7215,12 @@ Bitcoin.Util = {
         },
 
         //Verifies the shares and str
-        verifyShamirsSecret: function (sharesArray, str) {
+        verifyShamirsSecret: function(sharesArray, str) {
             return (str && this.retrieveShamirSecret(sharesArray) === str)
         },
 
         //Returns the retrived secret by combining the shamirs shares
-        retrieveShamirSecret: function (sharesArray) {
+        retrieveShamirSecret: function(sharesArray) {
             try {
                 if (sharesArray.length > 0) {
                     var comb = shamirSecretShare.combine(sharesArray.slice(0, sharesArray.length));
@@ -7241,17 +7231,75 @@ Bitcoin.Util = {
             } catch {
                 return false;
             }
+        },
+
+        validateASCII: function(string, bool = true) {
+            if (typeof string !== "string")
+                return null;
+            if (bool) {
+                let x;
+                for (let i = 0; i < string.length; i++) {
+                    x = string.charCodeAt(i);
+                    if (x < 32 || x > 127)
+                        return false;
+                }
+                return true;
+            } else {
+                let x, invalids = {};
+                for (let i = 0; i < string.length; i++) {
+                    x = string.charCodeAt(i);
+                    if (x < 32 || x > 127)
+                        if (x in invalids)
+                            invalids[string[i]].push(i)
+                    else
+                        invalids[string[i]] = [i];
+                }
+                if (Object.keys(invalids).length)
+                    return invalids;
+                else
+                    return true;
+            }
+        },
+
+        convertToASCII: function(string, mode = 'soft-remove') {
+            let chars = this.validateASCII(string, false);
+            if (chars === true)
+                return string;
+            else if (chars === null)
+                return null;
+            let convertor, result = string,
+                refAlt = {};
+            this.util.asciiAlternatives.split('\n').forEach(a => refAlt[a[0]] = a.slice(2));
+            mode = mode.toLowerCase();
+            if (mode === "hard-unicode")
+                convertor = (c) => `\\u${('000'+c.charCodeAt().toString(16)).slice(-4)}`;
+            else if (mode === "soft-unicode")
+                convertor = (c) => refAlt[c] || `\\u${('000'+c.charCodeAt().toString(16)).slice(-4)}`;
+            else if (mode === "hard-remove")
+                convertor = c => "";
+            else if (mode === "soft-remove")
+                convertor = c => refAlt[c] || "";
+            else
+                return null;
+            for (let c in chars)
+                result = result.replaceAll(c, convertor(c));
+            return result;
+        },
+
+        revertUnicode: function(string) {
+            return string.replace(/\\u[\dA-F]{4}/gi,
+                m => String.fromCharCode(parseInt(m.replace(/\\u/g, ''), 16)));
         }
     }
 </script>
-<script id="floBlockchainAPI" version="2.0.1">
+<script id="floBlockchainAPI" version="2.0.1a">
     /* FLO Blockchain Operator to send/receive data from blockchain using API calls*/
     const floBlockchainAPI = {
 
         util: {
             serverList: floGlobals.apiURL[floGlobals.blockchain].slice(0),
             curPos: floCrypto.randInt(0, floGlobals.apiURL[floGlobals.blockchain].length),
-            fetch_retry: function (apicall) {
+            fetch_retry: function(apicall) {
                 return new Promise((resolve, reject) => {
                     this.serverList.splice(this.curPos, 1);
                     this.curPos = floCrypto.randInt(0, this.serverList.length)
@@ -7260,7 +7308,7 @@ Bitcoin.Util = {
                         .catch(error => reject(error));
                 })
             },
-            fetch_api: function (apicall) {
+            fetch_api: function(apicall) {
                 return new Promise((resolve, reject) => {
                     if (this.serverList.length === 0)
                         reject("No floSight server working")
@@ -7284,7 +7332,7 @@ Bitcoin.Util = {
         },
 
         //Promised function to get data from API
-        promisedAPI: function (apicall) {
+        promisedAPI: function(apicall) {
             return new Promise((resolve, reject) => {
                 console.log(apicall)
                 this.util.fetch_api(apicall)
@@ -7294,7 +7342,7 @@ Bitcoin.Util = {
         },
 
         //Get balance for the given Address
-        getBalance: function (addr) {
+        getBalance: function(addr) {
             return new Promise((resolve, reject) => {
                 this.promisedAPI(`api/addr/${addr}/balance`)
                     .then(balance => resolve(parseFloat(balance)))
@@ -7303,7 +7351,7 @@ Bitcoin.Util = {
         },
 
         //Write Data into blockchain
-        writeData: function (senderAddr, data, privKey, receiverAddr = floGlobals.adminID) {
+        writeData: function(senderAddr, data, privKey, receiverAddr = floGlobals.adminID) {
             return new Promise((resolve, reject) => {
                 if (typeof data != "string")
                     data = JSON.stringify(data);
@@ -7314,8 +7362,10 @@ Bitcoin.Util = {
         },
 
         //Send Tx to blockchain 
-        sendTx: function (senderAddr, receiverAddr, sendAmt, privKey, floData = '') {
+        sendTx: function(senderAddr, receiverAddr, sendAmt, privKey, floData = '') {
             return new Promise((resolve, reject) => {
+                if (!floCrypto.validateASCII(floData))
+                    return reject("Invalid FLO_Data: only printable ASCII characters are allowed");
                 if (!floCrypto.validateAddr(senderAddr))
                     reject(`Invalid address : ${senderAddr}`);
                 else if (!floCrypto.validateAddr(receiverAddr))
@@ -7356,12 +7406,14 @@ Bitcoin.Util = {
         },
 
         //merge all UTXOs of a given floID into a single UTXO
-        mergeUTXOs: function (floID, privKey, floData = '') {
+        mergeUTXOs: function(floID, privKey, floData = '') {
             return new Promise((resolve, reject) => {
                 if (!floCrypto.validateAddr(floID))
                     return reject(`Invalid floID`);
                 if (!floCrypto.verifyPrivKey(privKey, floID))
                     return reject("Invalid Private Key")
+                if (!floCrypto.validateASCII(floData))
+                    return reject("Invalid FLO_Data: only printable ASCII characters are allowed");
 
                 var trx = bitjs.transaction();
                 var utxoAmt = 0.0;
@@ -7391,7 +7443,7 @@ Bitcoin.Util = {
          * @param  {boolean} preserveRatio (optional) preserve ratio or equal contribution
          * @return {Promise}
          */
-        writeDataMultiple: function (senderPrivKeys, data, receivers = [floGlobals.adminID], preserveRatio = true) {
+        writeDataMultiple: function(senderPrivKeys, data, receivers = [floGlobals.adminID], preserveRatio = true) {
             return new Promise((resolve, reject) => {
                 if (!Array.isArray(senderPrivKeys))
                     return reject("Invalid senderPrivKeys: SenderPrivKeys must be Array")
@@ -7423,9 +7475,10 @@ Bitcoin.Util = {
          * @param  {string} floData FLO data of the txn
          * @return {Promise}
          */
-        sendTxMultiple: function (senderPrivKeys, receivers, floData = '') {
+        sendTxMultiple: function(senderPrivKeys, receivers, floData = '') {
             return new Promise((resolve, reject) => {
-
+                if (!floCrypto.validateASCII(floData))
+                    return reject("Invalid FLO_Data: only printable ASCII characters are allowed");
                 let senders = {},
                     preserveRatio;
                 //check for argument validations
@@ -7581,7 +7634,7 @@ Bitcoin.Util = {
         },
 
         //Broadcast signed Tx in blockchain using API
-        broadcastTx: function (signedTxHash) {
+        broadcastTx: function(signedTxHash) {
             return new Promise((resolve, reject) => {
                 var request = new XMLHttpRequest();
                 var url = this.util.serverList[this.util.curPos] + 'api/tx/send';
@@ -7593,7 +7646,7 @@ Bitcoin.Util = {
                     request.open('POST', url, true);
                     //Send the proper header information along with the request
                     request.setRequestHeader('Content-type', 'application/json');
-                    request.onload = function () {
+                    request.onload = function() {
                         if (request.readyState == 4 && request.status == 200) {
                             console.log(request.response);
                             resolve(JSON.parse(request.response).txid.result);
@@ -7605,7 +7658,7 @@ Bitcoin.Util = {
             })
         },
 
-        getTx: function (txid) {
+        getTx: function(txid) {
             return new Promise((resolve, reject) => {
                 this.promisedAPI(`api/tx/${txid}`)
                     .then(response => resolve(response))
@@ -7614,7 +7667,7 @@ Bitcoin.Util = {
         },
 
         //Read Txs of Address between from and to
-        readTxs: function (addr, from, to) {
+        readTxs: function(addr, from, to) {
             return new Promise((resolve, reject) => {
                 this.promisedAPI(`api/addrs/${addr}/txs?from=${from}&to=${to}`)
                     .then(response => resolve(response))
@@ -7623,7 +7676,7 @@ Bitcoin.Util = {
         },
 
         //Read All Txs of Address (newest first)
-        readAllTxs: function (addr) {
+        readAllTxs: function(addr) {
             return new Promise((resolve, reject) => {
                 this.promisedAPI(`api/addrs/${addr}/txs?from=0&to=1`).then(response => {
                     this.promisedAPI(`api/addrs/${addr}/txs?from=0&to=${response.totalItems}0`)
@@ -7642,9 +7695,9 @@ Bitcoin.Util = {
         contains    : filters data that contains a string
         filter      : custom filter funtion for floData (eg . filter: d => {return d[0] == '$'})
         */
-        readData: function (addr, options = {}) {
-            options.limit = options.limit | 0
-            options.ignoreOld = options.ignoreOld | 0
+        readData: function(addr, options = {}) {
+            options.limit = options.limit || 0
+            options.ignoreOld = options.ignoreOld || 0
             return new Promise((resolve, reject) => {
                 this.promisedAPI(`api/addrs/${addr}/txs?from=0&to=1`).then(response => {
                     var newItems = response.totalItems - options.ignoreOld;
@@ -7655,22 +7708,18 @@ Bitcoin.Util = {
                             var filteredData = [];
                             for (i = 0; i < (response.totalItems - options.ignoreOld) &&
                                 filteredData.length < options.limit; i++) {
-                                if (options.sentOnly && response.items[i].vin[0].addr !==
-                                    addr)
+                                if (options.sentOnly && response.items[i].vin[0].addr !== addr)
                                     continue;
                                 if (options.pattern) {
                                     try {
-                                        let jsonContent = JSON.parse(response.items[i]
-                                            .floData)
-                                        if (!Object.keys(jsonContent).includes(options
-                                                .pattern))
+                                        let jsonContent = JSON.parse(response.items[i].floData)
+                                        if (!Object.keys(jsonContent).includes(options.pattern))
                                             continue;
                                     } catch (error) {
                                         continue;
                                     }
                                 }
-                                if (options.filter && !options.filter(response.items[i]
-                                        .floData))
+                                if (options.filter && !options.filter(response.items[i].floData))
                                     continue;
                                 filteredData.push(response.items[i].floData);
                             }
@@ -7889,36 +7938,52 @@ Bitcoin.Util = {
             });
         },
 
+        /*searchData: function (obsName, options = {}, dbName = this.defaultDB) {
+            
+            return new Promise((resolve, reject) => {
+                this.openDB(dbName).then(db => {
+                    var obs = db.transaction(obsName, "readonly").objectStore(obsName);
+                    var filteredResult = {}
+                    let keyRange;
+                    if(options.lowerKey!==null && options.upperKey!==null)
+                        keyRange = IDBKeyRange.bound(options.lowerKey, options.upperKey);
+                    else if(options.lowerKey!==null)
+                        keyRange = IDBKeyRange.lowerBound(options.lowerKey);
+                    else if (options.upperKey!==null)
+                        keyRange = IDBKeyRange.upperBound(options.upperBound);
+                    else if (options.atKey)
+                    let curReq = obs.openCursor(keyRange, )
+                }).catch(error => reject(error))
+            })
+        },*/
+
         searchData: function (obsName, options = {}, dbName = this.defaultDB) {
             options.lowerKey = options.atKey || options.lowerKey || 0
             options.upperKey = options.atKey || options.upperKey || false
             options.patternEval = options.patternEval || ((k, v) => {
                 return true
             })
+            options.limit = options.limit || false;
             options.lastOnly = options.lastOnly || false
             return new Promise((resolve, reject) => {
                 this.openDB(dbName).then(db => {
                     var obs = db.transaction(obsName, "readonly").objectStore(obsName);
                     var filteredResult = {}
                     let curReq = obs.openCursor(
-                        options.upperKey ? IDBKeyRange.bound(options.lowerKey, options
-                            .upperKey) : IDBKeyRange.lowerBound(options.lowerKey),
+                        options.upperKey ? IDBKeyRange.bound(options.lowerKey, options.upperKey) : IDBKeyRange.lowerBound(options.lowerKey),
                         options.lastOnly ? "prev" : "next");
                     curReq.onsuccess = (evt) => {
                         var cursor = evt.target.result;
                         if (cursor) {
                             if (options.patternEval(cursor.primaryKey, cursor.value)) {
                                 filteredResult[cursor.primaryKey] = cursor.value;
-                                options.lastOnly ? resolve(filteredResult) : cursor
-                                    .continue();
+                                options.lastOnly ? resolve(filteredResult) : cursor.continue();
                             } else
                                 cursor.continue();
                         } else
                             resolve(filteredResult);
                     }
-                    curReq.onerror = (evt) => reject(
-                        `Search unsuccessful [${evt.target.error.name}] ${evt.target.error.message}`
-                    );
+                    curReq.onerror = (evt) => reject(`Search unsuccessful [${evt.target.error.name}] ${evt.target.error.message}`);
                     db.close();
                 }).catch(error => reject(error));
             });
