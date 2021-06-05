@@ -33,7 +33,20 @@
         lastVC: {}
     }
 </script>
+<script id="onLoadStartUp">
+    function onLoadStartUp() {
 
+        //floDapps.addStartUpFunction('Sample', Promised Function)
+        //floDapps.setAppObjectStores({sampleObs1:{}, sampleObs2:{options{autoIncrement:true, keyPath:'SampleKey'}, Indexes:{sampleIndex:{}}}})
+        //floDapps.setCustomPrivKeyInput( () => { FUNCTION BODY *must resolve private key* } )
+
+        floDapps.launchStartUp().then(result => {
+            console.log(result)
+            alert(`Welcome FLO_ID: ${myFloID}`)
+            //App functions....
+        }).catch(error => console.error(error))
+    }
+</script>
 </head>
 
 <body onload="onLoadStartUp()">
@@ -6942,7 +6955,7 @@ Bitcoin.Util = {
 })();
 </script>
 
-<script id="floCrypto" version="2.0.0">
+<script id="floCrypto" version="2.0.1">
     /* FLO Crypto Operators*/
     const floCrypto = {
 
@@ -6951,17 +6964,19 @@ Bitcoin.Util = {
 
             ecparams: EllipticCurve.getSECCurveByName("secp256k1"),
 
-            exponent1: function () {
+            asciiAlternatives: `‘ '\n’ '\n“ "\n” "\n– --\n— ---\n≥ >=\n≤ <=\n≠ !=\n× *\n÷ /\n← <-\n→ ->\n↔ <->\n⇒ =>\n⇐ <=\n⇔ <=>`,
+
+            exponent1: function() {
                 return this.p.add(BigInteger.ONE).divide(BigInteger("4"))
             },
 
-            calculateY: function (x) {
+            calculateY: function(x) {
                 let p = this.p;
                 let exp = this.exponent1();
                 // x is x value of public key in BigInteger format without 02 or 03 or 04 prefix
                 return x.modPow(BigInteger("3"), p).add(BigInteger("7")).mod(p).modPow(exp, p)
             },
-            getUncompressedPublicKey: function (compressedPublicKey) {
+            getUncompressedPublicKey: function(compressedPublicKey) {
                 const p = this.p;
                 // Fetch x from compressedPublicKey
                 let pubKeyBytes = Crypto.util.hexToBytes(compressedPublicKey);
@@ -6976,16 +6991,15 @@ Bitcoin.Util = {
                 // verify y value
                 let resultBigInt = y.mod(BigInteger("2"));
                 let check = resultBigInt.toString() % 2;
-                if (prefix_modulus !== check) {
+                if (prefix_modulus !== check)
                     yDecimalValue = y.negate().mod(p).toString();
-                }
                 return {
                     x: xDecimalValue,
                     y: yDecimalValue
                 };
             },
 
-            getSenderPublicKeyString: function () {
+            getSenderPublicKeyString: function() {
                 privateKey = ellipticCurveEncryption.senderRandom();
                 senderPublicKeyString = ellipticCurveEncryption.senderPublicString(privateKey);
                 return {
@@ -6994,39 +7008,28 @@ Bitcoin.Util = {
                 }
             },
 
-            deriveSharedKeySender: function (receiverCompressedPublicKey, senderPrivateKey) {
-                try {
-                    let receiverPublicKeyString = this.getUncompressedPublicKey(receiverCompressedPublicKey);
-                    var senderDerivedKey = ellipticCurveEncryption.senderSharedKeyDerivation(
-                        receiverPublicKeyString.x, receiverPublicKeyString.y, senderPrivateKey);
-                    return senderDerivedKey;
-                } catch (error) {
-                    return new Error(error);
-                }
+            deriveSharedKeySender: function(receiverCompressedPublicKey, senderPrivateKey) {
+                let receiverPublicKeyString = this.getUncompressedPublicKey(receiverCompressedPublicKey);
+                var senderDerivedKey = ellipticCurveEncryption.senderSharedKeyDerivation(
+                    receiverPublicKeyString.x, receiverPublicKeyString.y, senderPrivateKey);
+                return senderDerivedKey;
             },
 
-            deriveReceiverSharedKey: function (senderPublicKeyString, receiverPrivateKey) {
+            deriveReceiverSharedKey: function(senderPublicKeyString, receiverPrivateKey) {
                 return ellipticCurveEncryption.receiverSharedKeyDerivation(
-                    senderPublicKeyString.XValuePublicString, senderPublicKeyString.YValuePublicString,
-                    receiverPrivateKey);
+                    senderPublicKeyString.XValuePublicString, senderPublicKeyString.YValuePublicString, receiverPrivateKey);
             },
 
-            getReceiverPublicKeyString: function (privateKey) {
+            getReceiverPublicKeyString: function(privateKey) {
                 return ellipticCurveEncryption.receiverPublicString(privateKey);
             },
 
-            deriveSharedKeyReceiver: function (senderPublicKeyString, receiverPrivateKey) {
-                try {
-                    return ellipticCurveEncryption.receiverSharedKeyDerivation(senderPublicKeyString
-                        .XValuePublicString,
-                        senderPublicKeyString.YValuePublicString, receiverPrivateKey);
-
-                } catch (error) {
-                    return new Error(error);
-                }
+            deriveSharedKeyReceiver: function(senderPublicKeyString, receiverPrivateKey) {
+                return ellipticCurveEncryption.receiverSharedKeyDerivation(
+                    senderPublicKeyString.XValuePublicString, senderPublicKeyString.YValuePublicString, receiverPrivateKey);
             },
 
-            wifToDecimal: function (pk_wif, isPubKeyCompressed = false) {
+            wifToDecimal: function(pk_wif, isPubKeyCompressed = false) {
                 let pk = Bitcoin.Base58.decode(pk_wif)
                 pk.shift()
                 pk.splice(-4, 4)
@@ -7043,14 +7046,14 @@ Bitcoin.Util = {
         },
 
         //generate a random Interger within range
-        randInt: function (min, max) {
+        randInt: function(min, max) {
             min = Math.ceil(min);
             max = Math.floor(max);
             return Math.floor(Math.random() * (max - min + 1)) + min;
         },
 
         //generate a random String within length (options : alphaNumeric chars only)
-        randString: function (length, alphaNumeric = true) {
+        randString: function(length, alphaNumeric = true) {
             var result = '';
             if (alphaNumeric)
                 var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -7063,7 +7066,7 @@ Bitcoin.Util = {
         },
 
         //Encrypt Data using public-key
-        encryptData: function (data, receiverCompressedPublicKey) {
+        encryptData: function(data, receiverCompressedPublicKey) {
             var senderECKeyData = this.util.getSenderPublicKeyString();
             var senderDerivedKey = this.util.deriveSharedKeySender(receiverCompressedPublicKey, senderECKeyData
                 .privateKey);
@@ -7076,7 +7079,7 @@ Bitcoin.Util = {
         },
 
         //Decrypt Data using private-key
-        decryptData: function (data, myPrivateKey) {
+        decryptData: function(data, myPrivateKey) {
             var receiverECKeyData = {};
             if (typeof myPrivateKey !== "string") throw new Error("No private key found.");
 
@@ -7095,7 +7098,7 @@ Bitcoin.Util = {
         },
 
         //Sign data using private-key
-        signData: function (data, privateKeyHex) {
+        signData: function(data, privateKeyHex) {
             var key = new Bitcoin.ECKey(privateKeyHex);
             key.setCompressed(true);
 
@@ -7111,7 +7114,7 @@ Bitcoin.Util = {
         },
 
         //Verify signatue of the data using public-key
-        verifySign: function (data, signatureHex, publicKeyHex) {
+        verifySign: function(data, signatureHex, publicKeyHex) {
             var msgHash = Crypto.SHA256(data);
             var messageHashBigInteger = new BigInteger(msgHash);
 
@@ -7126,7 +7129,7 @@ Bitcoin.Util = {
         },
 
         //Generates a new flo ID and returns private-key, public-key and floID
-        generateNewID: function () {
+        generateNewID: function() {
             try {
                 var key = new Bitcoin.ECKey(false);
                 key.setCompressed(true);
@@ -7141,7 +7144,7 @@ Bitcoin.Util = {
         },
 
         //Returns public-key from private-key
-        getPubKeyHex: function (privateKeyHex) {
+        getPubKeyHex: function(privateKeyHex) {
             if (!privateKeyHex)
                 return null;
             var key = new Bitcoin.ECKey(privateKeyHex);
@@ -7152,7 +7155,7 @@ Bitcoin.Util = {
         },
 
         //Returns flo-ID from public-key or private-key
-        getFloID: function (keyHex) {
+        getFloID: function(keyHex) {
             if (!keyHex)
                 return null;
             try {
@@ -7166,7 +7169,7 @@ Bitcoin.Util = {
         },
 
         //Verify the private-key for the given public-key or flo-ID
-        verifyPrivKey: function (privateKeyHex, pubKey_floID, isfloID = true) {
+        verifyPrivKey: function(privateKeyHex, pubKey_floID, isfloID = true) {
             if (!privateKeyHex || !pubKey_floID)
                 return false;
             try {
@@ -7186,7 +7189,7 @@ Bitcoin.Util = {
         },
 
         //Check if the given Address is valid or not
-        validateAddr: function (inpAddr) {
+        validateAddr: function(inpAddr) {
             if (!inpAddr)
                 return false;
             try {
@@ -7198,7 +7201,7 @@ Bitcoin.Util = {
         },
 
         //Split the str using shamir's Secret and Returns the shares 
-        createShamirsSecretShares: function (str, total_shares, threshold_limit) {
+        createShamirsSecretShares: function(str, total_shares, threshold_limit) {
             try {
                 if (str.length > 0) {
                     var strHex = shamirSecretShare.str2hex(str);
@@ -7212,12 +7215,12 @@ Bitcoin.Util = {
         },
 
         //Verifies the shares and str
-        verifyShamirsSecret: function (sharesArray, str) {
+        verifyShamirsSecret: function(sharesArray, str) {
             return (str && this.retrieveShamirSecret(sharesArray) === str)
         },
 
         //Returns the retrived secret by combining the shamirs shares
-        retrieveShamirSecret: function (sharesArray) {
+        retrieveShamirSecret: function(sharesArray) {
             try {
                 if (sharesArray.length > 0) {
                     var comb = shamirSecretShare.combine(sharesArray.slice(0, sharesArray.length));
@@ -7228,26 +7231,84 @@ Bitcoin.Util = {
             } catch {
                 return false;
             }
+        },
+
+        validateASCII: function(string, bool = true) {
+            if (typeof string !== "string")
+                return null;
+            if (bool) {
+                let x;
+                for (let i = 0; i < string.length; i++) {
+                    x = string.charCodeAt(i);
+                    if (x < 32 || x > 127)
+                        return false;
+                }
+                return true;
+            } else {
+                let x, invalids = {};
+                for (let i = 0; i < string.length; i++) {
+                    x = string.charCodeAt(i);
+                    if (x < 32 || x > 127)
+                        if (x in invalids)
+                            invalids[string[i]].push(i)
+                    else
+                        invalids[string[i]] = [i];
+                }
+                if (Object.keys(invalids).length)
+                    return invalids;
+                else
+                    return true;
+            }
+        },
+
+        convertToASCII: function(string, mode = 'soft-remove') {
+            let chars = this.validateASCII(string, false);
+            if (chars === true)
+                return string;
+            else if (chars === null)
+                return null;
+            let convertor, result = string,
+                refAlt = {};
+            this.util.asciiAlternatives.split('\n').forEach(a => refAlt[a[0]] = a.slice(2));
+            mode = mode.toLowerCase();
+            if (mode === "hard-unicode")
+                convertor = (c) => `\\u${('000'+c.charCodeAt().toString(16)).slice(-4)}`;
+            else if (mode === "soft-unicode")
+                convertor = (c) => refAlt[c] || `\\u${('000'+c.charCodeAt().toString(16)).slice(-4)}`;
+            else if (mode === "hard-remove")
+                convertor = c => "";
+            else if (mode === "soft-remove")
+                convertor = c => refAlt[c] || "";
+            else
+                return null;
+            for (let c in chars)
+                result = result.replaceAll(c, convertor(c));
+            return result;
+        },
+
+        revertUnicode: function(string) {
+            return string.replace(/\\u[\dA-F]{4}/gi,
+                m => String.fromCharCode(parseInt(m.replace(/\\u/g, ''), 16)));
         }
     }
 </script>
-<script id="floBlockchainAPI" version="2.0.1">
+<script id="floBlockchainAPI" version="2.0.1c">
     /* FLO Blockchain Operator to send/receive data from blockchain using API calls*/
     const floBlockchainAPI = {
 
         util: {
             serverList: floGlobals.apiURL[floGlobals.blockchain].slice(0),
             curPos: floCrypto.randInt(0, floGlobals.apiURL[floGlobals.blockchain].length),
-            fetch_retry: function (apicall) {
+            fetch_retry: function(apicall) {
                 return new Promise((resolve, reject) => {
                     this.serverList.splice(this.curPos, 1);
-                    this.curPos = floCrypto.randInt(0, this.serverList.length)
+                    this.curPos = floCrypto.randInt(0, this.serverList.length - 1)
                     this.fetch_api(apicall)
                         .then(result => resolve(result))
                         .catch(error => reject(error));
                 })
             },
-            fetch_api: function (apicall) {
+            fetch_api: function(apicall) {
                 return new Promise((resolve, reject) => {
                     if (this.serverList.length === 0)
                         reject("No floSight server working")
@@ -7271,7 +7332,7 @@ Bitcoin.Util = {
         },
 
         //Promised function to get data from API
-        promisedAPI: function (apicall) {
+        promisedAPI: function(apicall) {
             return new Promise((resolve, reject) => {
                 console.log(apicall)
                 this.util.fetch_api(apicall)
@@ -7281,7 +7342,7 @@ Bitcoin.Util = {
         },
 
         //Get balance for the given Address
-        getBalance: function (addr) {
+        getBalance: function(addr) {
             return new Promise((resolve, reject) => {
                 this.promisedAPI(`api/addr/${addr}/balance`)
                     .then(balance => resolve(parseFloat(balance)))
@@ -7290,7 +7351,7 @@ Bitcoin.Util = {
         },
 
         //Write Data into blockchain
-        writeData: function (senderAddr, data, privKey, receiverAddr = floGlobals.adminID) {
+        writeData: function(senderAddr, data, privKey, receiverAddr = floGlobals.adminID) {
             return new Promise((resolve, reject) => {
                 if (typeof data != "string")
                     data = JSON.stringify(data);
@@ -7301,8 +7362,10 @@ Bitcoin.Util = {
         },
 
         //Send Tx to blockchain 
-        sendTx: function (senderAddr, receiverAddr, sendAmt, privKey, floData = '') {
+        sendTx: function(senderAddr, receiverAddr, sendAmt, privKey, floData = '') {
             return new Promise((resolve, reject) => {
+                if (!floCrypto.validateASCII(floData))
+                    return reject("Invalid FLO_Data: only printable ASCII characters are allowed");
                 if (!floCrypto.validateAddr(senderAddr))
                     reject(`Invalid address : ${senderAddr}`);
                 else if (!floCrypto.validateAddr(receiverAddr))
@@ -7343,12 +7406,14 @@ Bitcoin.Util = {
         },
 
         //merge all UTXOs of a given floID into a single UTXO
-        mergeUTXOs: function (floID, privKey, floData = '') {
+        mergeUTXOs: function(floID, privKey, floData = '') {
             return new Promise((resolve, reject) => {
                 if (!floCrypto.validateAddr(floID))
                     return reject(`Invalid floID`);
                 if (!floCrypto.verifyPrivKey(privKey, floID))
                     return reject("Invalid Private Key")
+                if (!floCrypto.validateASCII(floData))
+                    return reject("Invalid FLO_Data: only printable ASCII characters are allowed");
 
                 var trx = bitjs.transaction();
                 var utxoAmt = 0.0;
@@ -7378,7 +7443,7 @@ Bitcoin.Util = {
          * @param  {boolean} preserveRatio (optional) preserve ratio or equal contribution
          * @return {Promise}
          */
-        writeDataMultiple: function (senderPrivKeys, data, receivers = [floGlobals.adminID], preserveRatio = true) {
+        writeDataMultiple: function(senderPrivKeys, data, receivers = [floGlobals.adminID], preserveRatio = true) {
             return new Promise((resolve, reject) => {
                 if (!Array.isArray(senderPrivKeys))
                     return reject("Invalid senderPrivKeys: SenderPrivKeys must be Array")
@@ -7410,9 +7475,10 @@ Bitcoin.Util = {
          * @param  {string} floData FLO data of the txn
          * @return {Promise}
          */
-        sendTxMultiple: function (senderPrivKeys, receivers, floData = '') {
+        sendTxMultiple: function(senderPrivKeys, receivers, floData = '') {
             return new Promise((resolve, reject) => {
-
+                if (!floCrypto.validateASCII(floData))
+                    return reject("Invalid FLO_Data: only printable ASCII characters are allowed");
                 let senders = {},
                     preserveRatio;
                 //check for argument validations
@@ -7568,7 +7634,7 @@ Bitcoin.Util = {
         },
 
         //Broadcast signed Tx in blockchain using API
-        broadcastTx: function (signedTxHash) {
+        broadcastTx: function(signedTxHash) {
             return new Promise((resolve, reject) => {
                 var request = new XMLHttpRequest();
                 var url = this.util.serverList[this.util.curPos] + 'api/tx/send';
@@ -7580,7 +7646,7 @@ Bitcoin.Util = {
                     request.open('POST', url, true);
                     //Send the proper header information along with the request
                     request.setRequestHeader('Content-type', 'application/json');
-                    request.onload = function () {
+                    request.onload = function() {
                         if (request.readyState == 4 && request.status == 200) {
                             console.log(request.response);
                             resolve(JSON.parse(request.response).txid.result);
@@ -7592,7 +7658,7 @@ Bitcoin.Util = {
             })
         },
 
-        getTx: function (txid) {
+        getTx: function(txid) {
             return new Promise((resolve, reject) => {
                 this.promisedAPI(`api/tx/${txid}`)
                     .then(response => resolve(response))
@@ -7601,7 +7667,7 @@ Bitcoin.Util = {
         },
 
         //Read Txs of Address between from and to
-        readTxs: function (addr, from, to) {
+        readTxs: function(addr, from, to) {
             return new Promise((resolve, reject) => {
                 this.promisedAPI(`api/addrs/${addr}/txs?from=${from}&to=${to}`)
                     .then(response => resolve(response))
@@ -7610,7 +7676,7 @@ Bitcoin.Util = {
         },
 
         //Read All Txs of Address (newest first)
-        readAllTxs: function (addr) {
+        readAllTxs: function(addr) {
             return new Promise((resolve, reject) => {
                 this.promisedAPI(`api/addrs/${addr}/txs?from=0&to=1`).then(response => {
                     this.promisedAPI(`api/addrs/${addr}/txs?from=0&to=${response.totalItems}0`)
@@ -7625,13 +7691,18 @@ Bitcoin.Util = {
         limit       : maximum number of filtered data (default = 1000, negative  = no limit)
         ignoreOld   : ignore old txs (default = 0)
         sentOnly    : filters only sent data
-        pattern     : filters data that starts with a pattern
-        contains    : filters data that contains a string
+        receivedOnly: filters only received data
+        pattern     : filters data that with JSON pattern
         filter      : custom filter funtion for floData (eg . filter: d => {return d[0] == '$'})
+        txid        : (boolean) resolve txid or not
+        sender      : flo-id(s) of sender
+        receiver    : flo-id(s) of receiver
         */
-        readData: function (addr, options = {}) {
-            options.limit = options.limit | 0
-            options.ignoreOld = options.ignoreOld | 0
+        readData: function(addr, options = {}) {
+            options.limit = options.limit || 0
+            options.ignoreOld = options.ignoreOld || 0
+            if (typeof options.sender === "string") options.sender = [options.sender];
+            if (typeof options.receiver === "string") options.receiver = [options.receiver];
             return new Promise((resolve, reject) => {
                 this.promisedAPI(`api/addrs/${addr}/txs?from=0&to=1`).then(response => {
                     var newItems = response.totalItems - options.ignoreOld;
@@ -7642,24 +7713,54 @@ Bitcoin.Util = {
                             var filteredData = [];
                             for (i = 0; i < (response.totalItems - options.ignoreOld) &&
                                 filteredData.length < options.limit; i++) {
-                                if (options.sentOnly && response.items[i].vin[0].addr !==
-                                    addr)
-                                    continue;
                                 if (options.pattern) {
                                     try {
-                                        let jsonContent = JSON.parse(response.items[i]
-                                            .floData)
-                                        if (!Object.keys(jsonContent).includes(options
-                                                .pattern))
+                                        let jsonContent = JSON.parse(response.items[i].floData)
+                                        if (!Object.keys(jsonContent).includes(options.pattern))
                                             continue;
                                     } catch (error) {
                                         continue;
                                     }
                                 }
-                                if (options.filter && !options.filter(response.items[i]
-                                        .floData))
+                                if (options.sentOnly) {
+                                    let flag = false;
+                                    for (let vin of response.items[i].vin)
+                                        if (vin.addr === addr) {
+                                            flag = true;
+                                            break;
+                                        }
+                                    if (!flag) continue;
+                                }
+                                if (Array.isArray(options.sender)) {
+                                    let flag = false;
+                                    for (let vin of response.items[i].vin)
+                                        if (options.sender.includes(vin.addr)) {
+                                            flag = true;
+                                            break;
+                                        }
+                                    if (!flag) continue;
+                                }
+                                if (options.receivedOnly) {
+                                    let flag = false;
+                                    for (let vout of response.items[i].vout)
+                                        if (vout.scriptPubKey.addresses[0] === addr) {
+                                            flag = true;
+                                            break;
+                                        }
+                                    if (!flag) continue;
+                                }
+                                if (Array.isArray(options.receiver)) {
+                                    let flag = false;
+                                    for (let vout of response.items[i].vout)
+                                        if (options.receiver.includes(vout.scriptPubKey.addresses[0])) {
+                                            flag = true;
+                                            break;
+                                        }
+                                    if (!flag) continue;
+                                }
+                                if (options.filter && !options.filter(response.items[i].floData))
                                     continue;
-                                filteredData.push(response.items[i].floData);
+                                filteredData.push(options.txid ? [response.items[i].txid, response.items[i].floData] : response.items[i].floData);
                             }
                             resolve({
                                 totalTxs: response.totalItems,
@@ -7876,43 +7977,59 @@ Bitcoin.Util = {
             });
         },
 
+        /*searchData: function (obsName, options = {}, dbName = this.defaultDB) {
+            
+            return new Promise((resolve, reject) => {
+                this.openDB(dbName).then(db => {
+                    var obs = db.transaction(obsName, "readonly").objectStore(obsName);
+                    var filteredResult = {}
+                    let keyRange;
+                    if(options.lowerKey!==null && options.upperKey!==null)
+                        keyRange = IDBKeyRange.bound(options.lowerKey, options.upperKey);
+                    else if(options.lowerKey!==null)
+                        keyRange = IDBKeyRange.lowerBound(options.lowerKey);
+                    else if (options.upperKey!==null)
+                        keyRange = IDBKeyRange.upperBound(options.upperBound);
+                    else if (options.atKey)
+                    let curReq = obs.openCursor(keyRange, )
+                }).catch(error => reject(error))
+            })
+        },*/
+
         searchData: function (obsName, options = {}, dbName = this.defaultDB) {
             options.lowerKey = options.atKey || options.lowerKey || 0
             options.upperKey = options.atKey || options.upperKey || false
             options.patternEval = options.patternEval || ((k, v) => {
                 return true
             })
+            options.limit = options.limit || false;
             options.lastOnly = options.lastOnly || false
             return new Promise((resolve, reject) => {
                 this.openDB(dbName).then(db => {
                     var obs = db.transaction(obsName, "readonly").objectStore(obsName);
                     var filteredResult = {}
                     let curReq = obs.openCursor(
-                        options.upperKey ? IDBKeyRange.bound(options.lowerKey, options
-                            .upperKey) : IDBKeyRange.lowerBound(options.lowerKey),
+                        options.upperKey ? IDBKeyRange.bound(options.lowerKey, options.upperKey) : IDBKeyRange.lowerBound(options.lowerKey),
                         options.lastOnly ? "prev" : "next");
                     curReq.onsuccess = (evt) => {
                         var cursor = evt.target.result;
                         if (cursor) {
                             if (options.patternEval(cursor.primaryKey, cursor.value)) {
                                 filteredResult[cursor.primaryKey] = cursor.value;
-                                options.lastOnly ? resolve(filteredResult) : cursor
-                                    .continue();
+                                options.lastOnly ? resolve(filteredResult) : cursor.continue();
                             } else
                                 cursor.continue();
                         } else
                             resolve(filteredResult);
                     }
-                    curReq.onerror = (evt) => reject(
-                        `Search unsuccessful [${evt.target.error.name}] ${evt.target.error.message}`
-                    );
+                    curReq.onerror = (evt) => reject(`Search unsuccessful [${evt.target.error.name}] ${evt.target.error.message}`);
                     db.close();
                 }).catch(error => reject(error));
             });
         }
     }
 </script>
-<script id="floCloudAPI" version="2.0.2c">
+<script id="floCloudAPI" version="2.0.2e">
     /* FLO Cloud operations to send/request application data*/
     const floCloudAPI = {
 
@@ -7934,7 +8051,7 @@ Bitcoin.Util = {
                         return nodeIdNewInt8Array;
                     },
 
-                    addNode: function (floID, KB) {
+                    addNode: function(floID, KB) {
                         let decodedId = this.decodeID(floID);
                         const contact = {
                             id: decodedId,
@@ -7943,27 +8060,27 @@ Bitcoin.Util = {
                         KB.add(contact)
                     },
 
-                    removeNode: function (floID, KB) {
+                    removeNode: function(floID, KB) {
                         let decodedId = this.decodeID(floID);
                         KB.remove(decodedId)
                     },
 
-                    isPresent: function (floID, KB) {
+                    isPresent: function(floID, KB) {
                         let kArray = KB.toArray().map(k => k.floID);
                         return kArray.includes(floID)
                     },
 
-                    distanceOf: function (floID, KB) {
+                    distanceOf: function(floID, KB) {
                         let decodedId = this.decodeID(floID);
                         return KB.distance(KB.localNodeId, decodedId);
                     },
 
-                    closestOf: function (floID, n, KB) {
+                    closestOf: function(floID, n, KB) {
                         let decodedId = this.decodeID(floID);
                         return KB.closest(decodedId, n)
                     },
 
-                    constructKB: function (list, refID) {
+                    constructKB: function(list, refID) {
                         const KBoptions = {
                             localNodeId: this.decodeID(refID)
                         };
@@ -7974,7 +8091,7 @@ Bitcoin.Util = {
                     }
                 },
 
-                launch: function () {
+                launch: function() {
                     return new Promise((resolve, reject) => {
                         try {
                             let superNodeList = Object.keys(floGlobals.supernodes);
@@ -7992,7 +8109,7 @@ Bitcoin.Util = {
                     });
                 },
 
-                innerNodes: function (id1, id2) {
+                innerNodes: function(id1, id2) {
                     if (!this.SNCO.includes(id1) || !this.SNCO.includes(id2))
                         throw Error('Given nodes are not supernode');
                     let iNodes = []
@@ -8004,7 +8121,7 @@ Bitcoin.Util = {
                     return iNodes
                 },
 
-                outterNodes: function (id1, id2) {
+                outterNodes: function(id1, id2) {
                     if (!this.SNCO.includes(id1) || !this.SNCO.includes(id2))
                         throw Error('Given nodes are not supernode');
                     let oNodes = []
@@ -8016,7 +8133,7 @@ Bitcoin.Util = {
                     return oNodes
                 },
 
-                prevNode: function (id, N = 1) {
+                prevNode: function(id, N = 1) {
                     let n = N || this.SNCO.length;
                     if (!this.SNCO.includes(id))
                         throw Error('Given node is not supernode');
@@ -8031,7 +8148,7 @@ Bitcoin.Util = {
                     return (N == 1 ? pNodes[0] : pNodes)
                 },
 
-                nextNode: function (id, N = 1) {
+                nextNode: function(id, N = 1) {
                     let n = N || this.SNCO.length;
                     if (!this.SNCO.includes(id))
                         throw Error('Given node is not supernode');
@@ -8047,7 +8164,7 @@ Bitcoin.Util = {
                     return (N == 1 ? nNodes[0] : nNodes)
                 },
 
-                closestNode: function (id, N = 1) {
+                closestNode: function(id, N = 1) {
                     let decodedId = this.util.decodeID(id);
                     let n = N || this.SNCO.length;
                     let cNodes = this.SNKB.closest(decodedId, n)
@@ -8056,13 +8173,13 @@ Bitcoin.Util = {
                 }
             },
 
-            inactive: [],
+            inactive: new Set(),
             connect(snID) {
                 return new Promise((resolve, reject) => {
                     if (!(snID in floGlobals.supernodes))
                         return reject(`${snID} is not a supernode`)
                     let inactive = this.inactive
-                    if (inactive.includes(snID))
+                    if (inactive.has(snID))
                         return reject(`${snID} is not active`)
                     var wsConn = new WebSocket("wss://" + floGlobals.supernodes[snID].uri + "/ws");
                     wsConn.onmessage = (evt) => {
@@ -8070,12 +8187,12 @@ Bitcoin.Util = {
                             resolve(wsConn)
                         else if (evt.data == '$-') {
                             wsConn.close();
-                            inactive.push(snID)
+                            inactive.add(snID)
                             reject(`${snID} is not active`)
                         }
                     }
                     wsConn.onerror = evt => {
-                        inactive.push(snID)
+                        inactive.add(snID)
                         reject(`${snID} is unavailable`)
                     }
                 })
@@ -8083,7 +8200,7 @@ Bitcoin.Util = {
 
             connectActive(snID, reverse = false) {
                 return new Promise((resolve, reject) => {
-                    if (this.inactive.length === this.kBucket.SNCO.length)
+                    if (this.inactive.size === this.kBucket.SNCO.length)
                         return reject('Cloud offline')
                     if (!(snID in floGlobals.supernodes))
                         snID = this.kBucket.closestNode(snID);
@@ -8101,7 +8218,7 @@ Bitcoin.Util = {
                 })
             },
 
-            singleRequest: function (floID, data) {
+            singleRequest: function(floID, data) {
                 return new Promise((resolve, reject) => {
                     this.connectActive(floID).then(node => {
                         let randID = floCrypto.randString(5);
@@ -8122,7 +8239,7 @@ Bitcoin.Util = {
                 });
             },
 
-            liveRequest: function (floID, datareq, callback) {
+            liveRequest: function(floID, datareq, callback) {
                 let request = {
                     ...datareq.request
                 };
@@ -8166,21 +8283,21 @@ Bitcoin.Util = {
                 });
             },
 
-            encodeMessage: function (message) {
+            encodeMessage: function(message) {
                 return btoa(unescape(encodeURIComponent(JSON.stringify(message))))
             },
 
-            decodeMessage: function (message) {
+            decodeMessage: function(message) {
                 return JSON.parse(decodeURIComponent(escape(atob(message))))
             },
 
-            filterKey: function (type, options) {
+            filterKey: function(type, options) {
                 return type + (options.comment ? ':' + options.comment : '') +
                     '|' + (options.receiverID || floGlobals.adminID) +
                     '|' + (options.application || floGlobals.application);
             },
 
-            lastCommit: function (method, objName) {
+            lastCommit: function(method, objName) {
                 switch (method) {
                     case "GET":
                         return JSON.parse(this.lastCommit[objName]);
@@ -8189,7 +8306,7 @@ Bitcoin.Util = {
                 }
             },
 
-            updateObject: function (dataSet) {
+            updateObject: function(dataSet) {
                 try {
                     console.log(dataSet)
                     let updatedObjects = new Set()
@@ -8216,7 +8333,7 @@ Bitcoin.Util = {
                 }
             },
 
-            storeGeneral: function (fk, dataSet) {
+            storeGeneral: function(fk, dataSet) {
                 try {
                     console.log(dataSet)
                     if (typeof floGlobals.generalData[fk] !== "object")
@@ -8233,7 +8350,7 @@ Bitcoin.Util = {
         },
 
         //send Any message to supernode cloud storage
-        sendApplicationData: function (message, type, options = {}) {
+        sendApplicationData: function(message, type, options = {}) {
             return new Promise((resolve, reject) => {
                 var data = {
                     senderID: myFloID,
@@ -8259,7 +8376,7 @@ Bitcoin.Util = {
         },
 
         //request any data from supernode cloud
-        requestApplicationData: function (type, options = {}) {
+        requestApplicationData: function(type, options = {}) {
             return new Promise((resolve, reject) => {
                 var request = {
                     receiverID: options.receiverID || floGlobals.adminID,
@@ -8296,7 +8413,7 @@ Bitcoin.Util = {
         },
 
         //delete data from supernode cloud (received only)
-        deleteApplicationData: function (vectorClocks, options = {}) {
+        deleteApplicationData: function(vectorClocks, options = {}) {
             return new Promise((resolve, reject) => {
                 var delreq = {
                     requestorID: myFloID,
@@ -8322,7 +8439,7 @@ Bitcoin.Util = {
         },
 
         //edit comment of data in supernode cloud (mutable comments only)
-        editApplicationData: function (vectorClock, newComment, oldData, options = {}) {
+        editApplicationData: function(vectorClock, newComment, oldData, options = {}) {
             return new Promise((resolve, reject) => {
                 let p0
                 if (!oldData) {
@@ -8364,7 +8481,7 @@ Bitcoin.Util = {
         },
 
         //mark data in supernode cloud (subAdmin access only)
-        markApplicationData: function (mark, options = {}) {
+        markApplicationData: function(mark, options = {}) {
             return new Promise((resolve, reject) => {
                 if (!floGlobals.subAdmins.includes(myFloID))
                     return reject("Only subAdmins can mark data")
@@ -8399,7 +8516,7 @@ Bitcoin.Util = {
         },
 
         //send General Data
-        sendGeneralData: function (message, type, options = {}) {
+        sendGeneralData: function(message, type, options = {}) {
             return new Promise((resolve, reject) => {
                 if (options.encrypt) {
                     let encryptionKey = options.encrypt === true ?
@@ -8416,7 +8533,7 @@ Bitcoin.Util = {
         },
 
         //request General Data
-        requestGeneralData: function (type, options = {}) {
+        requestGeneralData: function(type, options = {}) {
             return new Promise((resolve, reject) => {
                 var fk = this.util.filterKey(type, options)
                 options.lowerVectorClock = options.lowerVectorClock || floGlobals.lastVC[fk] + 1;
@@ -8439,7 +8556,7 @@ Bitcoin.Util = {
         },
 
         //request an object data from supernode cloud
-        requestObjectData: function (objectName, options = {}) {
+        requestObjectData: function(objectName, options = {}) {
             return new Promise((resolve, reject) => {
                 options.lowerVectorClock = options.lowerVectorClock || floGlobals.lastVC[objectName] +
                     1;
@@ -8455,7 +8572,7 @@ Bitcoin.Util = {
                     }
                     delete options.callback;
                 }
-                this.requestApplicationData(objectName, options).then(data).then(dataSet => {
+                this.requestApplicationData(objectName, options).then(dataSet => {
                     this.util.updateObject(dataSet)
                     delete options.comment;
                     options.lowerVectorClock = floGlobals.lastVC[objectName] + 1
@@ -8477,8 +8594,21 @@ Bitcoin.Util = {
             })
         },
 
+        closeRequest: function(requestID) {
+            return new Promise((resolve, reject) => {
+                let conn = this.util.liveRequest[requestID]
+                if (!conn)
+                    return reject('Request not found')
+                conn.onclose = evt => {
+                    delete this.util.liveRequest[requestID]
+                    resolve('Request connection closed')
+                }
+                conn.close()
+            })
+        },
+
         //reset or initialize an object and send it to cloud
-        resetObjectData: function (objectName, options = {}) {
+        resetObjectData: function(objectName, options = {}) {
             return new Promise((resolve, reject) => {
                 let message = {
                     reset: floGlobals.appObjects[objectName]
@@ -8492,7 +8622,7 @@ Bitcoin.Util = {
         },
 
         //update the diff and send it to cloud
-        updateObjectData: function (objectName, options = {}) {
+        updateObjectData: function(objectName, options = {}) {
             return new Promise((resolve, reject) => {
                 let message = {
                     diff: findDiff(this.util.lastCommit("GET", objectName), floGlobals.appObjects[
@@ -8516,7 +8646,7 @@ Bitcoin.Util = {
         this.arbiter = options.arbiter || this.arbiter
         this.metadata = Object.assign({}, options.metadata)
 
-        this.createNode = function () {
+        this.createNode = function() {
             return {
                 contacts: [],
                 dontSplit: false,
@@ -8525,12 +8655,12 @@ Bitcoin.Util = {
             }
         }
 
-        this.ensureInt8 = function (name, val) {
+        this.ensureInt8 = function(name, val) {
             if (!(val instanceof Uint8Array))
                 throw new TypeError(name + ' is not a Uint8Array')
         }
 
-        this.arrayEquals = function (array1, array2) {
+        this.arrayEquals = function(array1, array2) {
             if (array1 === array2)
                 return true
             if (array1.length !== array2.length)
@@ -8544,11 +8674,11 @@ Bitcoin.Util = {
         this.ensureInt8('option.localNodeId as parameter 1', this.localNodeId)
         this.root = this.createNode()
 
-        this.arbiter = function (incumbent, candidate) {
+        this.arbiter = function(incumbent, candidate) {
             return incumbent.vectorClock > candidate.vectorClock ? incumbent : candidate
         }
 
-        this.distance = function (firstId, secondId) {
+        this.distance = function(firstId, secondId) {
             let distance = 0
             let i = 0
             const min = Math.min(firstId.length, secondId.length)
@@ -8559,7 +8689,7 @@ Bitcoin.Util = {
             return distance
         }
 
-        this.add = function (contact) {
+        this.add = function(contact) {
             this.ensureInt8('contact.id', (contact || {}).id)
             let bitIndex = 0
             let node = this.root
@@ -8580,7 +8710,7 @@ Bitcoin.Util = {
             return this.add(contact)
         }
 
-        this.closest = function (id, n = Infinity) {
+        this.closest = function(id, n = Infinity) {
             this.ensureInt8('id', id)
             if ((!Number.isInteger(n) && n !== Infinity) || n <= 0)
                 throw new TypeError('n is not positive number')
@@ -8601,7 +8731,7 @@ Bitcoin.Util = {
                 .map(a => a[1])
         }
 
-        this.count = function () {
+        this.count = function() {
             let count = 0
             for (const nodes = [this.root]; nodes.length > 0;) {
                 const node = nodes.pop()
@@ -8613,7 +8743,7 @@ Bitcoin.Util = {
             return count
         }
 
-        this._determineNode = function (node, id, bitIndex) {
+        this._determineNode = function(node, id, bitIndex) {
             const bytesDescribedByBitIndex = bitIndex >> 3
             const bitIndexWithinByte = bitIndex % 8
             if ((id.length <= bytesDescribedByBitIndex) && (bitIndexWithinByte !== 0))
@@ -8624,7 +8754,7 @@ Bitcoin.Util = {
             return node.left
         }
 
-        this.get = function (id) {
+        this.get = function(id) {
             this.ensureInt8('id', id)
             let bitIndex = 0
             let node = this.root
@@ -8634,14 +8764,14 @@ Bitcoin.Util = {
             return index >= 0 ? node.contacts[index] : null
         }
 
-        this._indexOf = function (node, id) {
+        this._indexOf = function(node, id) {
             for (let i = 0; i < node.contacts.length; ++i)
                 if (this.arrayEquals(node.contacts[i].id, id))
                     return i
             return -1
         }
 
-        this.remove = function (id) {
+        this.remove = function(id) {
             this.ensureInt8('the id as parameter 1', id)
             let bitIndex = 0
             let node = this.root
@@ -8653,7 +8783,7 @@ Bitcoin.Util = {
             return this
         }
 
-        this._split = function (node, bitIndex) {
+        this._split = function(node, bitIndex) {
             node.left = this.createNode()
             node.right = this.createNode()
             for (const contact of node.contacts)
@@ -8664,7 +8794,7 @@ Bitcoin.Util = {
             otherNode.dontSplit = true
         }
 
-        this.toArray = function () {
+        this.toArray = function() {
             let result = []
             for (const nodes = [this.root]; nodes.length > 0;) {
                 const node = nodes.pop()
@@ -8676,7 +8806,7 @@ Bitcoin.Util = {
             return result
         }
 
-        this._update = function (node, index, contact) {
+        this._update = function(node, index, contact) {
             if (!this.arrayEquals(node.contacts[index].id, contact.id))
                 throw new Error('wrong index for _update')
             const incumbent = node.contacts[index]
@@ -8687,13 +8817,13 @@ Bitcoin.Util = {
         }
     }
 </script>
-<script id="floDapps" version="2.0.1a">
+<script id="floDapps" version="2.0.1c">
     /* General functions for FLO Dapps*/
     const floDapps = {
 
         util: {
 
-            initIndexedDB: function () {
+            initIndexedDB: function() {
                 return new Promise((resolve, reject) => {
                     var obs_g = {
                         //general
@@ -8731,7 +8861,7 @@ Bitcoin.Util = {
                 })
             },
 
-            initUserDB: function (floID) {
+            initUserDB: function(floID) {
                 return new Promise((resolve, reject) => {
                     var obs = {
                         contacts: {},
@@ -8744,7 +8874,7 @@ Bitcoin.Util = {
                 })
             },
 
-            loadUserDB: function (floID) {
+            loadUserDB: function(floID) {
                 return new Promise((resolve, reject) => {
                     var loadData = ["contacts", "pubKeys", "messages"]
                     var promises = []
@@ -8760,86 +8890,69 @@ Bitcoin.Util = {
 
             startUpFunctions: {
 
-                readSupernodeListFromAPI: function () {
+                readSupernodeListFromAPI: function() {
                     return new Promise((resolve, reject) => {
-                        compactIDB.readData("lastTx", floGlobals.SNStorageID, "floDapps").then(
-                            lastTx => {
-                                floBlockchainAPI.readData(floGlobals.SNStorageID, {
-                                    ignoreOld: lastTx,
-                                    sentOnly: true,
-                                    pattern: "SuperNodeStorage"
-                                }).then(result => {
-                                    for (var i = result.data.length - 1; i >= 0; i--) {
-                                        var content = JSON.parse(result.data[i])
-                                            .SuperNodeStorage;
-                                        for (sn in content.removeNodes)
-                                            compactIDB.removeData("supernodes", sn,
-                                                "floDapps");
-                                        for (sn in content.newNodes)
-                                            compactIDB.writeData("supernodes", content
-                                                .newNodes[sn], sn, "floDapps");
-                                    }
-                                    compactIDB.writeData("lastTx", result.totalTxs,
-                                        floGlobals.SNStorageID, "floDapps");
-                                    compactIDB.readAllData("supernodes", "floDapps").then(
-                                        result => {
-                                            floGlobals.supernodes = result;
-                                            floCloudAPI.util.kBucket.launch()
-                                                .then(result => resolve(
-                                                    "Loaded Supernode list\n" +
-                                                    result))
-                                        })
-                                })
-                            }).catch(error => reject(error))
-                    })
-                },
-
-                readAppConfigFromAPI: function () {
-                    return new Promise((resolve, reject) => {
-                        compactIDB.readData("lastTx", floGlobals.adminID, "floDapps").then(lastTx => {
-                            floBlockchainAPI.readData(floGlobals.adminID, {
+                        compactIDB.readData("lastTx", floGlobals.SNStorageID, "floDapps").then(lastTx => {
+                            floBlockchainAPI.readData(floGlobals.SNStorageID, {
                                 ignoreOld: lastTx,
                                 sentOnly: true,
-                                pattern: floGlobals.application
+                                pattern: "SuperNodeStorage"
                             }).then(result => {
                                 for (var i = result.data.length - 1; i >= 0; i--) {
-                                    var content = JSON.parse(result.data[i])[floGlobals
-                                        .application];
-                                    if (!content || typeof content !== "object")
-                                        continue;
-                                    if (Array.isArray(content.removeSubAdmin))
-                                        for (var j = 0; j < content.removeSubAdmin
-                                            .length; j++)
-                                            compactIDB.removeData("subAdmins", content
-                                                .removeSubAdmin[j]);
-                                    if (Array.isArray(content.addSubAdmin))
-                                        for (var k = 0; k < content.addSubAdmin
-                                            .length; k++)
-                                            compactIDB.writeData("subAdmins", true,
-                                                content.addSubAdmin[k]);
-                                    if (content.settings)
-                                        for (let l in content.settings)
-                                            compactIDB.writeData("settings", content
-                                                .settings[l], l)
+                                    var content = JSON.parse(result.data[i]).SuperNodeStorage;
+                                    for (sn in content.removeNodes)
+                                        compactIDB.removeData("supernodes", sn, "floDapps");
+                                    for (sn in content.newNodes)
+                                        compactIDB.writeData("supernodes", content.newNodes[sn], sn, "floDapps");
                                 }
-                                compactIDB.writeData("lastTx", result.totalTxs,
-                                    floGlobals.adminID, "floDapps");
-                                compactIDB.readAllData("subAdmins").then(result => {
-                                    floGlobals.subAdmins = Object.keys(result);
-                                    compactIDB.readAllData("settings").then(
-                                        result => {
-                                            floGlobals.settings = result;
-                                            resolve(
-                                                "Read app configuration from blockchain"
-                                            );
-                                        })
+                                compactIDB.writeData("lastTx", result.totalTxs, floGlobals.SNStorageID, "floDapps");
+                                compactIDB.readAllData("supernodes", "floDapps").then(result => {
+                                    floGlobals.supernodes = result;
+                                    floCloudAPI.util.kBucket.launch()
+                                        .then(result => resolve("Loaded Supernode list\n" + result))
+                                        .catch(error => reject(error))
                                 })
                             })
                         }).catch(error => reject(error))
                     })
                 },
 
-                loadDataFromAppIDB: function () {
+                readAppConfigFromAPI: function() {
+                    return new Promise((resolve, reject) => {
+                        compactIDB.readData("lastTx", `${floGlobals.application}|${floGlobals.adminID}`, "floDapps").then(lastTx => {
+                            floBlockchainAPI.readData(floGlobals.adminID, {
+                                ignoreOld: lastTx,
+                                sentOnly: true,
+                                pattern: floGlobals.application
+                            }).then(result => {
+                                for (var i = result.data.length - 1; i >= 0; i--) {
+                                    var content = JSON.parse(result.data[i])[floGlobals.application];
+                                    if (!content || typeof content !== "object")
+                                        continue;
+                                    if (Array.isArray(content.removeSubAdmin))
+                                        for (var j = 0; j < content.removeSubAdmin.length; j++)
+                                            compactIDB.removeData("subAdmins", content.removeSubAdmin[j]);
+                                    if (Array.isArray(content.addSubAdmin))
+                                        for (var k = 0; k < content.addSubAdmin.length; k++)
+                                            compactIDB.writeData("subAdmins", true, content.addSubAdmin[k]);
+                                    if (content.settings)
+                                        for (let l in content.settings)
+                                            compactIDB.writeData("settings", content.settings[l], l)
+                                }
+                                compactIDB.writeData("lastTx", result.totalTxs, `${floGlobals.application}|${floGlobals.adminID}`, "floDapps");
+                                compactIDB.readAllData("subAdmins").then(result => {
+                                    floGlobals.subAdmins = Object.keys(result);
+                                    compactIDB.readAllData("settings").then(result => {
+                                        floGlobals.settings = result;
+                                        resolve("Read app configuration from blockchain");
+                                    })
+                                })
+                            })
+                        }).catch(error => reject(error))
+                    })
+                },
+
+                loadDataFromAppIDB: function() {
                     return new Promise((resolve, reject) => {
                         var loadData = ["appObjects", "generalData", "lastVC"]
                         var promises = []
@@ -8854,9 +8967,9 @@ Bitcoin.Util = {
                 }
             },
 
-            getCredentials: function () {
+            getCredentials: function() {
 
-                const defaultInput = function (type) {
+                const defaultInput = function(type) {
                     return new Promise((resolve, reject) => {
                         let inputVal = prompt(`Enter ${type}: `)
                         if (inputVal === null)
@@ -8868,7 +8981,7 @@ Bitcoin.Util = {
 
                 const inputFn = this.getCredentials.privKeyInput || defaultInput;
 
-                const readSharesFromIDB = function (indexArr) {
+                const readSharesFromIDB = function(indexArr) {
                     return new Promise((resolve, reject) => {
                         var promises = []
                         for (var i = 0; i < indexArr.length; i++)
@@ -8883,8 +8996,8 @@ Bitcoin.Util = {
                     })
                 }
 
-                const writeSharesToIDB = function (shares, i = 0, resultIndexes = []) {
-                    return new Promise((resolve, reject) => {
+                const writeSharesToIDB = function(shares, i = 0, resultIndexes = []) {
+                    return new Promise(resolve => {
                         if (i >= shares.length)
                             return resolve(resultIndexes)
                         var n = floCrypto.randInt(0, 100000)
@@ -8899,7 +9012,7 @@ Bitcoin.Util = {
                     })
                 }
 
-                const getPrivateKeyCredentials = function () {
+                const getPrivateKeyCredentials = function() {
                     return new Promise((resolve, reject) => {
                         var indexArr = localStorage.getItem(`${floGlobals.application}#privKey`)
                         if (indexArr) {
@@ -8922,31 +9035,24 @@ Bitcoin.Util = {
                                 if (!privKey)
                                     return;
                                 var threshold = floCrypto.randInt(10, 20)
-                                writeSharesToIDB(floCrypto.createShamirsSecretShares(
-                                    privKey, threshold, threshold)).then(
-                                    resultIndexes => {
-                                        //store index keys in localStorage
-                                        localStorage.setItem(
-                                            `${floGlobals.application}#privKey`,
-                                            JSON.stringify(resultIndexes))
-                                        //also add a dummy privatekey to the IDB
-                                        var randomPrivKey = floCrypto
-                                            .generateNewID().privKey
-                                        var randomThreshold = floCrypto.randInt(10,
-                                            20)
-                                        writeSharesToIDB(floCrypto
-                                            .createShamirsSecretShares(
-                                                randomPrivKey, randomThreshold,
-                                                randomThreshold))
-                                        //resolve private Key
-                                        resolve(privKey)
-                                    }).catch(error => reject(error))
+                                var shares = floCrypto.createShamirsSecretShares(privKey, threshold, threshold)
+                                writeSharesToIDB(shares).then(resultIndexes => {
+                                    //store index keys in localStorage
+                                    localStorage.setItem(`${floGlobals.application}#privKey`, JSON.stringify(resultIndexes))
+                                    //also add a dummy privatekey to the IDB
+                                    var randomPrivKey = floCrypto.generateNewID().privKey
+                                    var randomThreshold = floCrypto.randInt(10, 20)
+                                    var randomShares = floCrypto.createShamirsSecretShares(randomPrivKey, randomThreshold, randomThreshold)
+                                    writeSharesToIDB(randomShares)
+                                    //resolve private Key
+                                    resolve(privKey)
+                                })
                             })
                         }
                     })
                 }
 
-                const checkIfPinRequired = function (key) {
+                const checkIfPinRequired = function(key) {
                     return new Promise((resolve, reject) => {
                         if (key.length == 52)
                             resolve(key)
@@ -8958,8 +9064,7 @@ Bitcoin.Util = {
                                 } catch (error) {
                                     reject("Access Denied: Incorrect PIN/Password")
                                 }
-                            }).catch(error => reject(
-                                "Access Denied: PIN/Password required"))
+                            }).catch(error => reject("Access Denied: PIN/Password required"))
                         }
                     })
                 }
@@ -8981,38 +9086,33 @@ Bitcoin.Util = {
                 })
             },
 
-            startUpLog: function (status, log) {
+            startUpLog: function(status, log) {
                 if (status)
                     console.log(log)
                 else
                     console.error(log)
             },
 
-            callStartUpFunction: function (fname) {
+            callStartUpFunction: function(fname) {
                 return new Promise((resolve, reject) => {
                     this.startUpFunctions[fname]().then(result => {
                         this.callStartUpFunction.completed += 1
-                        this.startUpLog(true,
-                            `${result}\nCompleted ${this.callStartUpFunction.completed}/${this.callStartUpFunction.total} Startup functions`
-                        )
+                        this.startUpLog(true, `${result}\nCompleted ${this.callStartUpFunction.completed}/${this.callStartUpFunction.total} Startup functions`)
                         resolve(true)
                     }).catch(error => {
                         this.callStartUpFunction.failed += 1
-                        this.startUpLog(false,
-                            `${error}\nFailed ${this.callStartUpFunction.failed}/${this.callStartUpFunction.total} Startup functions`
-                        )
+                        this.startUpLog(false, `${error}\nFailed ${this.callStartUpFunction.failed}/${this.callStartUpFunction.total} Startup functions`)
                         reject(false)
                     })
                 })
             }
         },
 
-        launchStartUp: function () {
+        launchStartUp: function() {
             return new Promise((resolve, reject) => {
                 this.util.initIndexedDB().then(log => {
                     console.log(log)
-                    this.util.callStartUpFunction.total = Object.keys(this.util
-                        .startUpFunctions).length
+                    this.util.callStartUpFunction.total = Object.keys(this.util.startUpFunctions).length
                     this.util.callStartUpFunction.completed = 0
                     this.util.callStartUpFunction.failed = 0
                     var p0 = []
@@ -9058,26 +9158,26 @@ Bitcoin.Util = {
             })
         },
 
-        addStartUpFunction: function (fname, fn) {
+        addStartUpFunction: function(fname, fn) {
             if (fname in this.util.startUpFunctions)
                 throw (`Function ${fname} already defined`)
             this.util.startUpFunctions[fname] = fn;
         },
 
-        setMidStartup: function (fn) {
+        setMidStartup: function(fn) {
             if (fn instanceof Function)
                 this.launchStartUp.midFunction = fn;
         },
 
-        setCustomStartupLogger: function (logger) {
+        setCustomStartupLogger: function(logger) {
             this.util.startUpLog = logger;
         },
 
-        setCustomPrivKeyInput: function (customFn) {
+        setCustomPrivKeyInput: function(customFn) {
             this.util.getCredentials.privKeyInput = customFn
         },
 
-        setAppObjectStores: function (appObs) {
+        setAppObjectStores: function(appObs) {
             this.util.initIndexedDB.appObs = appObs
         },
 
@@ -9152,8 +9252,7 @@ Bitcoin.Util = {
             return new Promise((resolve, reject) => {
                 if (!Array.isArray(addList) || !addList.length) addList = undefined;
                 if (!Array.isArray(rmList) || !rmList.length) rmList = undefined;
-                if (!settings || typeof settings !== "object" || !Object.keys(settings).length)
-                    settings = undefined;
+                if (!settings || typeof settings !== "object" || !Object.keys(settings).length) settings = undefined;
                 if (!addList && !rmList && !settings)
                     return reject("No configuration change")
                 var floData = {
@@ -9173,7 +9272,7 @@ Bitcoin.Util = {
             })
         },
 
-        clearCredentials: function () {
+        clearCredentials: function() {
             return new Promise((resolve, reject) => {
                 compactIDB.clearData('credentials', floGlobals.application).then(result => {
                     localStorage.removeItem(`${floGlobals.application}#privKey`)
@@ -9183,7 +9282,7 @@ Bitcoin.Util = {
             })
         },
 
-        deleteUserData: function (credentials = false) {
+        deleteUserData: function(credentials = false) {
             return new Promise((resolve, reject) => {
                 let p = []
                 p.push(compactIDB.deleteDB(`floDapps#${myFloID}`))
@@ -9195,17 +9294,19 @@ Bitcoin.Util = {
             })
         },
 
-        deleteAppData: function () {
+        deleteAppData: function() {
             return new Promise((resolve, reject) => {
                 compactIDB.deleteDB(floGlobals.application).then(result => {
                     localStorage.removeItem(`${floGlobals.application}#privKey`)
                     myPrivKey = myPubKey = myFloID = undefined;
-                    resolve("App database(local) deleted")
-                })
+                    compactIDB.removeData('lastTx', `${floGlobals.application}|${floGlobals.adminID}`, 'floDapps')
+                        .then(result => resolve("App database(local) deleted"))
+                        .catch(error => reject(error))
+                }).catch(error => reject(error))
             })
         },
 
-        securePrivKey: function (pwd) {
+        securePrivKey: function(pwd) {
             return new Promise((resolve, reject) => {
                 let indexArr = localStorage.getItem(`${floGlobals.application}#privKey`)
                 if (!indexArr)
@@ -9225,7 +9326,50 @@ Bitcoin.Util = {
             })
         },
 
-        getNextGeneralData: function (type, vectorClock = null, options = {}) {
+        verifyPin: function(pin = null) {
+            const readSharesFromIDB = function(indexArr) {
+                return new Promise((resolve, reject) => {
+                    var promises = []
+                    for (var i = 0; i < indexArr.length; i++)
+                        promises.push(compactIDB.readData('credentials', indexArr[i]))
+                    Promise.all(promises).then(shares => {
+                        var secret = floCrypto.retrieveShamirSecret(shares)
+                        console.info(shares, secret)
+                        if (secret)
+                            resolve(secret)
+                        else
+                            reject("Shares are insufficient or incorrect")
+                    }).catch(error => reject(error))
+                })
+            }
+            return new Promise((resolve, reject) => {
+                var indexArr = localStorage.getItem(`${floGlobals.application}#privKey`)
+                console.info(indexArr)
+                if (!indexArr)
+                    reject('No login credentials found')
+                readSharesFromIDB(JSON.parse(indexArr)).then(key => {
+                    if (key.length == 52) {
+                        if (pin === null)
+                            resolve("Private key not secured")
+                        else
+                            reject("Private key not secured")
+                    } else {
+                        if (pin === null)
+                            return reject("PIN/Password required")
+                        try {
+                            let privKey = Crypto.AES.decrypt(key, pin);
+                            resolve("PIN/Password verified")
+                        } catch (error) {
+                            reject("Incorrect PIN/Password")
+                        }
+                    }
+                }).catch(error => reject(error))
+            })
+
+
+        },
+
+        getNextGeneralData: function(type, vectorClock = null, options = {}) {
             var fk = floCloudAPI.util.filterKey(type, options)
             vectorClock = vectorClock || this.getNextGeneralData[fk] || '0';
             var filteredResult = {}
@@ -9265,7 +9409,7 @@ Bitcoin.Util = {
         },
 
         syncData: {
-            oldDevice: function () {
+            oldDevice: function() {
                 return new Promise((resolve, reject) => {
                     let sync = {
                         contacts: floGlobals.contacts,
@@ -9295,14 +9439,13 @@ Bitcoin.Util = {
                         let vc = Object.keys(response).sort().pop()
                         let sync = JSON.parse(Crypto.AES.decrypt(response[vc].message, myPrivKey))
                         let promises = []
-                        let store = (key, val, obs) =>
-                            promises.push(compactIDB.writeData(obs, val, key, `floDapps#${floID}`))[
-                                "contacts", "pubKeys", "messages"].forEach(c => {
-                                for (let i in sync[c]) {
-                                    store(i, sync[c][i], c)
-                                    floGlobals[c][i] = sync[c][i]
-                                }
-                            })
+                        let store = (key, val, obs) => promises.push(compactIDB.writeData(obs, val, key, `floDapps#${floID}`));
+                        ["contacts", "pubKeys", "messages"].forEach(c => {
+                            for (let i in sync[c]) {
+                                store(i, sync[c][i], c)
+                                floGlobals[c][i] = sync[c][i]
+                            }
+                        })
                         Promise.all(promises)
                             .then(results => resolve("Sync data successful"))
                             .catch(error => reject(error))
@@ -9310,20 +9453,6 @@ Bitcoin.Util = {
                 })
             }
         }
-    }
-</script>
-<script id="onLoadStartUp">
-    function onLoadStartUp() {
-
-        //floDapps.addStartUpFunction('Sample', Promised Function)
-        //floDapps.setAppObjectStores({sampleObs1:{}, sampleObs2:{options{autoIncrement:true, keyPath:'SampleKey'}, Indexes:{sampleIndex:{}}}})
-        //floDapps.setCustomPrivKeyInput( () => { FUNCTION BODY *must return private key* } )
-
-        floDapps.launchStartUp().then(result => {
-            console.log(result)
-            alert(`Welcome FLO_ID: ${myFloID}`)
-            //App functions....
-        }).catch(error => console.error(error))
     }
 </script>
 </body>
