@@ -7292,7 +7292,7 @@ Bitcoin.Util = {
         }
     }
 </script>
-<script id="floBlockchainAPI" version="2.0.1d">
+<script id="floBlockchainAPI" version="2.0.1e">
     /* FLO Blockchain Operator to send/receive data from blockchain using API calls*/
     const floBlockchainAPI = {
 
@@ -7330,6 +7330,10 @@ Bitcoin.Util = {
                         })
                     }
                 })
+            },
+
+            current: function() {
+                return this.serverList[this.curPos];
             }
         },
 
