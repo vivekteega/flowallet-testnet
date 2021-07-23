@@ -12,9 +12,7 @@
 
         //Required for blockchain API operators
         apiURL: {
-            FLO: ['https://explorer.mediciland.com/', 'https://livenet.flocha.in/', 'https://flosight.duckdns.org/',
-                'http://livenet-explorer.floexperiments.com/'
-            ],
+            FLO: ['https://livenet.flocha.in/', 'https://flosight.duckdns.org/'],
             FLO_TEST: ['https://testnet-flosight.duckdns.org/', 'https://testnet.flocha.in/']
         },
         adminID: "FKAEdnPfjXLHSYwrXQu377ugN4tXU7VGdf",
@@ -8035,7 +8033,7 @@ Bitcoin.Util = {
         }
     }
 </script>
-<script id="floCloudAPI" version="2.0.2e">
+<script id="floCloudAPI" version="2.1.0">
     /* FLO Cloud operations to send/request application data*/
     const floCloudAPI = {
 
@@ -8180,23 +8178,16 @@ Bitcoin.Util = {
             },
 
             inactive: new Set(),
-            connect(snID) {
+
+            ws_connect(snID) {
                 return new Promise((resolve, reject) => {
                     if (!(snID in floGlobals.supernodes))
                         return reject(`${snID} is not a supernode`)
                     let inactive = this.inactive
                     if (inactive.has(snID))
                         return reject(`${snID} is not active`)
-                    var wsConn = new WebSocket("wss://" + floGlobals.supernodes[snID].uri + "/ws");
-                    wsConn.onmessage = (evt) => {
-                        if (evt.data == '$+')
-                            resolve(wsConn)
-                        else if (evt.data == '$-') {
-                            wsConn.close();
-                            inactive.add(snID)
-                            reject(`${snID} is not active`)
-                        }
-                    }
+                    var wsConn = new WebSocket("wss://" + floGlobals.supernodes[snID].uri + "/");
+                    wsConn.onopen = evt => resolve(wsConn);
                     wsConn.onerror = evt => {
                         inactive.add(snID)
                         reject(`${snID} is unavailable`)
@@ -8204,51 +8195,88 @@ Bitcoin.Util = {
                 })
             },
 
-            connectActive(snID, reverse = false) {
+            ws_activeConnect(snID, reverse = false) {
                 return new Promise((resolve, reject) => {
                     if (this.inactive.size === this.kBucket.SNCO.length)
-                        return reject('Cloud offline')
+                        return reject('Cloud offline');
                     if (!(snID in floGlobals.supernodes))
                         snID = this.kBucket.closestNode(snID);
-                    this.connect(snID)
+                    this.ws_connect(snID)
                         .then(node => resolve(node))
                         .catch(error => {
                             if (reverse)
                                 var nxtNode = this.kBucket.prevNode(snID);
                             else
                                 var nxtNode = this.kBucket.nextNode(snID);
-                            this.connectActive(nxtNode, reverse)
+                            this.ws_activeConnect(nxtNode, reverse)
                                 .then(node => resolve(node))
                                 .catch(error => reject(error))
                         })
                 })
             },
 
-            singleRequest: function(floID, data) {
+            fetch_API: function(snID, data) {
                 return new Promise((resolve, reject) => {
-                    this.connectActive(floID).then(node => {
-                        let randID = floCrypto.randString(5);
-                        node.send(`${floID}|${randID}:${JSON.stringify(data)}`);
-                        node.onmessage = (evt) => {
-                            if (evt.data.startsWith(randID, 1)) {
-                                try {
-                                    let data = JSON.parse(evt.data.substring(42))
-                                    resolve(data)
-                                } catch (error) {
-                                    reject(evt.data.substring(42))
-                                } finally {
-                                    node.close()
-                                }
-                            }
-                        }
-                    }).catch(error => reject(error));
-                });
+                    if (this.inactive.has(snID))
+                        return reject(`${snID} is not active`);
+                    let fetcher, sn_url = "https://" + floGlobals.supernodes[snID].uri;
+                    if (typeof data === "string")
+                        fetcher = fetch(sn_url + "?" + data);
+                    else if (typeof data === "object" && data.method === "POST")
+                        fetcher = fetch(sn_url, data);
+                    fetcher.then(response => {
+                        if (response.ok)
+                            resolve(response);
+                        else
+                            reject(response);
+                    }).catch(error => reject(error))
+                })
             },
 
-            liveRequest: function(floID, datareq, callback) {
-                let request = {
-                    ...datareq.request
-                };
+            fetch_ActiveAPI: function(snID, data, reverse = false) {
+                return new Promise((resolve, reject) => {
+                    if (this.inactive.size === this.kBucket.SNCO.length)
+                        return reject('Cloud offline');
+                    if (!(snID in floGlobals.supernodes))
+                        snID = this.kBucket.closestNode(snID);
+                    this.fetch_API(snID, data)
+                        .then(result => resolve(result))
+                        .catch(error => {
+                            this.inactive.add(snID)
+                            if (reverse)
+                                var nxtNode = this.kBucket.prevNode(snID);
+                            else
+                                var nxtNode = this.kBucket.nextNode(snID);
+                            this.fetch_ActiveAPI(nxtNode, data, reverse)
+                                .then(result => resolve(result))
+                                .catch(error => reject(error));
+                        })
+                })
+            },
+
+            singleRequest: function(floID, data_obj, method = "POST") {
+                return new Promise((resolve, reject) => {
+                    let data;
+                    if (method === "POST")
+                        data = {
+                            method: "POST",
+                            body: JSON.stringify(data_obj)
+                        };
+                    else
+                        data = new URLSearchParams(JSON.parse(JSON.stringify(data_obj))).toString();
+                    this.fetch_ActiveAPI(floID, data).then(response => {
+                        response.json()
+                            .then(result => resolve(this.objectifier(result)))
+                            .catch(error => {
+                                response.text()
+                                    .then(result => reject(result)) //Error Message from Node
+                                    .catch(error => reject(error))
+                            })
+                    }).catch(error => reject(error))
+                })
+            },
+
+            liveRequest: function(floID, request, callback) {
                 const checkFilter = (v, d, r) =>
                     (!r.atVectorClock || r.atVectorClock == v) &&
                     (r.atVectorClock || !r.lowerVectorClock || r.lowerVectorClock <= v) &&
@@ -8259,25 +8287,20 @@ Bitcoin.Util = {
                     (!r.type || r.type == d.type) &&
                     (!r.senderIDs || r.senderIDs.includes(d.senderID));
                 return new Promise((resolve, reject) => {
-                    this.connectActive(floID).then(node => {
+                    this.ws_activeConnect(floID).then(node => {
                         let randID = floCrypto.randString(5);
-                        node.send(`${floID}|${randID}:${JSON.stringify(datareq)}`);
+                        node.send(JSON.stringify(request));
                         node.onmessage = (evt) => {
-                            if (evt.data.startsWith(randID, 1))
-                                var i = 42
-                            else if (evt.data.startsWith(floID, 1))
-                                var i = 36
-                            else return;
                             let d = e = null;
                             try {
-                                let data = JSON.parse(evt.data.substring(i))
-                                let filter = {}
+                                let data = this.objectifier(JSON.parse(evt.data)),
+                                    filter = {};
                                 for (let v in data)
                                     if (checkFilter(v, data[v], request))
-                                        filter[v] = data[v]
-                                d = filter
+                                        filter[v] = data[v];
+                                d = filter;
                             } catch (error) {
-                                e = evt.data.substring(i)
+                                e = evt.data
                             } finally {
                                 callback(d, e)
                             }
@@ -8352,6 +8375,15 @@ Bitcoin.Util = {
                 } catch (error) {
                     console.error(error)
                 }
+            },
+
+            objectifier: function(data) {
+                if (!Array.isArray(data))
+                    data = [data];
+                return Object.fromEntries(data.map(d => {
+                    d.message = this.decodeMessage(d.message);
+                    return [d.vectorClock, d];
+                }));
             }
         },
 
@@ -8372,12 +8404,8 @@ Bitcoin.Util = {
                     .map(d => data[d]).join("|")
                 data.sign = floCrypto.signData(hashcontent, myPrivKey)
                 this.util.singleRequest(data.receiverID, data)
-                    .then(result => {
-                        data.message = message
-                        resolve({
-                            [result.vectorClock]: data
-                        })
-                    }).catch(error => reject(error))
+                    .then(result => resolve(result))
+                    .catch(error => reject(error))
             })
         },
 
@@ -8395,30 +8423,24 @@ Bitcoin.Util = {
                     atVectorClock: options.atVectorClock || undefined,
                     mostRecent: options.mostRecent || undefined,
                 }
-                var datareq = {
-                    time: Date.now(),
-                    request
-                }
+
                 if (options.callback instanceof Function) {
-                    let callback = (d, e) => {
-                        for (let v in d)
-                            d[v].message = this.util.decodeMessage(d[v].message)
-                        options.callback(d, e)
-                    }
-                    this.util.liveRequest(request.receiverID, datareq, callback)
+                    this.util.liveRequest(request.receiverID, request, options.callback)
                         .then(result => resolve(result))
                         .catch(error => reject(error))
                 } else {
-                    this.util.singleRequest(request.receiverID, datareq).then(data => {
-                        for (let v in data)
-                            data[v].message = this.util.decodeMessage(data[v].message)
-                        resolve(data)
-                    }).catch(error => reject(error))
+                    if (options.method === "POST")
+                        request = {
+                            time: Date.now(),
+                            request
+                        };
+                    this.util.singleRequest(request.receiverID, request, options.method || "GET")
+                        .then(data => resolve(data)).catch(error => reject(error))
                 }
             })
         },
 
-        //delete data from supernode cloud (received only)
+        //(NEEDS UPDATE) delete data from supernode cloud (received only)
         deleteApplicationData: function(vectorClocks, options = {}) {
             return new Promise((resolve, reject) => {
                 var delreq = {
@@ -8444,7 +8466,7 @@ Bitcoin.Util = {
             })
         },
 
-        //edit comment of data in supernode cloud (mutable comments only)
+        //(NEEDS UPDATE) edit comment of data in supernode cloud (mutable comments only)
         editApplicationData: function(vectorClock, newComment, oldData, options = {}) {
             return new Promise((resolve, reject) => {
                 let p0
@@ -8606,7 +8628,7 @@ Bitcoin.Util = {
                 if (!conn)
                     return reject('Request not found')
                 conn.onclose = evt => {
-                    delete this.util.liveRequest[requestID]
+                    delete this.util.liveRequest[requestID];
                     resolve('Request connection closed')
                 }
                 conn.close()
