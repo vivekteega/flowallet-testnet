@@ -117,9 +117,9 @@ In addition, we have these system variables outside FLO Globals but used globall
  * Returns : pubKey (string)
 
 #### 	Calculate FLO ID
-	 floCrypto.getFloIDfromPubkeyHex(publicKey)
-`getFloIDfromPubkeyHex` returns flo-ID from public-key
-1. publicKey - public key hex value 
+	 floCrypto.getFloID(publickey_or_privateKey)
+`getFloID` returns flo-ID from given public-key (or) private-key
+1. publickey_or_privateKey - public key or private key hex value 
 * Returns : floID (string)
 
 #### 	Verify Private Key
