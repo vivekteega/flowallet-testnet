@@ -7290,7 +7290,7 @@ Bitcoin.Util = {
         }
     }
 </script>
-<script id="floBlockchainAPI" version="2.0.1e">
+<script id="floBlockchainAPI" version="2.1.0">
     /* FLO Blockchain Operator to send/receive data from blockchain using API calls*/
     const floBlockchainAPI = {
 
@@ -7392,7 +7392,7 @@ Bitcoin.Util = {
                             } else break;
                         }
                         if (utxoAmt < sendAmt + fee)
-                            reject("Insufficient balance!");
+                            reject("Insufficient FLO balance!");
                         else {
                             trx.addoutput(receiverAddr, sendAmt);
                             var change = utxoAmt - sendAmt - fee;
@@ -7698,7 +7698,7 @@ Bitcoin.Util = {
         receivedOnly: filters only received data
         pattern     : filters data that with JSON pattern
         filter      : custom filter funtion for floData (eg . filter: d => {return d[0] == '$'})
-        txid        : (boolean) resolve txid or not
+        tx          : (boolean) resolve tx data or not (resolves an Array of Object with tx details)
         sender      : flo-id(s) of sender
         receiver    : flo-id(s) of receiver
         */
@@ -7764,7 +7764,16 @@ Bitcoin.Util = {
                                 }
                                 if (options.filter && !options.filter(response.items[i].floData))
                                     continue;
-                                filteredData.push(options.txid ? [response.items[i].txid, response.items[i].floData] : response.items[i].floData);
+
+                                if (options.tx) {
+                                    let d = {}
+                                    d.txid = response.items[i].txid;
+                                    d.time = response.items[i].time;
+                                    d.blockheight = response.items[i].blockheight;
+                                    d.data = response.items[i].floData;
+                                    filteredData.push(d);
+                                } else
+                                    filteredData.push(response.items[i].floData)
                             }
                             resolve({
                                 totalTxs: response.totalItems,
