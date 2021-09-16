@@ -7290,7 +7290,7 @@ Bitcoin.Util = {
         }
     }
 </script>
-<script id="floBlockchainAPI" version="2.1.0">
+<script id="floBlockchainAPI" version="2.1.1">
     /* FLO Blockchain Operator to send/receive data from blockchain using API calls*/
     const floBlockchainAPI = {
 
@@ -7355,57 +7355,75 @@ Bitcoin.Util = {
         },
 
         //Write Data into blockchain
-        writeData: function(senderAddr, data, privKey, receiverAddr = floGlobals.adminID) {
+        writeData: function(senderAddr, data, privKey, receiverAddr = floGlobals.adminID, strict_utxo = true) {
             return new Promise((resolve, reject) => {
                 if (typeof data != "string")
                     data = JSON.stringify(data);
-                this.sendTx(senderAddr, receiverAddr, floGlobals.sendAmt, privKey, data)
+                this.sendTx(senderAddr, receiverAddr, floGlobals.sendAmt, privKey, data, strict_utxo)
                     .then(txid => resolve(txid))
                     .catch(error => reject(error))
             });
         },
 
         //Send Tx to blockchain 
-        sendTx: function(senderAddr, receiverAddr, sendAmt, privKey, floData = '') {
+        sendTx: function(senderAddr, receiverAddr, sendAmt, privKey, floData = '', strict_utxo = true) {
             return new Promise((resolve, reject) => {
                 if (!floCrypto.validateASCII(floData))
                     return reject("Invalid FLO_Data: only printable ASCII characters are allowed");
-                if (!floCrypto.validateAddr(senderAddr))
-                    reject(`Invalid address : ${senderAddr}`);
+                else if (!floCrypto.validateAddr(senderAddr))
+                    return reject(`Invalid address : ${senderAddr}`);
                 else if (!floCrypto.validateAddr(receiverAddr))
-                    reject(`Invalid address : ${receiverAddr}`);
-                if (privKey.length < 1 || !floCrypto.verifyPrivKey(privKey, senderAddr))
-                    reject("Invalid Private key!");
+                    return reject(`Invalid address : ${receiverAddr}`);
+                else if (privKey.length < 1 || !floCrypto.verifyPrivKey(privKey, senderAddr))
+                    return reject("Invalid Private key!");
                 else if (typeof sendAmt !== 'number' || sendAmt <= 0)
-                    reject(`Invalid sendAmt : ${sendAmt}`);
-                else {
-                    var trx = bitjs.transaction();
-                    var utxoAmt = 0.0;
-                    var fee = floGlobals.fee;
-                    this.promisedAPI(`api/addr/${senderAddr}/utxo`).then(utxos => {
-                        for (var i = utxos.length - 1;
-                            (i >= 0) && (utxoAmt < sendAmt + fee); i--) {
-                            if (utxos[i].confirmations) {
-                                trx.addinput(utxos[i].txid, utxos[i].vout, utxos[i]
-                                    .scriptPubKey)
-                                utxoAmt += utxos[i].amount;
-                            } else break;
-                        }
-                        if (utxoAmt < sendAmt + fee)
-                            reject("Insufficient FLO balance!");
-                        else {
-                            trx.addoutput(receiverAddr, sendAmt);
-                            var change = utxoAmt - sendAmt - fee;
-                            if (change > 0)
-                                trx.addoutput(senderAddr, change);
-                            trx.addflodata(floData.replace(/\n/g, ' '));
-                            var signedTxHash = trx.sign(privKey, 1);
-                            this.broadcastTx(signedTxHash)
-                                .then(txid => resolve(txid))
-                                .catch(error => reject(error))
-                        }
+                    return reject(`Invalid sendAmt : ${sendAmt}`);
+
+                //get unconfirmed tx list
+                this.promisedAPI(`api/addr/${senderAddr}`).then(result => {
+                    this.readTxs(senderAddr, 0, result.unconfirmedTxApperances).then(result => {
+                        let unconfirmedSpent = {};
+                        for (let tx of result.items)
+                            if (tx.confirmations == 0)
+                                for (let vin of tx.vin)
+                                    if (vin.addr === senderAddr) {
+                                        if (Array.isArray(unconfirmedSpent[vin.txid]))
+                                            unconfirmedSpent[vin.txid].push(vin.vout);
+                                        else
+                                            unconfirmedSpent[vin.txid] = [vin.vout];
+                                    }
+                        //get utxos list
+                        this.promisedAPI(`api/addr/${senderAddr}/utxo`).then(utxos => {
+                            //form/construct the transaction data
+                            var trx = bitjs.transaction();
+                            var utxoAmt = 0.0;
+                            var fee = floGlobals.fee;
+                            for (var i = utxos.length - 1;
+                                (i >= 0) && (utxoAmt < sendAmt + fee); i--) {
+                                //use only utxos with confirmations (strict_utxo mode)
+                                if (utxos[i].confirmations || !strict_utxo) {
+                                    if (utxos[i].txid in unconfirmedSpent && unconfirmedSpent[utxos[i].txid].includes(utxos[i].vout))
+                                        continue; //A transaction has already used this utxo, but is unconfirmed.
+                                    trx.addinput(utxos[i].txid, utxos[i].vout, utxos[i].scriptPubKey);
+                                    utxoAmt += utxos[i].amount;
+                                };
+                            }
+                            if (utxoAmt < sendAmt + fee)
+                                reject("Insufficient FLO balance!");
+                            else {
+                                trx.addoutput(receiverAddr, sendAmt);
+                                var change = utxoAmt - sendAmt - fee;
+                                if (change > 0)
+                                    trx.addoutput(senderAddr, change);
+                                trx.addflodata(floData.replace(/\n/g, ' '));
+                                var signedTxHash = trx.sign(privKey, 1);
+                                this.broadcastTx(signedTxHash)
+                                    .then(txid => resolve(txid))
+                                    .catch(error => reject(error))
+                            }
+                        }).catch(error => reject(error))
                     }).catch(error => reject(error))
-                }
+                }).catch(error => reject(error))
             });
         },
 
@@ -7425,8 +7443,7 @@ Bitcoin.Util = {
                 this.promisedAPI(`api/addr/${floID}/utxo`).then(utxos => {
                     for (var i = utxos.length - 1; i >= 0; i--) {
                         if (utxos[i].confirmations) {
-                            trx.addinput(utxos[i].txid, utxos[i].vout, utxos[i]
-                                .scriptPubKey)
+                            trx.addinput(utxos[i].txid, utxos[i].vout, utxos[i].scriptPubKey)
                             utxoAmt += utxos[i].amount;
                         }
                     }
@@ -7611,8 +7628,7 @@ Bitcoin.Util = {
                             for (let i = utxos.length - 1;
                                 (i >= 0) && (utxoAmt < sendAmt); i--) {
                                 if (utxos[i].confirmations) {
-                                    trx.addinput(utxos[i].txid, utxos[i].vout, utxos[i]
-                                        .scriptPubKey)
+                                    trx.addinput(utxos[i].txid, utxos[i].vout, utxos[i].scriptPubKey)
                                     wifSeq.push(wif);
                                     utxoAmt += utxos[i].amount;
                                 }
