@@ -7290,7 +7290,7 @@ Bitcoin.Util = {
         }
     }
 </script>
-<script id="floBlockchainAPI" version="2.0.1e">
+<script id="floBlockchainAPI" version="2.1.1a">
     /* FLO Blockchain Operator to send/receive data from blockchain using API calls*/
     const floBlockchainAPI = {
 
@@ -7301,7 +7301,7 @@ Bitcoin.Util = {
                 return new Promise((resolve, reject) => {
                     let i = this.serverList.indexOf(rm_flosight)
                     if (i != -1) this.serverList.splice(i, 1);
-                    this.curPos = floCrypto.randInt(0, this.serverList.length - 1)
+                    this.curPos = floCrypto.randInt(0, this.serverList.length - 1);
                     this.fetch_api(apicall)
                         .then(result => resolve(result))
                         .catch(error => reject(error));
@@ -7310,7 +7310,7 @@ Bitcoin.Util = {
             fetch_api: function(apicall) {
                 return new Promise((resolve, reject) => {
                     if (this.serverList.length === 0)
-                        reject("No floSight server working")
+                        reject("No floSight server working");
                     else {
                         let flosight = this.serverList[this.curPos];
                         fetch(flosight + apicall).then(response => {
@@ -7338,7 +7338,7 @@ Bitcoin.Util = {
         //Promised function to get data from API
         promisedAPI: function(apicall) {
             return new Promise((resolve, reject) => {
-                console.log(apicall)
+                //console.log(apicall);
                 this.util.fetch_api(apicall)
                     .then(result => resolve(result))
                     .catch(error => reject(error));
@@ -7355,57 +7355,75 @@ Bitcoin.Util = {
         },
 
         //Write Data into blockchain
-        writeData: function(senderAddr, data, privKey, receiverAddr = floGlobals.adminID) {
+        writeData: function(senderAddr, data, privKey, receiverAddr = floGlobals.adminID, strict_utxo = true) {
             return new Promise((resolve, reject) => {
                 if (typeof data != "string")
                     data = JSON.stringify(data);
-                this.sendTx(senderAddr, receiverAddr, floGlobals.sendAmt, privKey, data)
+                this.sendTx(senderAddr, receiverAddr, floGlobals.sendAmt, privKey, data, strict_utxo)
                     .then(txid => resolve(txid))
-                    .catch(error => reject(error))
+                    .catch(error => reject(error));
             });
         },
 
         //Send Tx to blockchain 
-        sendTx: function(senderAddr, receiverAddr, sendAmt, privKey, floData = '') {
+        sendTx: function(senderAddr, receiverAddr, sendAmt, privKey, floData = '', strict_utxo = true) {
             return new Promise((resolve, reject) => {
                 if (!floCrypto.validateASCII(floData))
                     return reject("Invalid FLO_Data: only printable ASCII characters are allowed");
-                if (!floCrypto.validateAddr(senderAddr))
-                    reject(`Invalid address : ${senderAddr}`);
+                else if (!floCrypto.validateAddr(senderAddr))
+                    return reject(`Invalid address : ${senderAddr}`);
                 else if (!floCrypto.validateAddr(receiverAddr))
-                    reject(`Invalid address : ${receiverAddr}`);
-                if (privKey.length < 1 || !floCrypto.verifyPrivKey(privKey, senderAddr))
-                    reject("Invalid Private key!");
+                    return reject(`Invalid address : ${receiverAddr}`);
+                else if (privKey.length < 1 || !floCrypto.verifyPrivKey(privKey, senderAddr))
+                    return reject("Invalid Private key!");
                 else if (typeof sendAmt !== 'number' || sendAmt <= 0)
-                    reject(`Invalid sendAmt : ${sendAmt}`);
-                else {
-                    var trx = bitjs.transaction();
-                    var utxoAmt = 0.0;
-                    var fee = floGlobals.fee;
-                    this.promisedAPI(`api/addr/${senderAddr}/utxo`).then(utxos => {
-                        for (var i = utxos.length - 1;
-                            (i >= 0) && (utxoAmt < sendAmt + fee); i--) {
-                            if (utxos[i].confirmations) {
-                                trx.addinput(utxos[i].txid, utxos[i].vout, utxos[i]
-                                    .scriptPubKey)
-                                utxoAmt += utxos[i].amount;
-                            } else break;
-                        }
-                        if (utxoAmt < sendAmt + fee)
-                            reject("Insufficient balance!");
-                        else {
-                            trx.addoutput(receiverAddr, sendAmt);
-                            var change = utxoAmt - sendAmt - fee;
-                            if (change > 0)
-                                trx.addoutput(senderAddr, change);
-                            trx.addflodata(floData.replace(/\n/g, ' '));
-                            var signedTxHash = trx.sign(privKey, 1);
-                            this.broadcastTx(signedTxHash)
-                                .then(txid => resolve(txid))
-                                .catch(error => reject(error))
-                        }
+                    return reject(`Invalid sendAmt : ${sendAmt}`);
+
+                //get unconfirmed tx list
+                this.promisedAPI(`api/addr/${senderAddr}`).then(result => {
+                    this.readTxs(senderAddr, 0, result.unconfirmedTxApperances).then(result => {
+                        let unconfirmedSpent = {};
+                        for (let tx of result.items)
+                            if (tx.confirmations == 0)
+                                for (let vin of tx.vin)
+                                    if (vin.addr === senderAddr) {
+                                        if (Array.isArray(unconfirmedSpent[vin.txid]))
+                                            unconfirmedSpent[vin.txid].push(vin.vout);
+                                        else
+                                            unconfirmedSpent[vin.txid] = [vin.vout];
+                                    }
+                        //get utxos list
+                        this.promisedAPI(`api/addr/${senderAddr}/utxo`).then(utxos => {
+                            //form/construct the transaction data
+                            var trx = bitjs.transaction();
+                            var utxoAmt = 0.0;
+                            var fee = floGlobals.fee;
+                            for (var i = utxos.length - 1;
+                                (i >= 0) && (utxoAmt < sendAmt + fee); i--) {
+                                //use only utxos with confirmations (strict_utxo mode)
+                                if (utxos[i].confirmations || !strict_utxo) {
+                                    if (utxos[i].txid in unconfirmedSpent && unconfirmedSpent[utxos[i].txid].includes(utxos[i].vout))
+                                        continue; //A transaction has already used this utxo, but is unconfirmed.
+                                    trx.addinput(utxos[i].txid, utxos[i].vout, utxos[i].scriptPubKey);
+                                    utxoAmt += utxos[i].amount;
+                                };
+                            }
+                            if (utxoAmt < sendAmt + fee)
+                                reject("Insufficient FLO balance!");
+                            else {
+                                trx.addoutput(receiverAddr, sendAmt);
+                                var change = utxoAmt - sendAmt - fee;
+                                if (change > 0)
+                                    trx.addoutput(senderAddr, change);
+                                trx.addflodata(floData.replace(/\n/g, ' '));
+                                var signedTxHash = trx.sign(privKey, 1);
+                                this.broadcastTx(signedTxHash)
+                                    .then(txid => resolve(txid))
+                                    .catch(error => reject(error))
+                            }
+                        }).catch(error => reject(error))
                     }).catch(error => reject(error))
-                }
+                }).catch(error => reject(error))
             });
         },
 
@@ -7415,21 +7433,18 @@ Bitcoin.Util = {
                 if (!floCrypto.validateAddr(floID))
                     return reject(`Invalid floID`);
                 if (!floCrypto.verifyPrivKey(privKey, floID))
-                    return reject("Invalid Private Key")
+                    return reject("Invalid Private Key");
                 if (!floCrypto.validateASCII(floData))
                     return reject("Invalid FLO_Data: only printable ASCII characters are allowed");
-
                 var trx = bitjs.transaction();
                 var utxoAmt = 0.0;
                 var fee = floGlobals.fee;
                 this.promisedAPI(`api/addr/${floID}/utxo`).then(utxos => {
-                    for (var i = utxos.length - 1; i >= 0; i--) {
+                    for (var i = utxos.length - 1; i >= 0; i--)
                         if (utxos[i].confirmations) {
-                            trx.addinput(utxos[i].txid, utxos[i].vout, utxos[i]
-                                .scriptPubKey)
+                            trx.addinput(utxos[i].txid, utxos[i].vout, utxos[i].scriptPubKey);
                             utxoAmt += utxos[i].amount;
                         }
-                    }
                     trx.addoutput(floID, utxoAmt - fee);
                     trx.addflodata(floData.replace(/\n/g, ' '));
                     var signedTxHash = trx.sign(privKey, 1);
@@ -7450,15 +7465,15 @@ Bitcoin.Util = {
         writeDataMultiple: function(senderPrivKeys, data, receivers = [floGlobals.adminID], preserveRatio = true) {
             return new Promise((resolve, reject) => {
                 if (!Array.isArray(senderPrivKeys))
-                    return reject("Invalid senderPrivKeys: SenderPrivKeys must be Array")
+                    return reject("Invalid senderPrivKeys: SenderPrivKeys must be Array");
                 if (!preserveRatio) {
                     let tmp = {};
                     let amount = (floGlobals.sendAmt * receivers.length) / senderPrivKeys.length;
                     senderPrivKeys.forEach(key => tmp[key] = amount);
-                    senderPrivKeys = tmp
+                    senderPrivKeys = tmp;
                 }
                 if (!Array.isArray(receivers))
-                    return reject("Invalid receivers: Receivers must be Array")
+                    return reject("Invalid receivers: Receivers must be Array");
                 else {
                     let tmp = {};
                     let amount = floGlobals.sendAmt;
@@ -7521,9 +7536,8 @@ Bitcoin.Util = {
                                 if (!key)
                                     invalids.InvalidSenderPrivKeys.push(key);
                                 else {
-                                    if (typeof senderPrivKeys[key] !== 'number' || senderPrivKeys[
-                                            key] <= 0)
-                                        invalids.InvalidSenderAmountFor.push(key)
+                                    if (typeof senderPrivKeys[key] !== 'number' || senderPrivKeys[key] <= 0)
+                                        invalids.InvalidSenderAmountFor.push(key);
                                     else
                                         inputVal += senderPrivKeys[key];
                                     let floID = floCrypto.getFloID(key);
@@ -7541,9 +7555,9 @@ Bitcoin.Util = {
                     //Validate the receiver IDs and receive amount
                     for (let floID in receivers) {
                         if (!floCrypto.validateAddr(floID))
-                            invalids.InvalidReceiverIDs.push(floID)
+                            invalids.InvalidReceiverIDs.push(floID);
                         if (typeof receivers[floID] !== 'number' || receivers[floID] <= 0)
-                            invalids.InvalidReceiveAmountFor.push(floID)
+                            invalids.InvalidReceiveAmountFor.push(floID);
                         else
                             outputVal += receivers[floID];
                     }
@@ -7555,15 +7569,14 @@ Bitcoin.Util = {
                         return reject(invalids);
                     //Reject if given inputVal and outputVal are not equal
                     if (!preserveRatio && inputVal != outputVal)
-                        return reject(
-                            `Input Amount (${inputVal}) not equal to Output Amount (${outputVal})`)
+                        return reject(`Input Amount (${inputVal}) not equal to Output Amount (${outputVal})`);
                 } catch (error) {
                     return reject(error)
                 }
                 //Get balance of senders
-                let promises = []
+                let promises = [];
                 for (let floID in senders)
-                    promises.push(this.getBalance(floID))
+                    promises.push(this.getBalance(floID));
                 Promise.all(promises).then(results => {
                     let totalBalance = 0,
                         totalFee = floGlobals.fee,
@@ -7575,10 +7588,9 @@ Bitcoin.Util = {
                     let insufficient = [];
                     for (let floID in senders) {
                         balance[floID] = parseFloat(results.shift());
-                        if (isNaN(balance[floID]) || (preserveRatio && balance[floID] <=
-                                totalFee) || (!preserveRatio && balance[floID] < senders[floID]
-                                .coins + dividedFee))
-                            insufficient.push(floID)
+                        if (isNaN(balance[floID]) || (preserveRatio && balance[floID] <= totalFee) ||
+                            (!preserveRatio && balance[floID] < senders[floID].coins + dividedFee))
+                            insufficient.push(floID);
                         totalBalance += balance[floID];
                     }
                     if (insufficient.length)
@@ -7590,11 +7602,11 @@ Bitcoin.Util = {
                     for (floID in receivers)
                         totalSendAmt += receivers[floID];
                     if (totalBalance < totalSendAmt)
-                        return reject("Insufficient total Balance")
+                        return reject("Insufficient total Balance");
                     //Get the UTXOs of the senders
-                    let promises = []
+                    let promises = [];
                     for (floID in senders)
-                        promises.push(this.promisedAPI(`api/addr/${floID}/utxo`))
+                        promises.push(this.promisedAPI(`api/addr/${floID}/utxo`));
                     Promise.all(promises).then(results => {
                         let wifSeq = [];
                         var trx = bitjs.transaction();
@@ -7611,8 +7623,7 @@ Bitcoin.Util = {
                             for (let i = utxos.length - 1;
                                 (i >= 0) && (utxoAmt < sendAmt); i--) {
                                 if (utxos[i].confirmations) {
-                                    trx.addinput(utxos[i].txid, utxos[i].vout, utxos[i]
-                                        .scriptPubKey)
+                                    trx.addinput(utxos[i].txid, utxos[i].vout, utxos[i].scriptPubKey);
                                     wifSeq.push(wif);
                                     utxoAmt += utxos[i].amount;
                                 }
@@ -7642,7 +7653,7 @@ Bitcoin.Util = {
             return new Promise((resolve, reject) => {
                 var request = new XMLHttpRequest();
                 var url = this.util.serverList[this.util.curPos] + 'api/tx/send';
-                console.log(url)
+                console.log(url);
                 if (signedTxHash.length < 1)
                     reject("Empty Signature");
                 else {
@@ -7698,28 +7709,26 @@ Bitcoin.Util = {
         receivedOnly: filters only received data
         pattern     : filters data that with JSON pattern
         filter      : custom filter funtion for floData (eg . filter: d => {return d[0] == '$'})
-        txid        : (boolean) resolve txid or not
+        tx          : (boolean) resolve tx data or not (resolves an Array of Object with tx details)
         sender      : flo-id(s) of sender
         receiver    : flo-id(s) of receiver
         */
         readData: function(addr, options = {}) {
-            options.limit = options.limit || 0
-            options.ignoreOld = options.ignoreOld || 0
+            options.limit = options.limit || 0;
+            options.ignoreOld = options.ignoreOld || 0;
             if (typeof options.sender === "string") options.sender = [options.sender];
             if (typeof options.receiver === "string") options.receiver = [options.receiver];
             return new Promise((resolve, reject) => {
                 this.promisedAPI(`api/addrs/${addr}/txs?from=0&to=1`).then(response => {
                     var newItems = response.totalItems - options.ignoreOld;
-                    this.promisedAPI(`api/addrs/${addr}/txs?from=0&to=${newItems*2}`).then(
-                        response => {
+                    this.promisedAPI(`api/addrs/${addr}/txs?from=0&to=${newItems*2}`).then(response => {
                             if (options.limit <= 0)
                                 options.limit = response.items.length;
                             var filteredData = [];
-                            for (i = 0; i < (response.totalItems - options.ignoreOld) &&
-                                filteredData.length < options.limit; i++) {
+                            for (let i = 0; i < (response.totalItems - options.ignoreOld) && filteredData.length < options.limit; i++) {
                                 if (options.pattern) {
                                     try {
-                                        let jsonContent = JSON.parse(response.items[i].floData)
+                                        let jsonContent = JSON.parse(response.items[i].floData);
                                         if (!Object.keys(jsonContent).includes(options.pattern))
                                             continue;
                                     } catch (error) {
@@ -7764,7 +7773,16 @@ Bitcoin.Util = {
                                 }
                                 if (options.filter && !options.filter(response.items[i].floData))
                                     continue;
-                                filteredData.push(options.txid ? [response.items[i].txid, response.items[i].floData] : response.items[i].floData);
+
+                                if (options.tx) {
+                                    let d = {}
+                                    d.txid = response.items[i].txid;
+                                    d.time = response.items[i].time;
+                                    d.blockheight = response.items[i].blockheight;
+                                    d.data = response.items[i].floData;
+                                    filteredData.push(d);
+                                } else
+                                    filteredData.push(response.items[i].floData);
                             }
                             resolve({
                                 totalTxs: response.totalItems,
