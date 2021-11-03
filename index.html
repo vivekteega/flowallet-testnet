@@ -2856,16 +2856,8 @@
         })
         function checkFloData(){
             isFloDataChanged = false
-            const floDataText = sentFloData.value.trim()
-            let isValid = true
-            for(char of floDataText){
-                // if(/^[a-z0-9\s!"#$%&'()*+,.\/:;<=>?@\[\]^_`{|}~-]*$/i.test(char)){
-                if(!/^[\x20-\x7E\s]+/.test(char)){
-                    isValid = false
-                    break;
-                }
-            }
-            if(isValid){
+            const floDataText = sentFloData.value;
+            if(/^[\x20-\x7E]*$/.test(floDataText)){
                 sendFloDataButton.classList.remove('hide-completely')
                 fixFloDataButton.classList.add('hide-completely')
                 floDataStaus.textContent = ''
@@ -2875,8 +2867,8 @@
             }
         }
         function removeInvalid(){
-            const floDataText = sentFloData.value.trim()
-            sentFloData.value = floDataText.replace(/[^\x20-\x7E]*/gm, '')
+            const floDataText = sentFloData.value;
+            sentFloData.value = floDataText.replace(/\s/g, " ").replace(/[^\x20-\x7E]/g, '');
             checkFloData()
         }
     </script>
