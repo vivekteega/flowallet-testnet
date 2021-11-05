@@ -8051,7 +8051,7 @@ Bitcoin.Util = {
         }
     }
 </script>
-<script id="floCloudAPI" version="2.1.0">
+<script id="floCloudAPI" version="2.1.0a">
     /* FLO Cloud operations to send/request application data*/
     const floCloudAPI = {
 
@@ -8364,9 +8364,8 @@ Bitcoin.Util = {
                                     floGlobals.appObjects[dataSet[vc].type] = dataSet[vc].message.reset;
                                 break;
                             case "UPDATE":
-                                if (dataSet[vc].message.update)
-                                    floGlobals.appObjects[dataSet[vc].type] = mergeDiff(floGlobals
-                                        .appObjects[dataSet[vc].type], message.diff)
+                                if (dataSet[vc].message.diff)
+                                    floGlobals.appObjects[dataSet[vc].type] = mergeDiff(floGlobals.appObjects[dataSet[vc].type], dataSet[vc].message.diff)
                         }
                         floGlobals.lastVC[dataSet[vc].type] = vc;
                         updatedObjects.add(dataSet[vc].type)
