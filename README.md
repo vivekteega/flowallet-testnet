@@ -20,7 +20,7 @@ This approach decentralizes the trust process totally and extends the capacity o
 ## RanchiMall recommended approach to create a FLO Distributed Application
 
 1. Create Master Admin FLO ID and private key
-2. Role Modeling: Create SubAdmins by having Master Admin declare it in the FLO Blockchain, and decide what roles will differnent kind of SubAdmins play
+2. Role Modeling: Create SubAdmins by having Master Admin declare it in the FLO Blockchain, and decide what roles will different kind of SubAdmins play
 3. Data Modeling:  Create Blockchain cloud data formats for your application. Do it twice: One for system trusted users like SubAdmins using Object Data. And again for normal untrusted users using General Data 
 4. Define core business functionalities of the app, and create Javascript methods to model it
 5. Secure the user Private Key (and other sensitive data, if any)
