@@ -59,6 +59,13 @@ This approach decentralizes the trust process totally and extends the capacity o
 
 * Consumers of data can ask for data by receiver ID, or filter it by application, type, or comment. They can also ask for data for a given type before and after a certain vector clock.
 
+## Common examples in usage of Standard Operations
+
+* Sends "Hello World" message to the cloud as General Data with type1 as `type` with `myFloID` as default sender and `floGlobals.adminID` as receiver. This has vectorClock support, our the client side will automatically synchronise all the relevant data stored in cloud. 
+```	floCloudAPI.sendGeneralData("Hello World", "type1") 
+```
+
+
 
 # Technical Details of standard operations 
 
