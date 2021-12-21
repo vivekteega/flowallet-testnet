@@ -409,9 +409,10 @@ Sends "Hello World" message to the cloud as General Data with type1 as `type` wi
 * Resolves: Status (string) | Rejects: error
 
 ###### Minimal Example: 
+```
 	floCloudAPI.requestGeneralData("type1") 
 Requests all messages of General Data nature from the cloud with type1 as `type` sent by anyone and `floGlobals.adminID` as default receiverID
-
+```
 #### resetObjectData
 	floCloudAPI.resetObjectData("objectName", options = {})
 `resetObjectData` resets the objectData to cloud.
@@ -480,8 +481,10 @@ Note: Application Data results are not stored in local IndexedDB  by Standard Op
 Note: If a blank REQUEST APPLICATION DATA is made, then cloud will give all application data at the admin ID of the application
 
 ###### Minimal Example: 
+```
 	floCloudAPI.requestApplicationData() 
 Requests all messages of Apllication Data nature from the cloud with any `type` sent by anyone and `floGlobals.adminID` as receiverID
+```
 
 ## 4. GENERAL DATA PARAMETERS AND OPTIONS
 
@@ -502,6 +505,11 @@ Type is mandatory in SEND GENERAL DATA because without at least one data identif
 
 Application field is used by the Cloud to judge whether this message should be deleted after 7 days, or stored permanently. Developers should be careful not to change value of application field if the default value enables the message to be stored permanently. Currently messages sent from subadmins to any receiverID for applications notified by the cloud in the FLO Blockchain are stored permanently. So do not change application field as a caution. Use the comment field. 
 
+###### Minimal Example: 
+```
+floCloudAPI.sendGeneralData("Hello World", "type1") 
+Sends "Hello World" message to the cloud as General Data with type1 as `type` with `myFloID` as default sender and `floGlobals.adminID` as receiver
+```
 ### REQUEST GENERAL DATA
 
 Parameters while requesting
@@ -527,6 +535,12 @@ Type is mandatory in REQUEST GENERAL DATA. So every TYPE of general data must be
 If you want to use requests to give results from all types at one go, use Application Data.
 
 Application field is used by the Cloud to judge whether this message should be deleted after 7 days, or stored permanently. Developers should be careful not to change value of application field if the default value enables the message to be stored permanently. Currently messages sent from subadmins to any receiverID for applications notified by the cloud in the FLO Blockchain are stored permanently. So do not change application field as a caution. Use the comment field.
+
+###### Minimal Example: 
+```
+floCloudAPI.requestGeneralData("type1") 
+Requests all messages of General Data nature from the cloud with type1 as `type` sent by anyone and `floGlobals.adminID` as default receiverID
+```
 
 ## 5. OBJECT DATA PARAMETERS AND OPTIONS
 
