@@ -66,7 +66,10 @@ This approach decentralizes the trust process totally and extends the capacity o
 floCloudAPI.sendGeneralData("Hello World", "type1") 
 ```
 
-
+* Request general data of type1 type, but filtered by senderIDs being floGlobals.subAdmins
+```
+floCloudAPI.requestGeneralData("type1", { senderIDs: floGlobals.subAdmins })
+```
 
 # Technical Details of standard operations 
 
