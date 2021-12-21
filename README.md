@@ -62,7 +62,8 @@ This approach decentralizes the trust process totally and extends the capacity o
 ## Common examples in usage of Standard Operations
 
 * Sends "Hello World" message to the cloud as General Data with type1 as `type` with `myFloID` as default sender and `floGlobals.adminID` as receiver. This has vectorClock support, our the client side will automatically synchronise all the relevant data stored in cloud. 
-```	floCloudAPI.sendGeneralData("Hello World", "type1") 
+```
+floCloudAPI.sendGeneralData("Hello World", "type1") 
 ```
 
 
