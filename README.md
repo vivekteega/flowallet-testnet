@@ -73,10 +73,11 @@ floCloudAPI.requestGeneralData("type1", { senderIDs: floGlobals.subAdmins })
 
 * Usage of sendGeneralData from RIBC dApp
 ```
+  //take name and comments as function parameters, and sendGeneralData of InternRequests type 
   applyForIntern: function (name, comments = '') {
                 return floCloudAPI.sendGeneralData([name, comments], "InternRequests")
             },
-
+// take updates as function parameter, and return a promise that sends general data of type "InternUpdates"
   postInternUpdate: function (updates) {
                 return new Promise((resolve, reject) => {
                     floCloudAPI.sendGeneralData(updates, "InternUpdates")
@@ -95,6 +96,7 @@ floCloudAPI.requestGeneralData("type1", { senderIDs: floGlobals.subAdmins })
 
 * floGlobals usage from RIBC dApp
 ```
+
 floGlobals.generalVC["{\"application\":\"RIBC\",\"type\":\"InternUpdates\"}"] 
 = '1640106537305_FSdjJCJdU43a1dyWY6dRES1ekoupEjFPqQ'
 
