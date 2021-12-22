@@ -77,14 +77,15 @@ floCloudAPI.requestGeneralData("type1", { senderIDs: floGlobals.subAdmins })
   applyForIntern: function (name, comments = '') {
                 return floCloudAPI.sendGeneralData([name, comments], "InternRequests")
             },
-// take updates as function parameter, and return a promise that sends general data of type "InternUpdates"
+  
+  //take updates as function parameter, and return a promise that sends general data of type "InternUpdates"
   postInternUpdate: function (updates) {
                 return new Promise((resolve, reject) => {
                     floCloudAPI.sendGeneralData(updates, "InternUpdates")
                         .then(results => resolve(results))
                         .catch(error => reject(error))
                 })
-
+  
   applyForTask: function (projectCode, branch, task, comments = '') {
                 return floCloudAPI.sendGeneralData([projectCode, branch, task, comments], "TaskRequests")
             },
@@ -96,6 +97,15 @@ floCloudAPI.requestGeneralData("type1", { senderIDs: floGlobals.subAdmins })
 
 * floGlobals usage from RIBC dApp
 ```
+
+floGlobals.vectorClock 
+= {RIBC: '1637841611864_FCja6sLv58e3RMy41T5AmWyvXEWesqBCkX'}
+
+floGlobals.generalVC["{\"application\":\"RIBC\",\"type\":\"InternUpdates\"}"]
+= '1640106537305_FSdjJCJdU43a1dyWY6dRES1ekoupEjFPqQ'
+
+floGlobals.vectorClock.RIBC
+= '1637841611864_FCja6sLv58e3RMy41T5AmWyvXEWesqBCkX'
 
 floGlobals.generalVC["{\"application\":\"RIBC\",\"type\":\"InternUpdates\"}"] 
 = '1640106537305_FSdjJCJdU43a1dyWY6dRES1ekoupEjFPqQ'
@@ -114,16 +124,6 @@ floGlobals.generalData["{\"application\":\"RIBC\",\"type\":\"InternUpdates\"}"][
 
 floGlobals.appObjects.RIBC.internList.F7HVKrF68Y6YKE9XXpHhAcxt6MwRLcUD67 
 = 'Salomi Sarkar'
-
-floGlobals.vectorClock 
-= {RIBC: '1637841611864_FCja6sLv58e3RMy41T5AmWyvXEWesqBCkX'}
-
-floGlobals.generalVC["{\"application\":\"RIBC\",\"type\":\"InternUpdates\"}"]
-= '1640106537305_FSdjJCJdU43a1dyWY6dRES1ekoupEjFPqQ'
-
-floGlobals.vectorClock.RIBC
-= '1637841611864_FCja6sLv58e3RMy41T5AmWyvXEWesqBCkX'
-
   
 ```
 
