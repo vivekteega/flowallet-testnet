@@ -94,6 +94,19 @@ floCloudAPI.requestGeneralData("type1", { senderIDs: floGlobals.subAdmins })
                     return floCloudAPI.sendGeneralData({ vectorClock, status }, "RequestStatus")
                 },
 ```
+* Object Data handling is automated in Standard operations unlike General data. Define, update and reset, these are only object data operations possible, yet they are very powerful in data capabilities. 
+```
+//Initiates "myFirstObject" with {a:1,b:2}, and sends to cloud with myFloID as default sender and floGlobals.adminID as receiver
+
+floGlobals.appObjects["myFirstObject"] = {a:1,b:2}
+floCloudAPI.resetObjectData("myFirstObject") 
+
+//Updates the old value of "myFirstObject" with {a:1,b:2}, and sends to cloud with myFloID as default sender and floGlobals.adminID as receiver. In case of update, only the object diff will be sent
+
+floGlobals.appObjects["myFirstObject"] = {a:1,c:3,d:4}
+floCloudAPI.updateObjectData("myFirstObject") 
+
+```
 
 * floGlobals usage from RIBC dApp
 ```
