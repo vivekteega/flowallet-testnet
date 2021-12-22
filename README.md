@@ -73,18 +73,18 @@ floCloudAPI.requestGeneralData("type1", { senderIDs: floGlobals.subAdmins })
 
 * Usage of sendGeneralData from RIBC dApp
 ```
-applyForIntern: function (name, comments = '') {
+  applyForIntern: function (name, comments = '') {
                 return floCloudAPI.sendGeneralData([name, comments], "InternRequests")
             },
 
-    postInternUpdate: function (updates) {
+  postInternUpdate: function (updates) {
                 return new Promise((resolve, reject) => {
                     floCloudAPI.sendGeneralData(updates, "InternUpdates")
                         .then(results => resolve(results))
                         .catch(error => reject(error))
                 })
 
-   applyForTask: function (projectCode, branch, task, comments = '') {
+  applyForTask: function (projectCode, branch, task, comments = '') {
                 return floCloudAPI.sendGeneralData([projectCode, branch, task, comments], "TaskRequests")
             },
 
