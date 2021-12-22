@@ -71,6 +71,53 @@ floCloudAPI.sendGeneralData("Hello World", "type1")
 floCloudAPI.requestGeneralData("type1", { senderIDs: floGlobals.subAdmins })
 ```
 
+* Usage of sendGeneralData from RIBC dApp
+```
+applyForIntern: function (name, comments = '') {
+                return floCloudAPI.sendGeneralData([name, comments], "InternRequests")
+            },
+
+    postInternUpdate: function (updates) {
+                return new Promise((resolve, reject) => {
+                    floCloudAPI.sendGeneralData(updates, "InternUpdates")
+                        .then(results => resolve(results))
+                        .catch(error => reject(error))
+                })
+
+   applyForTask: function (projectCode, branch, task, comments = '') {
+                return floCloudAPI.sendGeneralData([projectCode, branch, task, comments], "TaskRequests")
+            },
+
+  setRequestStatus: function (vectorClock, status) {
+                    return floCloudAPI.sendGeneralData({ vectorClock, status }, "RequestStatus")
+                },
+```
+
+* floGlobals usage from RIBC dApp
+```
+floGlobals.generalVC["{\"application\":\"RIBC\",\"type\":\"InternUpdates\"}"] = '1640106537305_FSdjJCJdU43a1dyWY6dRES1ekoupEjFPqQ'
+
+floGlobals.generalData["{\"application\":\"RIBC\",\"type\":\"InternUpdates\"}"][2] = {sender: 'FPFeL5PXzW9bGosUjQYCxTHSMHidnygvvd', vectorClock: '1580815876258_FPFeL5PXzW9bGosUjQYCxTHSMHidnygvvd', message: {…}}
+
+floGlobals.generalData["{\"application\":\"RIBC\",\"type\":\"InternUpdates\"}"][2]["vectorClock"] = '1580815876258_FPFeL5PXzW9bGosUjQYCxTHSMHidnygvvd'
+
+floGlobals.generalData["{\"application\":\"RIBC\",\"type\":\"InternUpdates\"}"][2]["message"]["sender"] = 'FPFeL5PXzW9bGosUjQYCxTHSMHidnygvvd'
+
+floGlobals.generalData["{\"application\":\"RIBC\",\"type\":\"InternUpdates\"}"][808]["message"]["description"] = 'Working on the flow and structure of Pearl Harbor topic'
+
+floGlobals.appObjects.RIBC.internList.F7HVKrF68Y6YKE9XXpHhAcxt6MwRLcUD67 = 'Salomi Sarkar'
+
+floGlobals.vectorClock = {RIBC: '1637841611864_FCja6sLv58e3RMy41T5AmWyvXEWesqBCkX'}
+
+floGlobals.generalVC["{\"application\":\"RIBC\",\"type\":\"InternUpdates\"}"]
+= '1640106537305_FSdjJCJdU43a1dyWY6dRES1ekoupEjFPqQ'
+
+floGlobals.vectorClock.RIBC
+= '1637841611864_FCja6sLv58e3RMy41T5AmWyvXEWesqBCkX'
+
+  
+```
+
 # Technical Details of standard operations 
 
 This template contains standard operations that can be used for the following:
