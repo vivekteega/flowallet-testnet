@@ -96,7 +96,8 @@ floCloudAPI.requestGeneralData("type1", { senderIDs: floGlobals.subAdmins })
 ```
 * Object Data handling is automated in Standard operations unlike General data. Define, update and reset, these are only object data operations possible, yet they are very powerful in data capabilities. 
 ```
-//Initiates "myFirstObject" with {a:1,b:2}, and sends to cloud with myFloID as default sender and floGlobals.adminID as receiver
+//Initiates "myFirstObject" with {a:1,b:2}, and sends to cloud with myFloID 
+as default sender and floGlobals.adminID as receiver
 
 floGlobals.appObjects["myFirstObject"] = {a:1,b:2}
 floCloudAPI.resetObjectData("myFirstObject") 
@@ -125,7 +126,8 @@ floGlobals.generalVC["{\"application\":\"RIBC\",\"type\":\"InternUpdates\"}"]
 = '1640106537305_FSdjJCJdU43a1dyWY6dRES1ekoupEjFPqQ'
 
 floGlobals.generalData["{\"application\":\"RIBC\",\"type\":\"InternUpdates\"}"][2] 
-= {sender: 'FPFeL5PXzW9bGosUjQYCxTHSMHidnygvvd', vectorClock: '1580815876258_FPFeL5PXzW9bGosUjQYCxTHSMHidnygvvd', message: {…}}
+= {sender: 'FPFeL5PXzW9bGosUjQYCxTHSMHidnygvvd', 
+vectorClock: '1580815876258_FPFeL5PXzW9bGosUjQYCxTHSMHidnygvvd', message: {…}}
 
 floGlobals.generalData["{\"application\":\"RIBC\",\"type\":\"InternUpdates\"}"][2]["vectorClock"] 
 = '1580815876258_FPFeL5PXzW9bGosUjQYCxTHSMHidnygvvd'
