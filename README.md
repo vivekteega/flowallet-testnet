@@ -101,7 +101,8 @@ floCloudAPI.requestGeneralData("type1", { senderIDs: floGlobals.subAdmins })
 floGlobals.appObjects["myFirstObject"] = {a:1,b:2}
 floCloudAPI.resetObjectData("myFirstObject") 
 
-//Updates the old value of "myFirstObject" with {a:1,b:2}, and sends to cloud with myFloID as default sender and floGlobals.adminID as receiver. In case of update, only the object diff will be sent
+//Updates the old value of "myFirstObject" with {a:1,b:2}, and sends to cloud with myFloID as default sender 
+and floGlobals.adminID as receiver. In case of update, only the object diff will be sent
 
 floGlobals.appObjects["myFirstObject"] = {a:1,c:3,d:4}
 floCloudAPI.updateObjectData("myFirstObject") 
