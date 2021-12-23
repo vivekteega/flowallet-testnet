@@ -9,6 +9,9 @@ We are offering methods simplifying access to inbuilt browser database IndexedDB
 
 Last but not the least, we are also providing methods for simplying common operations for FLO based Distributed Application Development. 
 
+# IMPORTANT
+We have two versions of cloud: old cloud version is 2.0.x in floCloudAPI, and new cloud version is 2.1.x in floCloudAPI. Please check that the version in floCloudAPI is 2.1.x whenever you use floCloudAPI as we are deprecating version 2.0.x
+
 # Background on FLO Distributed Applications
 
 FLO distibuted applications use the FLO Blockchain to store core data, and FLO Blockchain Cloud for other data. The data is accessed directly by browser based clients. No other component or servers are needed typically.
