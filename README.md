@@ -842,7 +842,7 @@ floDapps.addStartUpFunction("myFirstFunction",
 		function (){ 
 			return new Promise (
 			(resolve,reject)=>{
-			console.log("First function Excecuted before everything else");
+			console.log("First function Executed before everything else");
 			resolve("My First Function executed")
 		}); 
  });
@@ -864,6 +864,5 @@ floDapps.util.startUpFunctions.myFirstFunction();
 1. object - object to be mapped
 2. path - end path for the data holder
 3. data - data to be pushed in map
-
 
 
