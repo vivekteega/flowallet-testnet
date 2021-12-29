@@ -836,6 +836,14 @@ Sample startup is defined in onLoadStartUp function
 2. fn - body of the function
 Note: startup funtions are called in parallel. Therefore only add custom startup funtion only if it can run in parallel with other startup functions. (default startup funtions are read supernode list and subAdmin list from blockchain API, load data from indexedDB, get login credentials)
 
+```javascript
+//Executes automatically on startup before anything else executes
+floDapps.addStartUpFunction("myFirstFunction",function (){ return new Promise ((resolve,reject)=>{console.log("First function Excecuted before everything else");resolve("My First Function executed")}); });
+
+// Manaul execution on console
+floDapps.util.startUpFunctions.myFirstFunction();
+```
+
 ### Advanced Dapp functions usually not needed for users
 
 #### setAppObjectStores
