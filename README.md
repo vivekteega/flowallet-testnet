@@ -847,7 +847,7 @@ floDapps.addStartUpFunction("myFirstFunction",
 		}); 
  });
 
-// Manaul execution on console
+// Manual execution on console
 floDapps.util.startUpFunctions.myFirstFunction();
 ```
 
