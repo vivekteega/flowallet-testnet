@@ -851,6 +851,8 @@ floDapps.addStartUpFunction("myFirstFunction",
 floDapps.util.startUpFunctions.myFirstFunction();
 ```
 
+Philosophy: Suppose you want a function that must run before any of standard operation function runs. Then you need to first create a promisified version of that function 
+
 ### Advanced Dapp functions usually not needed for users
 
 #### setAppObjectStores
