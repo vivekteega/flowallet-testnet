@@ -858,11 +858,6 @@ floDapps.util.startUpFunctions.myFirstFunction();
 `setAppObjectStores` adds additionals objectstores for the app
 1. appObs - additionals objects for the app
 
-#### objectDataMapper
-	floDapps.objectDataMapper(object, path, data)
-`objectDataMapper` maps the object and data via path
-1. object - object to be mapped
-2. path - end path for the data holder
-3. data - data to be pushed in map
+
 
 
