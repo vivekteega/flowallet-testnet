@@ -838,7 +838,14 @@ Note: startup funtions are called in parallel. Therefore only add custom startup
 
 ```javascript
 //Executes automatically on startup before anything else executes
-floDapps.addStartUpFunction("myFirstFunction",function (){ return new Promise ((resolve,reject)=>{console.log("First function Excecuted before everything else");resolve("My First Function executed")}); });
+floDapps.addStartUpFunction("myFirstFunction",
+		function (){ 
+			return new Promise (
+			(resolve,reject)=>{
+			console.log("First function Excecuted before everything else");
+			resolve("My First Function executed")
+		}); 
+ });
 
 // Manaul execution on console
 floDapps.util.startUpFunctions.myFirstFunction();
