@@ -461,6 +461,44 @@ This module contains functions that interact with the supernode to send and retr
 ## FLO Cloud API operations
 `floCloudAPI` operations can interact with floSupernode cloud to send and retrieve data for applications. floCloudAPI uses floSupernode module for backend interactions. FLO Cloud API functions are promisified and resolves the data or status.
 
+#### NEW providing callback as a new option for automatic refresh of data in browser
+We have implemented a new feature where Standard Operations page can listen to any new general data or new object data and request for new data will be automatic. As soon as a new data is available in a cloud address, it will be notified to listening clients. This has been achieved by expanding `options` in `requestGeneralData` and `requestObjectData`
+
+A blank callback function can be provided as an option in `requestGeneralData` in which case the `floGlobals.generalData` will be automatically updated with new generalData relevant to that `requestGeneralData` whenever such data is available with the cloud. 
+
+A blank callback function when added as an option to `requestObjectData` will automatically update `floGlobals.appObjects` with all refreshes ar available to that `requestObjectData` without calling `requestObjectData` again explicitly.
+
+You can also specify an actual function name in callback, in which case that function will also be executed in addition to automatic data refreshes. This is usually for UI refresh needs. Alternately, one can monitor changes to `floGlobals.generalData` and `floGlobals.appObjects` via an event mechanism, and update UI whenever there are changes, in which case blank callback function is sufficient. 
+
+Note: Callbacks have been implemented using persistent listening websockets in both browsers and the cloud. So it will load the cloud with persistent memory requirements. Use it only when it is absolutely needed.
+
+```javascript
+
+//Requesting general data of type1 with calls in two equivalent ways using callback option for automatic refresh
+floCloudAPI.requestGeneralData("type1", {callback(){})
+floCloudAPI.requestGeneralData("type1", {callback: _=> null)
+
+//Requesting Object data for article_valuation_individual object using callback option for automatic refresh 
+floCloudAPI.requestObjectData("article_valuation_individual", {callback: _=> null)
+
+//They are all equivalent
+floCloudAPI.requestGeneralData("type1", {senderID:[x,y,z], callback: ()=>{})
+floCloudAPI.requestGeneralData("type1", {senderID:[x,y,z], callback(){})
+floCloudAPI.requestGeneralData("type1", {senderID:[x,y,z], callback: _=> null)
+
+//Implementation of a callback function that will update the UI and display data in console
+floCloudAPI.requestObjectData("article_valuation_individual", {callback: fnToUseTheData)
+
+fnToUseTheData example:
+fnToUseTheData: function (data, error) { 
+if(!error) {
+ console.log(data);
+ //Add Update UI function 
+}
+}
+
+```
+
 #### sendApplicationData
 	floCloudAPI.sendApplicationData(message, type, options = {})
 `sendApplicationData` sends application data to the cloud.
