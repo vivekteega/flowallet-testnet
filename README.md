@@ -475,26 +475,26 @@ Note: Callbacks have been implemented using persistent listening websockets in b
 ```javascript
 
 //Requesting general data of type1 with calls in two equivalent ways using callback option for automatic refresh
-floCloudAPI.requestGeneralData("type1", {callback(){})
-floCloudAPI.requestGeneralData("type1", {callback: _=> null)
+floCloudAPI.requestGeneralData("type1", {callback(){}})
+floCloudAPI.requestGeneralData("type1", {callback: _=> null})
 
 //Requesting Object data for article_valuation_individual object using callback option for automatic refresh 
-floCloudAPI.requestObjectData("article_valuation_individual", {callback: _=> null)
+floCloudAPI.requestObjectData("article_valuation_individual", {callback: _=> null) })
 
 //They are all equivalent
-floCloudAPI.requestGeneralData("type1", {senderID:[x,y,z], callback: ()=>{})
-floCloudAPI.requestGeneralData("type1", {senderID:[x,y,z], callback(){})
-floCloudAPI.requestGeneralData("type1", {senderID:[x,y,z], callback: _=> null)
+floCloudAPI.requestGeneralData("type1", {senderID:[x,y,z], callback: ()=>{} })
+floCloudAPI.requestGeneralData("type1", {senderID:[x,y,z], callback(){} })
+floCloudAPI.requestGeneralData("type1", {senderID:[x,y,z], callback: _=> null })
 
 //Implementation of a callback function that will update the UI and display data in console
-floCloudAPI.requestObjectData("article_valuation_individual", {callback: fnToUseTheData)
+floCloudAPI.requestObjectData("article_valuation_individual", {callback: fnToUseTheData} )
 
 fnToUseTheData example:
 fnToUseTheData: function (data, error) { 
 if(!error) {
  console.log(data);
  //Add Update UI function 
-}
+ }
 }
 
 ```
@@ -612,7 +612,7 @@ Requests all messages of Apllication Data nature from the cloud with any `type` 
 
 ## 4. GENERAL DATA PARAMETERS AND OPTIONS
 
-### SEND GENERAL DATA
+### SEND GENERAL DATA PARAMETERS AND OPTIONS
 Parameters while sending
 
  * `Message`: Actual Message to be sent
@@ -634,7 +634,7 @@ Application field is used by the Cloud to judge whether this message should be d
 floCloudAPI.sendGeneralData("Hello World", "type1") 
 Sends "Hello World" message to the cloud as General Data with type1 as `type` with `myFloID` as default sender and `floGlobals.adminID` as receiver
 ```
-### REQUEST GENERAL DATA
+### REQUEST GENERAL DATA PARAMETERS AND OPTIONS
 
 Parameters while requesting
 
@@ -649,6 +649,8 @@ Parameters while requesting
  * `upperVectorClock` - VC till which the data is to be requested
  * `atVectorClock` - VC at which the data is to requested
  * `mostRecent` - boolean (true: request only the recent data matching the pattern. Just the last one)
+ * `callback(){}` - will initialize websocket for automatic updates. 
+ * `callback: fnToUseTheData` - will initialize websocket for automatic updates, and will alse execute fnToUseTheData   
  
 The results are available in floGlobals.generalData after the request promise has been resolved
 
@@ -664,11 +666,22 @@ Application field is used by the Cloud to judge whether this message should be d
 ```
 floCloudAPI.requestGeneralData("type1") 
 Requests all messages of General Data nature from the cloud with type1 as `type` sent by anyone and `floGlobals.adminID` as default receiverID
+
+floCloudAPI.requestGeneralData("type1", {senderID:[x,y,z], callback: ()=>{}})
+floCloudAPI.requestGeneralData("type1", {senderID:[x,y,z], callback(){}})
+floCloudAPI.requestGeneralData("type1", {senderID:[x,y,z], callback: _=> null})
+
+floCloudAPI.requestObjectData("article_valuation_individual", {callback: fnToUseTheData})
+
+fnToUseTheData example:
+fnToUseTheData: function (data, error) { 
+if(!error) console.log(data)
+}
 ```
 
 ## 5. OBJECT DATA PARAMETERS AND OPTIONS
 
-### RESET or UPDATE OBJECT DATA
+### RESET or UPDATE OBJECT DATA PARAMETERS AND OPTIONS
 Parameters while resetting or updating
  * `Object Name`: Name of the object with data populated in floGlobals.appObjects[objectName] 
  
@@ -683,7 +696,7 @@ Note: Never use senderIDs in RESET and UPDATE. The system automatically picks th
 
 Note: Type field is never used in RESET, UPDATE or REQUEST operations in Object Data. Type field is internally blocked for Object Data.
 
-### REQUEST OBJECT DATA
+### REQUEST OBJECT DATA PARAMETERS AND OPTIONS
 
 #### Mandatory
 `Object Name` 
@@ -697,6 +710,8 @@ Note: Type field is never used in RESET, UPDATE or REQUEST operations in Object 
  * `upperVectorClock` - VC till which the data is to be requested
  * `atVectorClock` - VC at which the data is to requested
  * `mostRecent` - boolean (true: request only the recent data matching the pattern. Just the last one.)
+ * `callback(){}` - will initialize websocket for automatic updates. 
+ * `callback: fnToUseTheData` - will initialize websocket for automatic updates, and will alse execute fnToUseTheData   
 
 The output is available in floGlobals.appObjects[objectName] after request Object Data promise is resolved 
 
@@ -706,7 +721,7 @@ Application field is used by the Cloud to judge whether this message should be d
 
 ## 6. APPLICATION DATA PARAMETERS, OPTIONS AND EXPLANATIONS
 
-### SEND APPLICATION DATA
+### SEND APPLICATION DATA PARAMETERS AND OPTIONS
 Parameters while sending
 
  * `Message`: Actual Message to be sent
@@ -723,7 +738,7 @@ Type is mandatory in SEND APPLICATION DATA because without at least one data ide
 
 Application field is used by the Cloud to judge whether this message should be deleted after 7 days, or stored permanently. Developers should be careful not to change value of application field if the default value enables the message to be stored permanently. Currently messages sent from subadmins to any receiverID for applications notified by the cloud in the FLO Blockchain are stored permanently. So do not change application field as a caution. Use the comment field.
 
-### REQUEST APPLICATION DATA
+### REQUEST APPLICATION DATA PARAMETERS AND OPTIONS
 
 #### Mandatory Parameters while requesting
 None
@@ -738,6 +753,8 @@ None
  * `upperVectorClock` - VC till which the data is to be requested
  * `atVectorClock` - VC at which the data is to requested
  * `mostRecent` - boolean (true: request only the recent data matching the pattern. Just the last one)
+ * `callback(){}` - will initialize websocket for automatic updates. 
+ * `callback: fnToUseTheData` - will initialize websocket for automatic updates, and will alse execute fnToUseTheData   
 
 Note: Results will be available in promise.resolve(requestApplicationData(..)), and user will have to handle the response himself.
 
