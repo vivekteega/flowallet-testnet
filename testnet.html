@@ -81,19 +81,23 @@
             border: 1px transparent solid;
         }
 
-        .flex{
+        .flex {
             display: flex;
         }
-        .grid{
+
+        .grid {
             display: grid;
         }
-        .column-grid{
+
+        .column-grid {
             grid-auto-flow: column;
         }
-        .align-center{
+
+        .align-center {
             align-items: center;
         }
-        .gap-1{
+
+        .gap-1 {
             gap: 1rem;
         }
 
@@ -222,7 +226,7 @@
             margin: 0.4rem 0.8rem;
         }
 
-        #flo_data_status:not(:empty){
+        #flo_data_status:not(:empty) {
             color: red;
             padding: 0.5rem 0;
         }
@@ -564,11 +568,12 @@
             opacity: 0;
             pointer-events: none;
         }
-        .hide-completely{
+
+        .hide-completely {
             display: none;
         }
 
-        #fix_invalid_button{
+        #fix_invalid_button {
             margin-bottom: 1rem !important;
         }
 
@@ -1756,20 +1761,45 @@
             }
         }
 
+        /* new styles */
+        .flex {
+            display: flex;
+        }
+
+        details {
+            border-top: thin rgba(var(--text-color), 0.3) solid;
+            border-bottom: thin rgba(var(--text-color), 0.3) solid;
+        }
+
+        details summary {
+            display: flex;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            cursor: pointer;
+            align-items: center;
+            color: var(--accent-color);
+        }
+
+        details[open]>summary .down-arrow {
+            transform: rotate(180deg);
+        }
+
         /*# sourceMappingURL=main.css.map */
     </style>
+    <script>
+        /* Constants for FLO blockchain operations !!Make sure to add this at begining!! */
+        const floGlobals = {
+            blockchain: "FLO_TEST",
+            apiURL: {
+                FLO: ['https://flosight.duckdns.org/'],
+                FLO_TEST: ['https://testnet-flosight.duckdns.org/', 'https://testnet.flocha.in/']
+            },
+            fee: 0.0005
+        }
+    </script>
 </head>
-<script>
-    /* Constants for FLO blockchain operations !!Make sure to add this at begining!! */
-    const floGlobals = {
-        blockchain: "FLO_TEST",
-        apiURL: {
-            FLO: ['https://livenet.flocha.in/', 'https://flosight.duckdns.org/'],
-            FLO_TEST: ['https://testnet-flosight.duckdns.org/', 'https://testnet.flocha.in/']
-        },
-        fee: 0.0005
-    }
-</script>
 
 <body onload="onLoadStartUp()">
     <div id="main-card">
@@ -1963,9 +1993,7 @@
                                         C9.3,5.7,9.6,6,10,6z" />
                     </svg>
                 </div>
-                <trans-container id="transactions-container">
-
-                </trans-container>
+                <trans-container id="transactions-container"></trans-container>
                 <svg onclick="backToTop()" id="scrollToTop" viewBox="0 0 16 9" style="enable-background:new 0 0 16 9;"
                     xml:space="preserve">
                     <path class="st0" d="M15.7,7.3l-7-7c-0.4-0.4-1-0.4-1.4,0l-7,7c-0.4,0.4-0.4,1,0,1.4c0.4,0.4,1,0.4,1.4,0L8,2.4l6.3,6.3
@@ -2019,7 +2047,8 @@
                         <div id="show_character_count">1040/1040</div>
                     </div>
                     <p id="flo_data_status"></p>
-                    <button class="primaryButton hide-completely" id="fix_invalid_button" onclick="removeInvalid()">Fix</button>
+                    <button class="primaryButton hide-completely" id="fix_invalid_button"
+                        onclick="removeInvalid()">Fix</button>
                     <button class="primaryButton" id="sendBtn" onclick="showPrivKeyPage()" disabled>Send</button>
                 </div>
             </div>
@@ -2095,6 +2124,32 @@
                         transactions.After clearing local data you may experience slow loading of newly added address,
                         please proceed cautiously! </h5>
                     <button class="primaryButton" onclick="deleteDB()">Clear data</button>
+                </section>
+                <section>
+                    <details>
+                        <summary>
+                            <h4>Developer options</h4>
+                            <svg class="icon down-arrow" xmlns="http://www.w3.org/2000/svg" height="24px"
+                                viewBox="0 0 24 24" width="24px" fill="#000000">
+                                <path d="M24 24H0V0h24v24z" fill="none" opacity=".87" />
+                                <path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6-1.41-1.41z" />
+                            </svg>
+                        </summary>
+                        <div>
+                            <div style="display: grid; gap: 0.5rem; align-items: center; margin-right: 1rem;">
+                                <h4 style="margin: 0;">Allow unconfirmed UTXOs</h4>
+                                <strong id="unconfirmed_UTXO_warning"
+                                    style="background-color: khaki; padding: 0.5rem; border-radius: 0.3rem; color: #000000a8; justify-self: flex-start;">
+                                    This is a developer option only and not recommended for normal use.
+                                </strong>
+                            </div>
+                            <label class="switch">
+                                <input autocomplete="off" aria-label="Allow unconfirmed UTXOs" type="checkbox"
+                                    id="allow_utxo_switch" type="checkbox" />
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                    </details>
                 </section>
                 <section>
                     <h4>About</h4>
@@ -2826,63 +2881,112 @@
             document.getElementById('transactions-container').scrollTop = 0;
         }
 
-        let showCharacterCount = document.getElementById('show_character_count') 
+        let showCharacterCount = document.getElementById('show_character_count')
         let isFloDataChanged = false
         const fixFloDataButton = document.getElementById('fix_invalid_button')
         const sendFloDataButton = document.getElementById('sendBtn')
         const sentFloData = document.getElementById('flotextdata')
         const floDataStaus = document.getElementById('flo_data_status')
-        sentFloData.addEventListener('keydown', function(e){
-            if(this.value.length > 1040)
+        sentFloData.addEventListener('keydown', function (e) {
+            if (this.value.length > 1040)
                 e.preventDefault()
         })
-            
-        sentFloData.addEventListener('input', function(e){
-                isFloDataChanged = true
-            if(this.value.trim() !== ''){
+
+        sentFloData.addEventListener('input', function (e) {
+            isFloDataChanged = true
+            if (this.value.trim() !== '') {
                 sendFloDataButton.classList.add('hide-completely')
                 fixFloDataButton.classList.remove('hide-completely')
             }
-            else{
+            else {
                 sendFloDataButton.classList.remove('hide-completely')
                 fixFloDataButton.classList.add('hide-completely')
             }
-            if(1040 - this.value.length){
-                showCharacterCount.textContent = `${1040 - this.value.length}/1040` 
+            if (1040 - this.value.length) {
+                showCharacterCount.textContent = `${1040 - this.value.length}/1040`
             }
             else
                 showCharacterCount.textContent = `You can only add FLO data upto 1040 characters.`
             checkFloData()
         })
-        function checkFloData(){
+        function checkFloData() {
             isFloDataChanged = false
-            const floDataText = sentFloData.value.trim()
-            let isValid = true
-            for(char of floDataText){
-                // if(/^[a-z0-9\s!"#$%&'()*+,.\/:;<=>?@\[\]^_`{|}~-]*$/i.test(char)){
-                if(!/^[\x20-\x7E\s]+/.test(char)){
-                    isValid = false
-                    break;
-                }
-            }
-            if(isValid){
+            const floDataText = sentFloData.value;
+            if (/^[\x20-\x7E]*$/.test(floDataText)) {
                 sendFloDataButton.classList.remove('hide-completely')
                 fixFloDataButton.classList.add('hide-completely')
                 floDataStaus.textContent = ''
             }
-            else{
+            else {
                 floDataStaus.textContent = 'FLO data contains invalid characters. Use "Fix" to remove invalid characters.'
             }
         }
-        function removeInvalid(){
-            const floDataText = sentFloData.value.trim()
-            sentFloData.value = floDataText.replace(/[^\x20-\x7E]*/gm, '')
+        function removeInvalid() {
+            const floDataText = sentFloData.value;
+            sentFloData.value = floDataText.replace(/\s/g, " ").replace(/[^\x20-\x7E]/g, '');
             checkFloData()
+        }
+
+        let preventUnconfirmedUTXO = true
+        document.getElementById('allow_utxo_switch').addEventListener('change', e => {
+            preventUnconfirmedUTXO = !e.target.checked
+            localStorage.preventUnconfirmedUTXO = preventUnconfirmedUTXO
+        })
+        if (localStorage.getItem('preventUnconfirmedUTXO') !== 'null') {
+            const getBoolean = (localStorage.preventUnconfirmedUTXO === 'false')
+            preventUnconfirmedUTXO = getBoolean
+            document.getElementById('allow_utxo_switch').checked = getBoolean
         }
     </script>
 
-    <script>
+    <script id="init_lib" version="1.0.1">
         //All util libraries required for Standard operations (DO NOT EDIT ANY)
+
+        /* Reactor Event handling */
+        if (typeof reactor == "undefined" || !reactor) {
+            (function () {
+                function Event(name) {
+                    this.name = name;
+                    this.callbacks = [];
+                }
+
+                Event.prototype.registerCallback = function (callback) {
+                    this.callbacks.push(callback);
+                };
+
+                function Reactor() {
+                    this.events = {};
+                }
+
+                Reactor.prototype.registerEvent = function (eventName) {
+                    var event = new Event(eventName);
+                    this.events[eventName] = event;
+                };
+
+                Reactor.prototype.dispatchEvent = function (eventName, eventArgs) {
+                    this.events[eventName].callbacks.forEach(function (callback) {
+                        callback(eventArgs);
+                    });
+                };
+
+                Reactor.prototype.addEventListener = function (eventName, callback) {
+                    this.events[eventName].registerCallback(callback);
+                };
+
+                window.reactor = new Reactor();
+            })();
+        }
+
+        /* Sample Usage
+          --Creating and defining the event--
+          reactor.registerEvent('<eventName>');
+          reactor.addEventListener('<eventName>', function(someObject){
+            do something...
+          });
+          --Firing the event--
+          reactor.dispatchEvent('<eventName>',<someObject>);
+        */
+
 
         /*!
         * Crypto-JS v2.5.4  Crypto.js
@@ -5447,6 +5551,1270 @@
 
                 return null;
             };
+            /*!
+    * Crypto-JS 2.5.4 BlockModes.js
+    * contribution from Simon Greatrix
+    */
+
+            (function (C) {
+
+                // Create pad namespace
+                var C_pad = C.pad = {};
+
+                // Calculate the number of padding bytes required.
+                function _requiredPadding(cipher, message) {
+                    var blockSizeInBytes = cipher._blocksize * 4;
+                    var reqd = blockSizeInBytes - message.length % blockSizeInBytes;
+                    return reqd;
+                }
+
+                // Remove padding when the final byte gives the number of padding bytes.
+                var _unpadLength = function (cipher, message, alg, padding) {
+                    var pad = message.pop();
+                    if (pad == 0) {
+                        throw new Error("Invalid zero-length padding specified for " + alg +
+                            ". Wrong cipher specification or key used?");
+                    }
+                    var maxPad = cipher._blocksize * 4;
+                    if (pad > maxPad) {
+                        throw new Error("Invalid padding length of " + pad +
+                            " specified for " + alg +
+                            ". Wrong cipher specification or key used?");
+                    }
+                    for (var i = 1; i < pad; i++) {
+                        var b = message.pop();
+                        if (padding != undefined && padding != b) {
+                            throw new Error("Invalid padding byte of 0x" + b.toString(16) +
+                                " specified for " + alg +
+                                ". Wrong cipher specification or key used?");
+                        }
+                    }
+                };
+
+                // No-operation padding, used for stream ciphers
+                C_pad.NoPadding = {
+                    pad: function (cipher, message) { },
+                    unpad: function (cipher, message) { }
+                };
+
+                // Zero Padding.
+                //
+                // If the message is not an exact number of blocks, the final block is
+                // completed with 0x00 bytes. There is no unpadding.
+                C_pad.ZeroPadding = {
+                    pad: function (cipher, message) {
+                        var blockSizeInBytes = cipher._blocksize * 4;
+                        var reqd = message.length % blockSizeInBytes;
+                        if (reqd != 0) {
+                            for (reqd = blockSizeInBytes - reqd; reqd > 0; reqd--) {
+                                message.push(0x00);
+                            }
+                        }
+                    },
+
+                    unpad: function (cipher, message) {
+                        while (message[message.length - 1] == 0) {
+                            message.pop();
+                        }
+                    }
+                };
+
+                // ISO/IEC 7816-4 padding.
+                //
+                // Pads the plain text with an 0x80 byte followed by as many 0x00
+                // bytes are required to complete the block.
+                C_pad.iso7816 = {
+                    pad: function (cipher, message) {
+                        var reqd = _requiredPadding(cipher, message);
+                        message.push(0x80);
+                        for (; reqd > 1; reqd--) {
+                            message.push(0x00);
+                        }
+                    },
+
+                    unpad: function (cipher, message) {
+                        var padLength;
+                        for (padLength = cipher._blocksize * 4; padLength > 0; padLength--) {
+                            var b = message.pop();
+                            if (b == 0x80) return;
+                            if (b != 0x00) {
+                                throw new Error("ISO-7816 padding byte must be 0, not 0x" + b.toString(16) +
+                                    ". Wrong cipher specification or key used?");
+                            }
+                        }
+                        throw new Error(
+                            "ISO-7816 padded beyond cipher block size. Wrong cipher specification or key used?"
+                        );
+                    }
+                };
+
+                // ANSI X.923 padding
+                //
+                // The final block is padded with zeros except for the last byte of the
+                // last block which contains the number of padding bytes.
+                C_pad.ansix923 = {
+                    pad: function (cipher, message) {
+                        var reqd = _requiredPadding(cipher, message);
+                        for (var i = 1; i < reqd; i++) {
+                            message.push(0x00);
+                        }
+                        message.push(reqd);
+                    },
+
+                    unpad: function (cipher, message) {
+                        _unpadLength(cipher, message, "ANSI X.923", 0);
+                    }
+                };
+
+                // ISO 10126
+                //
+                // The final block is padded with random bytes except for the last
+                // byte of the last block which contains the number of padding bytes.
+                C_pad.iso10126 = {
+                    pad: function (cipher, message) {
+                        var reqd = _requiredPadding(cipher, message);
+                        for (var i = 1; i < reqd; i++) {
+                            message.push(Math.floor(Math.random() * 256));
+                        }
+                        message.push(reqd);
+                    },
+
+                    unpad: function (cipher, message) {
+                        _unpadLength(cipher, message, "ISO 10126", undefined);
+                    }
+                };
+
+                // PKCS7 padding
+                //
+                // PKCS7 is described in RFC 5652. Padding is in whole bytes. The
+                // value of each added byte is the number of bytes that are added,
+                // i.e. N bytes, each of value N are added.
+                C_pad.pkcs7 = {
+                    pad: function (cipher, message) {
+                        var reqd = _requiredPadding(cipher, message);
+                        for (var i = 0; i < reqd; i++) {
+                            message.push(reqd);
+                        }
+                    },
+
+                    unpad: function (cipher, message) {
+                        _unpadLength(cipher, message, "PKCS 7", message[message.length - 1]);
+                    }
+                };
+
+                // Create mode namespace
+                var C_mode = C.mode = {};
+
+                /**
+                * Mode base "class".
+                */
+                var Mode = C_mode.Mode = function (padding) {
+                    if (padding) {
+                        this._padding = padding;
+                    }
+                };
+
+                Mode.prototype = {
+                    encrypt: function (cipher, m, iv) {
+                        this._padding.pad(cipher, m);
+                        this._doEncrypt(cipher, m, iv);
+                    },
+
+                    decrypt: function (cipher, m, iv) {
+                        this._doDecrypt(cipher, m, iv);
+                        this._padding.unpad(cipher, m);
+                    },
+
+                    // Default padding
+                    _padding: C_pad.iso7816
+                };
+
+
+                /**
+                * Electronic Code Book mode.
+                * 
+                * ECB applies the cipher directly against each block of the input.
+                * 
+                * ECB does not require an initialization vector.
+                */
+                var ECB = C_mode.ECB = function () {
+                    // Call parent constructor
+                    Mode.apply(this, arguments);
+                };
+
+                // Inherit from Mode
+                var ECB_prototype = ECB.prototype = new Mode;
+
+                // Concrete steps for Mode template
+                ECB_prototype._doEncrypt = function (cipher, m, iv) {
+                    var blockSizeInBytes = cipher._blocksize * 4;
+                    // Encrypt each block
+                    for (var offset = 0; offset < m.length; offset += blockSizeInBytes) {
+                        cipher._encryptblock(m, offset);
+                    }
+                };
+                ECB_prototype._doDecrypt = function (cipher, c, iv) {
+                    var blockSizeInBytes = cipher._blocksize * 4;
+                    // Decrypt each block
+                    for (var offset = 0; offset < c.length; offset += blockSizeInBytes) {
+                        cipher._decryptblock(c, offset);
+                    }
+                };
+
+                // ECB never uses an IV
+                ECB_prototype.fixOptions = function (options) {
+                    options.iv = [];
+                };
+
+
+                /**
+                * Cipher block chaining
+                * 
+                * The first block is XORed with the IV. Subsequent blocks are XOR with the
+                * previous cipher output.
+                */
+                var CBC = C_mode.CBC = function () {
+                    // Call parent constructor
+                    Mode.apply(this, arguments);
+                };
+
+                // Inherit from Mode
+                var CBC_prototype = CBC.prototype = new Mode;
+
+                // Concrete steps for Mode template
+                CBC_prototype._doEncrypt = function (cipher, m, iv) {
+                    var blockSizeInBytes = cipher._blocksize * 4;
+
+                    // Encrypt each block
+                    for (var offset = 0; offset < m.length; offset += blockSizeInBytes) {
+                        if (offset == 0) {
+                            // XOR first block using IV
+                            for (var i = 0; i < blockSizeInBytes; i++)
+                                m[i] ^= iv[i];
+                        } else {
+                            // XOR this block using previous crypted block
+                            for (var i = 0; i < blockSizeInBytes; i++)
+                                m[offset + i] ^= m[offset + i - blockSizeInBytes];
+                        }
+                        // Encrypt block
+                        cipher._encryptblock(m, offset);
+                    }
+                };
+                CBC_prototype._doDecrypt = function (cipher, c, iv) {
+                    var blockSizeInBytes = cipher._blocksize * 4;
+
+                    // At the start, the previously crypted block is the IV
+                    var prevCryptedBlock = iv;
+
+                    // Decrypt each block
+                    for (var offset = 0; offset < c.length; offset += blockSizeInBytes) {
+                        // Save this crypted block
+                        var thisCryptedBlock = c.slice(offset, offset + blockSizeInBytes);
+                        // Decrypt block
+                        cipher._decryptblock(c, offset);
+                        // XOR decrypted block using previous crypted block
+                        for (var i = 0; i < blockSizeInBytes; i++) {
+                            c[offset + i] ^= prevCryptedBlock[i];
+                        }
+                        prevCryptedBlock = thisCryptedBlock;
+                    }
+                };
+
+
+                /**
+                * Cipher feed back
+                * 
+                * The cipher output is XORed with the plain text to produce the cipher output,
+                * which is then fed back into the cipher to produce a bit pattern to XOR the
+                * next block with.
+                * 
+                * This is a stream cipher mode and does not require padding.
+                */
+                var CFB = C_mode.CFB = function () {
+                    // Call parent constructor
+                    Mode.apply(this, arguments);
+                };
+
+                // Inherit from Mode
+                var CFB_prototype = CFB.prototype = new Mode;
+
+                // Override padding
+                CFB_prototype._padding = C_pad.NoPadding;
+
+                // Concrete steps for Mode template
+                CFB_prototype._doEncrypt = function (cipher, m, iv) {
+                    var blockSizeInBytes = cipher._blocksize * 4,
+                        keystream = iv.slice(0);
+
+                    // Encrypt each byte
+                    for (var i = 0; i < m.length; i++) {
+
+                        var j = i % blockSizeInBytes;
+                        if (j == 0) cipher._encryptblock(keystream, 0);
+
+                        m[i] ^= keystream[j];
+                        keystream[j] = m[i];
+                    }
+                };
+                CFB_prototype._doDecrypt = function (cipher, c, iv) {
+                    var blockSizeInBytes = cipher._blocksize * 4,
+                        keystream = iv.slice(0);
+
+                    // Encrypt each byte
+                    for (var i = 0; i < c.length; i++) {
+
+                        var j = i % blockSizeInBytes;
+                        if (j == 0) cipher._encryptblock(keystream, 0);
+
+                        var b = c[i];
+                        c[i] ^= keystream[j];
+                        keystream[j] = b;
+                    }
+                };
+
+
+                /**
+                * Output feed back
+                * 
+                * The cipher repeatedly encrypts its own output. The output is XORed with the
+                * plain text to produce the cipher text.
+                * 
+                * This is a stream cipher mode and does not require padding.
+                */
+                var OFB = C_mode.OFB = function () {
+                    // Call parent constructor
+                    Mode.apply(this, arguments);
+                };
+
+                // Inherit from Mode
+                var OFB_prototype = OFB.prototype = new Mode;
+
+                // Override padding
+                OFB_prototype._padding = C_pad.NoPadding;
+
+                // Concrete steps for Mode template
+                OFB_prototype._doEncrypt = function (cipher, m, iv) {
+
+                    var blockSizeInBytes = cipher._blocksize * 4,
+                        keystream = iv.slice(0);
+
+                    // Encrypt each byte
+                    for (var i = 0; i < m.length; i++) {
+
+                        // Generate keystream
+                        if (i % blockSizeInBytes == 0)
+                            cipher._encryptblock(keystream, 0);
+
+                        // Encrypt byte
+                        m[i] ^= keystream[i % blockSizeInBytes];
+
+                    }
+                };
+                OFB_prototype._doDecrypt = OFB_prototype._doEncrypt;
+
+                /**
+                * Counter
+                * @author Gergely Risko
+                *
+                * After every block the last 4 bytes of the IV is increased by one
+                * with carry and that IV is used for the next block.
+                *
+                * This is a stream cipher mode and does not require padding.
+                */
+                var CTR = C_mode.CTR = function () {
+                    // Call parent constructor
+                    Mode.apply(this, arguments);
+                };
+
+                // Inherit from Mode
+                var CTR_prototype = CTR.prototype = new Mode;
+
+                // Override padding
+                CTR_prototype._padding = C_pad.NoPadding;
+
+                CTR_prototype._doEncrypt = function (cipher, m, iv) {
+                    var blockSizeInBytes = cipher._blocksize * 4;
+                    var counter = iv.slice(0);
+
+                    for (var i = 0; i < m.length;) {
+                        // do not lose iv
+                        var keystream = counter.slice(0);
+
+                        // Generate keystream for next block
+                        cipher._encryptblock(keystream, 0);
+
+                        // XOR keystream with block
+                        for (var j = 0; i < m.length && j < blockSizeInBytes; j++, i++) {
+                            m[i] ^= keystream[j];
+                        }
+
+                        // Increase counter
+                        if (++(counter[blockSizeInBytes - 1]) == 256) {
+                            counter[blockSizeInBytes - 1] = 0;
+                            if (++(counter[blockSizeInBytes - 2]) == 256) {
+                                counter[blockSizeInBytes - 2] = 0;
+                                if (++(counter[blockSizeInBytes - 3]) == 256) {
+                                    counter[blockSizeInBytes - 3] = 0;
+                                    ++(counter[blockSizeInBytes - 4]);
+                                }
+                            }
+                        }
+                    }
+                };
+                CTR_prototype._doDecrypt = CTR_prototype._doEncrypt;
+
+            })(Crypto);
+
+            /*!
+        * Crypto-JS v2.5.4  PBKDF2.js
+        * http://code.google.com/p/crypto-js/
+        * Copyright (c) 2009-2013, Jeff Mott. All rights reserved.
+        * http://code.google.com/p/crypto-js/wiki/License
+        */
+            (function () {
+
+                // Shortcuts
+                var C = Crypto,
+                    util = C.util,
+                    charenc = C.charenc,
+                    UTF8 = charenc.UTF8,
+                    Binary = charenc.Binary;
+
+                C.PBKDF2 = function (password, salt, keylen, options) {
+
+                    // Convert to byte arrays
+                    if (password.constructor == String) password = UTF8.stringToBytes(password);
+                    if (salt.constructor == String) salt = UTF8.stringToBytes(salt);
+                    /* else, assume byte arrays already */
+
+                    // Defaults
+                    var hasher = options && options.hasher || C.SHA1,
+                        iterations = options && options.iterations || 1;
+
+                    // Pseudo-random function
+                    function PRF(password, salt) {
+                        return C.HMAC(hasher, salt, password, {
+                            asBytes: true
+                        });
+                    }
+
+                    // Generate key
+                    var derivedKeyBytes = [],
+                        blockindex = 1;
+                    while (derivedKeyBytes.length < keylen) {
+                        var block = PRF(password, salt.concat(util.wordsToBytes([blockindex])));
+                        for (var u = block, i = 1; i < iterations; i++) {
+                            u = PRF(password, u);
+                            for (var j = 0; j < block.length; j++) block[j] ^= u[j];
+                        }
+                        derivedKeyBytes = derivedKeyBytes.concat(block);
+                        blockindex++;
+                    }
+
+                    // Truncate excess bytes
+                    derivedKeyBytes.length = keylen;
+
+                    return options && options.asBytes ? derivedKeyBytes :
+                        options && options.asString ? Binary.bytesToString(derivedKeyBytes) :
+                            util.bytesToHex(derivedKeyBytes);
+
+                };
+
+            })();
+
+            /*
+                  * Copyright (c) 2010-2011 Intalio Pte, All Rights Reserved
+                  * 
+                  * Permission is hereby granted, free of charge, to any person obtaining a copy
+                  * of this software and associated documentation files (the "Software"), to deal
+                  * in the Software without restriction, including without limitation the rights
+                  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+                  * copies of the Software, and to permit persons to whom the Software is
+                  * furnished to do so, subject to the following conditions:
+                  * 
+                  * The above copyright notice and this permission notice shall be included in
+                  * all copies or substantial portions of the Software.
+                  * 
+                  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+                  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+                  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+                  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+                  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+                  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+                  * THE SOFTWARE.
+                  */
+            // https://github.com/cheongwy/node-scrypt-js
+            (function () {
+
+                var MAX_VALUE = 2147483647;
+                var workerUrl = null;
+
+                //function scrypt(byte[] passwd, byte[] salt, int N, int r, int p, int dkLen)
+                /*
+                * N = Cpu cost
+                * r = Memory cost
+                * p = parallelization cost
+                * 
+                */
+                window.Crypto_scrypt = function (passwd, salt, N, r, p, dkLen, callback) {
+                    if (N == 0 || (N & (N - 1)) != 0) throw Error("N must be > 0 and a power of 2");
+
+                    if (N > MAX_VALUE / 128 / r) throw Error("Parameter N is too large");
+                    if (r > MAX_VALUE / 128 / p) throw Error("Parameter r is too large");
+
+                    var PBKDF2_opts = {
+                        iterations: 1,
+                        hasher: Crypto.SHA256,
+                        asBytes: true
+                    };
+
+                    var B = Crypto.PBKDF2(passwd, salt, p * 128 * r, PBKDF2_opts);
+
+                    try {
+                        var i = 0;
+                        var worksDone = 0;
+                        var makeWorker = function () {
+                            if (!workerUrl) {
+                                var code = '(' + scryptCore.toString() + ')()';
+                                var blob;
+                                try {
+                                    blob = new Blob([code], {
+                                        type: "text/javascript"
+                                    });
+                                } catch (e) {
+                                    window.BlobBuilder = window.BlobBuilder || window.WebKitBlobBuilder ||
+                                        window.MozBlobBuilder ||
+                                        window.MSBlobBuilder;
+                                    blob = new BlobBuilder();
+                                    blob.append(code);
+                                    blob = blob.getBlob("text/javascript");
+                                }
+                                workerUrl = URL.createObjectURL(blob);
+                            }
+                            var worker = new Worker(workerUrl);
+                            worker.onmessage = function (event) {
+                                var Bi = event.data[0],
+                                    Bslice = event.data[1];
+                                worksDone++;
+
+                                if (i < p) {
+                                    worker.postMessage([N, r, p, B, i++]);
+                                }
+
+                                var length = Bslice.length,
+                                    destPos = Bi * 128 * r,
+                                    srcPos = 0;
+                                while (length--) {
+                                    B[destPos++] = Bslice[srcPos++];
+                                }
+
+                                if (worksDone == p) {
+                                    callback(Crypto.PBKDF2(passwd, B, dkLen, PBKDF2_opts));
+                                }
+                            };
+                            return worker;
+                        };
+                        var workers = [makeWorker(), makeWorker()];
+                        workers[0].postMessage([N, r, p, B, i++]);
+                        if (p > 1) {
+                            workers[1].postMessage([N, r, p, B, i++]);
+                        }
+                    } catch (e) {
+                        window.setTimeout(function () {
+                            scryptCore();
+                            callback(Crypto.PBKDF2(passwd, B, dkLen, PBKDF2_opts));
+                        }, 0);
+                    }
+
+                    // using this function to enclose everything needed to create a worker (but also invokable directly for synchronous use)
+                    function scryptCore() {
+                        var XY = [],
+                            V = [];
+
+                        if (typeof B === 'undefined') {
+                            onmessage = function (event) {
+                                var data = event.data;
+                                var N = data[0],
+                                    r = data[1],
+                                    p = data[2],
+                                    B = data[3],
+                                    i = data[4];
+
+                                var Bslice = [];
+                                arraycopy32(B, i * 128 * r, Bslice, 0, 128 * r);
+                                smix(Bslice, 0, r, N, V, XY);
+
+                                postMessage([i, Bslice]);
+                            };
+                        } else {
+                            for (var i = 0; i < p; i++) {
+                                smix(B, i * 128 * r, r, N, V, XY);
+                            }
+                        }
+
+                        function smix(B, Bi, r, N, V, XY) {
+                            var Xi = 0;
+                            var Yi = 128 * r;
+                            var i;
+
+                            arraycopy32(B, Bi, XY, Xi, Yi);
+
+                            for (i = 0; i < N; i++) {
+                                arraycopy32(XY, Xi, V, i * Yi, Yi);
+                                blockmix_salsa8(XY, Xi, Yi, r);
+                            }
+
+                            for (i = 0; i < N; i++) {
+                                var j = integerify(XY, Xi, r) & (N - 1);
+                                blockxor(V, j * Yi, XY, Xi, Yi);
+                                blockmix_salsa8(XY, Xi, Yi, r);
+                            }
+
+                            arraycopy32(XY, Xi, B, Bi, Yi);
+                        }
+
+                        function blockmix_salsa8(BY, Bi, Yi, r) {
+                            var X = [];
+                            var i;
+
+                            arraycopy32(BY, Bi + (2 * r - 1) * 64, X, 0, 64);
+
+                            for (i = 0; i < 2 * r; i++) {
+                                blockxor(BY, i * 64, X, 0, 64);
+                                salsa20_8(X);
+                                arraycopy32(X, 0, BY, Yi + (i * 64), 64);
+                            }
+
+                            for (i = 0; i < r; i++) {
+                                arraycopy32(BY, Yi + (i * 2) * 64, BY, Bi + (i * 64), 64);
+                            }
+
+                            for (i = 0; i < r; i++) {
+                                arraycopy32(BY, Yi + (i * 2 + 1) * 64, BY, Bi + (i + r) * 64, 64);
+                            }
+                        }
+
+                        function R(a, b) {
+                            return (a << b) | (a >>> (32 - b));
+                        }
+
+                        function salsa20_8(B) {
+                            var B32 = new Array(32);
+                            var x = new Array(32);
+                            var i;
+
+                            for (i = 0; i < 16; i++) {
+                                B32[i] = (B[i * 4 + 0] & 0xff) << 0;
+                                B32[i] |= (B[i * 4 + 1] & 0xff) << 8;
+                                B32[i] |= (B[i * 4 + 2] & 0xff) << 16;
+                                B32[i] |= (B[i * 4 + 3] & 0xff) << 24;
+                            }
+
+                            arraycopy(B32, 0, x, 0, 16);
+
+                            for (i = 8; i > 0; i -= 2) {
+                                x[4] ^= R(x[0] + x[12], 7);
+                                x[8] ^= R(x[4] + x[0], 9);
+                                x[12] ^= R(x[8] + x[4], 13);
+                                x[0] ^= R(x[12] + x[8], 18);
+                                x[9] ^= R(x[5] + x[1], 7);
+                                x[13] ^= R(x[9] + x[5], 9);
+                                x[1] ^= R(x[13] + x[9], 13);
+                                x[5] ^= R(x[1] + x[13], 18);
+                                x[14] ^= R(x[10] + x[6], 7);
+                                x[2] ^= R(x[14] + x[10], 9);
+                                x[6] ^= R(x[2] + x[14], 13);
+                                x[10] ^= R(x[6] + x[2], 18);
+                                x[3] ^= R(x[15] + x[11], 7);
+                                x[7] ^= R(x[3] + x[15], 9);
+                                x[11] ^= R(x[7] + x[3], 13);
+                                x[15] ^= R(x[11] + x[7], 18);
+                                x[1] ^= R(x[0] + x[3], 7);
+                                x[2] ^= R(x[1] + x[0], 9);
+                                x[3] ^= R(x[2] + x[1], 13);
+                                x[0] ^= R(x[3] + x[2], 18);
+                                x[6] ^= R(x[5] + x[4], 7);
+                                x[7] ^= R(x[6] + x[5], 9);
+                                x[4] ^= R(x[7] + x[6], 13);
+                                x[5] ^= R(x[4] + x[7], 18);
+                                x[11] ^= R(x[10] + x[9], 7);
+                                x[8] ^= R(x[11] + x[10], 9);
+                                x[9] ^= R(x[8] + x[11], 13);
+                                x[10] ^= R(x[9] + x[8], 18);
+                                x[12] ^= R(x[15] + x[14], 7);
+                                x[13] ^= R(x[12] + x[15], 9);
+                                x[14] ^= R(x[13] + x[12], 13);
+                                x[15] ^= R(x[14] + x[13], 18);
+                            }
+
+                            for (i = 0; i < 16; ++i) B32[i] = x[i] + B32[i];
+
+                            for (i = 0; i < 16; i++) {
+                                var bi = i * 4;
+                                B[bi + 0] = (B32[i] >> 0 & 0xff);
+                                B[bi + 1] = (B32[i] >> 8 & 0xff);
+                                B[bi + 2] = (B32[i] >> 16 & 0xff);
+                                B[bi + 3] = (B32[i] >> 24 & 0xff);
+                            }
+                        }
+
+                        function blockxor(S, Si, D, Di, len) {
+                            var i = len >> 6;
+                            while (i--) {
+                                D[Di++] ^= S[Si++];
+                                D[Di++] ^= S[Si++];
+                                D[Di++] ^= S[Si++];
+                                D[Di++] ^= S[Si++];
+                                D[Di++] ^= S[Si++];
+                                D[Di++] ^= S[Si++];
+                                D[Di++] ^= S[Si++];
+                                D[Di++] ^= S[Si++];
+
+                                D[Di++] ^= S[Si++];
+                                D[Di++] ^= S[Si++];
+                                D[Di++] ^= S[Si++];
+                                D[Di++] ^= S[Si++];
+                                D[Di++] ^= S[Si++];
+                                D[Di++] ^= S[Si++];
+                                D[Di++] ^= S[Si++];
+                                D[Di++] ^= S[Si++];
+
+                                D[Di++] ^= S[Si++];
+                                D[Di++] ^= S[Si++];
+                                D[Di++] ^= S[Si++];
+                                D[Di++] ^= S[Si++];
+                                D[Di++] ^= S[Si++];
+                                D[Di++] ^= S[Si++];
+                                D[Di++] ^= S[Si++];
+                                D[Di++] ^= S[Si++];
+
+                                D[Di++] ^= S[Si++];
+                                D[Di++] ^= S[Si++];
+                                D[Di++] ^= S[Si++];
+                                D[Di++] ^= S[Si++];
+                                D[Di++] ^= S[Si++];
+                                D[Di++] ^= S[Si++];
+                                D[Di++] ^= S[Si++];
+                                D[Di++] ^= S[Si++];
+
+                                D[Di++] ^= S[Si++];
+                                D[Di++] ^= S[Si++];
+                                D[Di++] ^= S[Si++];
+                                D[Di++] ^= S[Si++];
+                                D[Di++] ^= S[Si++];
+                                D[Di++] ^= S[Si++];
+                                D[Di++] ^= S[Si++];
+                                D[Di++] ^= S[Si++];
+
+                                D[Di++] ^= S[Si++];
+                                D[Di++] ^= S[Si++];
+                                D[Di++] ^= S[Si++];
+                                D[Di++] ^= S[Si++];
+                                D[Di++] ^= S[Si++];
+                                D[Di++] ^= S[Si++];
+                                D[Di++] ^= S[Si++];
+                                D[Di++] ^= S[Si++];
+
+                                D[Di++] ^= S[Si++];
+                                D[Di++] ^= S[Si++];
+                                D[Di++] ^= S[Si++];
+                                D[Di++] ^= S[Si++];
+                                D[Di++] ^= S[Si++];
+                                D[Di++] ^= S[Si++];
+                                D[Di++] ^= S[Si++];
+                                D[Di++] ^= S[Si++];
+
+                                D[Di++] ^= S[Si++];
+                                D[Di++] ^= S[Si++];
+                                D[Di++] ^= S[Si++];
+                                D[Di++] ^= S[Si++];
+                                D[Di++] ^= S[Si++];
+                                D[Di++] ^= S[Si++];
+                                D[Di++] ^= S[Si++];
+                                D[Di++] ^= S[Si++];
+                            }
+                        }
+
+                        function integerify(B, bi, r) {
+                            var n;
+
+                            bi += (2 * r - 1) * 64;
+
+                            n = (B[bi + 0] & 0xff) << 0;
+                            n |= (B[bi + 1] & 0xff) << 8;
+                            n |= (B[bi + 2] & 0xff) << 16;
+                            n |= (B[bi + 3] & 0xff) << 24;
+
+                            return n;
+                        }
+
+                        function arraycopy(src, srcPos, dest, destPos, length) {
+                            while (length--) {
+                                dest[destPos++] = src[srcPos++];
+                            }
+                        }
+
+                        function arraycopy32(src, srcPos, dest, destPos, length) {
+                            var i = length >> 5;
+                            while (i--) {
+                                dest[destPos++] = src[srcPos++];
+                                dest[destPos++] = src[srcPos++];
+                                dest[destPos++] = src[srcPos++];
+                                dest[destPos++] = src[srcPos++];
+                                dest[destPos++] = src[srcPos++];
+                                dest[destPos++] = src[srcPos++];
+                                dest[destPos++] = src[srcPos++];
+                                dest[destPos++] = src[srcPos++];
+
+                                dest[destPos++] = src[srcPos++];
+                                dest[destPos++] = src[srcPos++];
+                                dest[destPos++] = src[srcPos++];
+                                dest[destPos++] = src[srcPos++];
+                                dest[destPos++] = src[srcPos++];
+                                dest[destPos++] = src[srcPos++];
+                                dest[destPos++] = src[srcPos++];
+                                dest[destPos++] = src[srcPos++];
+
+                                dest[destPos++] = src[srcPos++];
+                                dest[destPos++] = src[srcPos++];
+                                dest[destPos++] = src[srcPos++];
+                                dest[destPos++] = src[srcPos++];
+                                dest[destPos++] = src[srcPos++];
+                                dest[destPos++] = src[srcPos++];
+                                dest[destPos++] = src[srcPos++];
+                                dest[destPos++] = src[srcPos++];
+
+                                dest[destPos++] = src[srcPos++];
+                                dest[destPos++] = src[srcPos++];
+                                dest[destPos++] = src[srcPos++];
+                                dest[destPos++] = src[srcPos++];
+                                dest[destPos++] = src[srcPos++];
+                                dest[destPos++] = src[srcPos++];
+                                dest[destPos++] = src[srcPos++];
+                                dest[destPos++] = src[srcPos++];
+                            }
+                        }
+                    } // scryptCore
+                }; // window.Crypto_scrypt
+            })();
+
+            /*!
+              * Crypto-JS v2.5.4  AES.js
+              * http://code.google.com/p/crypto-js/
+              * Copyright (c) 2009-2013, Jeff Mott. All rights reserved.
+              * http://code.google.com/p/crypto-js/wiki/License
+              */
+            (function () {
+
+                // Shortcuts
+                var C = Crypto,
+                    util = C.util,
+                    charenc = C.charenc,
+                    UTF8 = charenc.UTF8;
+
+                // Precomputed SBOX
+                var SBOX = [0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5,
+                    0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76,
+                    0xca, 0x82, 0xc9, 0x7d, 0xfa, 0x59, 0x47, 0xf0,
+                    0xad, 0xd4, 0xa2, 0xaf, 0x9c, 0xa4, 0x72, 0xc0,
+                    0xb7, 0xfd, 0x93, 0x26, 0x36, 0x3f, 0xf7, 0xcc,
+                    0x34, 0xa5, 0xe5, 0xf1, 0x71, 0xd8, 0x31, 0x15,
+                    0x04, 0xc7, 0x23, 0xc3, 0x18, 0x96, 0x05, 0x9a,
+                    0x07, 0x12, 0x80, 0xe2, 0xeb, 0x27, 0xb2, 0x75,
+                    0x09, 0x83, 0x2c, 0x1a, 0x1b, 0x6e, 0x5a, 0xa0,
+                    0x52, 0x3b, 0xd6, 0xb3, 0x29, 0xe3, 0x2f, 0x84,
+                    0x53, 0xd1, 0x00, 0xed, 0x20, 0xfc, 0xb1, 0x5b,
+                    0x6a, 0xcb, 0xbe, 0x39, 0x4a, 0x4c, 0x58, 0xcf,
+                    0xd0, 0xef, 0xaa, 0xfb, 0x43, 0x4d, 0x33, 0x85,
+                    0x45, 0xf9, 0x02, 0x7f, 0x50, 0x3c, 0x9f, 0xa8,
+                    0x51, 0xa3, 0x40, 0x8f, 0x92, 0x9d, 0x38, 0xf5,
+                    0xbc, 0xb6, 0xda, 0x21, 0x10, 0xff, 0xf3, 0xd2,
+                    0xcd, 0x0c, 0x13, 0xec, 0x5f, 0x97, 0x44, 0x17,
+                    0xc4, 0xa7, 0x7e, 0x3d, 0x64, 0x5d, 0x19, 0x73,
+                    0x60, 0x81, 0x4f, 0xdc, 0x22, 0x2a, 0x90, 0x88,
+                    0x46, 0xee, 0xb8, 0x14, 0xde, 0x5e, 0x0b, 0xdb,
+                    0xe0, 0x32, 0x3a, 0x0a, 0x49, 0x06, 0x24, 0x5c,
+                    0xc2, 0xd3, 0xac, 0x62, 0x91, 0x95, 0xe4, 0x79,
+                    0xe7, 0xc8, 0x37, 0x6d, 0x8d, 0xd5, 0x4e, 0xa9,
+                    0x6c, 0x56, 0xf4, 0xea, 0x65, 0x7a, 0xae, 0x08,
+                    0xba, 0x78, 0x25, 0x2e, 0x1c, 0xa6, 0xb4, 0xc6,
+                    0xe8, 0xdd, 0x74, 0x1f, 0x4b, 0xbd, 0x8b, 0x8a,
+                    0x70, 0x3e, 0xb5, 0x66, 0x48, 0x03, 0xf6, 0x0e,
+                    0x61, 0x35, 0x57, 0xb9, 0x86, 0xc1, 0x1d, 0x9e,
+                    0xe1, 0xf8, 0x98, 0x11, 0x69, 0xd9, 0x8e, 0x94,
+                    0x9b, 0x1e, 0x87, 0xe9, 0xce, 0x55, 0x28, 0xdf,
+                    0x8c, 0xa1, 0x89, 0x0d, 0xbf, 0xe6, 0x42, 0x68,
+                    0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb, 0x16
+                ];
+
+                // Compute inverse SBOX lookup table
+                for (var INVSBOX = [], i = 0; i < 256; i++) INVSBOX[SBOX[i]] = i;
+
+                // Compute multiplication in GF(2^8) lookup tables
+                var MULT2 = [],
+                    MULT3 = [],
+                    MULT9 = [],
+                    MULTB = [],
+                    MULTD = [],
+                    MULTE = [];
+
+                function xtime(a, b) {
+                    for (var result = 0, i = 0; i < 8; i++) {
+                        if (b & 1) result ^= a;
+                        var hiBitSet = a & 0x80;
+                        a = (a << 1) & 0xFF;
+                        if (hiBitSet) a ^= 0x1b;
+                        b >>>= 1;
+                    }
+                    return result;
+                }
+
+                for (var i = 0; i < 256; i++) {
+                    MULT2[i] = xtime(i, 2);
+                    MULT3[i] = xtime(i, 3);
+                    MULT9[i] = xtime(i, 9);
+                    MULTB[i] = xtime(i, 0xB);
+                    MULTD[i] = xtime(i, 0xD);
+                    MULTE[i] = xtime(i, 0xE);
+                }
+
+                // Precomputed RCon lookup
+                var RCON = [0x00, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36];
+
+                // Inner state
+                var state = [
+                    [],
+                    [],
+                    [],
+                    []
+                ],
+                    keylength,
+                    nrounds,
+                    keyschedule;
+
+                var AES = C.AES = {
+
+                    /**
+                    * Public API
+                    */
+
+                    encrypt: function (message, password, options) {
+
+                        options = options || {};
+
+                        // Determine mode
+                        var mode = options.mode || new C.mode.OFB;
+
+                        // Allow mode to override options
+                        if (mode.fixOptions) mode.fixOptions(options);
+
+                        var
+
+                            // Convert to bytes if message is a string
+                            m = (
+                                message.constructor == String ?
+                                    UTF8.stringToBytes(message) :
+                                    message
+                            ),
+
+                            // Generate random IV
+                            iv = options.iv || util.randomBytes(AES._blocksize * 4),
+
+                            // Generate key
+                            k = (
+                                password.constructor == String ?
+                                    // Derive key from pass-phrase
+                                    C.PBKDF2(password, iv, 32, {
+                                        asBytes: true
+                                    }) :
+                                    // else, assume byte array representing cryptographic key
+                                    password
+                            );
+
+                        // Encrypt
+                        AES._init(k);
+                        mode.encrypt(AES, m, iv);
+
+                        // Return ciphertext
+                        m = options.iv ? m : iv.concat(m);
+                        return (options && options.asBytes) ? m : util.bytesToBase64(m);
+
+                    },
+
+                    decrypt: function (ciphertext, password, options) {
+
+                        options = options || {};
+
+                        // Determine mode
+                        var mode = options.mode || new C.mode.OFB;
+
+                        // Allow mode to override options
+                        if (mode.fixOptions) mode.fixOptions(options);
+
+                        var
+
+                            // Convert to bytes if ciphertext is a string
+                            c = (
+                                ciphertext.constructor == String ?
+                                    util.base64ToBytes(ciphertext) :
+                                    ciphertext
+                            ),
+
+                            // Separate IV and message
+                            iv = options.iv || c.splice(0, AES._blocksize * 4),
+
+                            // Generate key
+                            k = (
+                                password.constructor == String ?
+                                    // Derive key from pass-phrase
+                                    C.PBKDF2(password, iv, 32, {
+                                        asBytes: true
+                                    }) :
+                                    // else, assume byte array representing cryptographic key
+                                    password
+                            );
+
+                        // Decrypt
+                        AES._init(k);
+                        mode.decrypt(AES, c, iv);
+
+                        // Return plaintext
+                        return (options && options.asBytes) ? c : UTF8.bytesToString(c);
+
+                    },
+
+
+                    /**
+                    * Package private methods and properties
+                    */
+
+                    _blocksize: 4,
+
+                    _encryptblock: function (m, offset) {
+
+                        // Set input
+                        for (var row = 0; row < AES._blocksize; row++) {
+                            for (var col = 0; col < 4; col++)
+                                state[row][col] = m[offset + col * 4 + row];
+                        }
+
+                        // Add round key
+                        for (var row = 0; row < 4; row++) {
+                            for (var col = 0; col < 4; col++)
+                                state[row][col] ^= keyschedule[col][row];
+                        }
+
+                        for (var round = 1; round < nrounds; round++) {
+
+                            // Sub bytes
+                            for (var row = 0; row < 4; row++) {
+                                for (var col = 0; col < 4; col++)
+                                    state[row][col] = SBOX[state[row][col]];
+                            }
+
+                            // Shift rows
+                            state[1].push(state[1].shift());
+                            state[2].push(state[2].shift());
+                            state[2].push(state[2].shift());
+                            state[3].unshift(state[3].pop());
+
+                            // Mix columns
+                            for (var col = 0; col < 4; col++) {
+
+                                var s0 = state[0][col],
+                                    s1 = state[1][col],
+                                    s2 = state[2][col],
+                                    s3 = state[3][col];
+
+                                state[0][col] = MULT2[s0] ^ MULT3[s1] ^ s2 ^ s3;
+                                state[1][col] = s0 ^ MULT2[s1] ^ MULT3[s2] ^ s3;
+                                state[2][col] = s0 ^ s1 ^ MULT2[s2] ^ MULT3[s3];
+                                state[3][col] = MULT3[s0] ^ s1 ^ s2 ^ MULT2[s3];
+
+                            }
+
+                            // Add round key
+                            for (var row = 0; row < 4; row++) {
+                                for (var col = 0; col < 4; col++)
+                                    state[row][col] ^= keyschedule[round * 4 + col][row];
+                            }
+
+                        }
+
+                        // Sub bytes
+                        for (var row = 0; row < 4; row++) {
+                            for (var col = 0; col < 4; col++)
+                                state[row][col] = SBOX[state[row][col]];
+                        }
+
+                        // Shift rows
+                        state[1].push(state[1].shift());
+                        state[2].push(state[2].shift());
+                        state[2].push(state[2].shift());
+                        state[3].unshift(state[3].pop());
+
+                        // Add round key
+                        for (var row = 0; row < 4; row++) {
+                            for (var col = 0; col < 4; col++)
+                                state[row][col] ^= keyschedule[nrounds * 4 + col][row];
+                        }
+
+                        // Set output
+                        for (var row = 0; row < AES._blocksize; row++) {
+                            for (var col = 0; col < 4; col++)
+                                m[offset + col * 4 + row] = state[row][col];
+                        }
+
+                    },
+
+                    _decryptblock: function (c, offset) {
+
+                        // Set input
+                        for (var row = 0; row < AES._blocksize; row++) {
+                            for (var col = 0; col < 4; col++)
+                                state[row][col] = c[offset + col * 4 + row];
+                        }
+
+                        // Add round key
+                        for (var row = 0; row < 4; row++) {
+                            for (var col = 0; col < 4; col++)
+                                state[row][col] ^= keyschedule[nrounds * 4 + col][row];
+                        }
+
+                        for (var round = 1; round < nrounds; round++) {
+
+                            // Inv shift rows
+                            state[1].unshift(state[1].pop());
+                            state[2].push(state[2].shift());
+                            state[2].push(state[2].shift());
+                            state[3].push(state[3].shift());
+
+                            // Inv sub bytes
+                            for (var row = 0; row < 4; row++) {
+                                for (var col = 0; col < 4; col++)
+                                    state[row][col] = INVSBOX[state[row][col]];
+                            }
+
+                            // Add round key
+                            for (var row = 0; row < 4; row++) {
+                                for (var col = 0; col < 4; col++)
+                                    state[row][col] ^= keyschedule[(nrounds - round) * 4 + col][row];
+                            }
+
+                            // Inv mix columns
+                            for (var col = 0; col < 4; col++) {
+
+                                var s0 = state[0][col],
+                                    s1 = state[1][col],
+                                    s2 = state[2][col],
+                                    s3 = state[3][col];
+
+                                state[0][col] = MULTE[s0] ^ MULTB[s1] ^ MULTD[s2] ^ MULT9[s3];
+                                state[1][col] = MULT9[s0] ^ MULTE[s1] ^ MULTB[s2] ^ MULTD[s3];
+                                state[2][col] = MULTD[s0] ^ MULT9[s1] ^ MULTE[s2] ^ MULTB[s3];
+                                state[3][col] = MULTB[s0] ^ MULTD[s1] ^ MULT9[s2] ^ MULTE[s3];
+
+                            }
+
+                        }
+
+                        // Inv shift rows
+                        state[1].unshift(state[1].pop());
+                        state[2].push(state[2].shift());
+                        state[2].push(state[2].shift());
+                        state[3].push(state[3].shift());
+
+                        // Inv sub bytes
+                        for (var row = 0; row < 4; row++) {
+                            for (var col = 0; col < 4; col++)
+                                state[row][col] = INVSBOX[state[row][col]];
+                        }
+
+                        // Add round key
+                        for (var row = 0; row < 4; row++) {
+                            for (var col = 0; col < 4; col++)
+                                state[row][col] ^= keyschedule[col][row];
+                        }
+
+                        // Set output
+                        for (var row = 0; row < AES._blocksize; row++) {
+                            for (var col = 0; col < 4; col++)
+                                c[offset + col * 4 + row] = state[row][col];
+                        }
+
+                    },
+
+
+                    /**
+                    * Private methods
+                    */
+
+                    _init: function (k) {
+                        keylength = k.length / 4;
+                        nrounds = keylength + 6;
+                        AES._keyexpansion(k);
+                    },
+
+                    // Generate a key schedule
+                    _keyexpansion: function (k) {
+
+                        keyschedule = [];
+
+                        for (var row = 0; row < keylength; row++) {
+                            keyschedule[row] = [
+                                k[row * 4],
+                                k[row * 4 + 1],
+                                k[row * 4 + 2],
+                                k[row * 4 + 3]
+                            ];
+                        }
+
+                        for (var row = keylength; row < AES._blocksize * (nrounds + 1); row++) {
+
+                            var temp = [
+                                keyschedule[row - 1][0],
+                                keyschedule[row - 1][1],
+                                keyschedule[row - 1][2],
+                                keyschedule[row - 1][3]
+                            ];
+
+                            if (row % keylength == 0) {
+
+                                // Rot word
+                                temp.push(temp.shift());
+
+                                // Sub word
+                                temp[0] = SBOX[temp[0]];
+                                temp[1] = SBOX[temp[1]];
+                                temp[2] = SBOX[temp[2]];
+                                temp[3] = SBOX[temp[3]];
+
+                                temp[0] ^= RCON[row / keylength];
+
+                            } else if (keylength > 6 && row % keylength == 4) {
+
+                                // Sub word
+                                temp[0] = SBOX[temp[0]];
+                                temp[1] = SBOX[temp[1]];
+                                temp[2] = SBOX[temp[2]];
+                                temp[3] = SBOX[temp[3]];
+
+                            }
+
+                            keyschedule[row] = [
+                                keyschedule[row - keylength][0] ^ temp[0],
+                                keyschedule[row - keylength][1] ^ temp[1],
+                                keyschedule[row - keylength][2] ^ temp[2],
+                                keyschedule[row - keylength][3] ^ temp[3]
+                            ];
+
+                        }
+
+                    }
+
+                };
+
+            })();
 
             /*
              * Copyright (c) 2000 - 2011 The Legion Of The Bouncy Castle (http://www.bouncycastle.org)
@@ -6607,11 +7975,11 @@
 
         /*
         Copyright (c) 2011 Stefan Thomas
-      
+        
         Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-      
+        
         The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-      
+        
         THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         */
 
@@ -6911,7 +8279,7 @@
                     cursor += 2 + sig[cursor + 1];
 
                     //if (cursor != sig.length)
-                    //	throw new Error("Extra bytes in signature");
+                    //  throw new Error("Extra bytes in signature");
 
                     var r = BigInteger.fromByteArrayUnsigned(rBa);
                     var s = BigInteger.fromByteArrayUnsigned(sBa);
@@ -7545,6 +8913,150 @@
             }
         };
 
+
+        (function (ellipticCurveType) {
+
+            //Defining Elliptic Encryption Object  
+            var ellipticEncryption = window.ellipticCurveEncryption = function () { };
+
+            ellipticEncryption.rng = new SecureRandom();
+
+
+
+            ellipticEncryption.getCurveParameters = function (curveName) {
+
+                //Default is secp256k1
+                curveName = typeof curveName !== 'undefined' ? curveName : "secp256k1";
+
+                var c = EllipticCurve.getSECCurveByName(curveName);
+                var curveDetails = {
+                    Q: "",
+                    A: "",
+                    B: "",
+                    GX: "",
+                    GY: "",
+                    N: ""
+                };
+
+                curveDetails.Q = c.getCurve().getQ().toString();
+                curveDetails.A = c.getCurve().getA().toBigInteger().toString();
+                curveDetails.B = c.getCurve().getB().toBigInteger().toString();
+                curveDetails.GX = c.getG().getX().toBigInteger().toString();
+                curveDetails.GY = c.getG().getY().toBigInteger().toString();
+                curveDetails.N = c.getN().toString();
+
+                return curveDetails;
+
+            }
+
+            ellipticEncryption.selectedCurve = ellipticEncryption.getCurveParameters(ellipticCurveType);
+
+
+            ellipticEncryption.get_curve = function () {
+                return new EllipticCurve.CurveFp(new BigInteger(this.selectedCurve.Q),
+                    new BigInteger(this.selectedCurve.A),
+                    new BigInteger(this.selectedCurve.B));
+            }
+
+            ellipticEncryption.get_G = function (curve) {
+                return new EllipticCurve.PointFp(curve,
+                    curve.fromBigInteger(new BigInteger(this.selectedCurve.GX)),
+                    curve.fromBigInteger(new BigInteger(this.selectedCurve.GY)));
+            }
+
+
+            ellipticEncryption.pick_rand = function () {
+                var n = new BigInteger(this.selectedCurve.N);
+                var n1 = n.subtract(BigInteger.ONE);
+                var r = new BigInteger(n.bitLength(), this.rng);
+                return r.mod(n1).add(BigInteger.ONE);
+            }
+
+
+            ellipticEncryption.senderRandom = function () {
+                var r = this.pick_rand();
+                return r.toString();
+            };
+
+
+
+            ellipticEncryption.receiverRandom = function () {
+
+                //This is receivers private key. For now we will use random. CHANGE IT LATER
+                var r = this.pick_rand();
+                return r.toString();
+            }
+
+
+
+            ellipticEncryption.senderPublicString = function (senderPrivateKey) {
+
+                var senderKeyECData = {};
+
+                var curve = this.get_curve();
+                var G = this.get_G(curve);
+                var a = new BigInteger(senderPrivateKey);
+                var P = G.multiply(a);
+                senderKeyECData.XValuePublicString = P.getX().toBigInteger().toString();
+                senderKeyECData.YValuePublicString = P.getY().toBigInteger().toString();
+
+                return senderKeyECData;
+            }
+
+            //In real life ellipticEncryption.receiverPublicString is the public key of the receiver.
+            //you don't have to run receiverRandom and the bottom function 
+            ellipticEncryption.receiverPublicString = function (receiverPublicKey) {
+
+                var receiverKeyECData = {};
+
+                var curve = this.get_curve();
+                var G = this.get_G(curve);
+                var a = new BigInteger(receiverPublicKey);
+                var P = G.multiply(a);
+                receiverKeyECData.XValuePublicString = P.getX().toBigInteger().toString();
+                receiverKeyECData.YValuePublicString = P.getY().toBigInteger().toString();
+
+                return receiverKeyECData;
+            }
+
+            ellipticEncryption.senderSharedKeyDerivation = function (receiverPublicStringXValue,
+                receiverPublicStringYValue, senderPrivateKey) {
+
+                var senderDerivedKey = {};
+                var curve = this.get_curve();
+                var P = new EllipticCurve.PointFp(curve,
+                    curve.fromBigInteger(new BigInteger(receiverPublicStringXValue)),
+                    curve.fromBigInteger(new BigInteger(receiverPublicStringYValue)));
+                var a = new BigInteger(senderPrivateKey);
+                var S = P.multiply(a);
+
+                senderDerivedKey.XValue = S.getX().toBigInteger().toString();
+                senderDerivedKey.YValue = S.getY().toBigInteger().toString();
+
+                return senderDerivedKey;
+            }
+
+
+            ellipticEncryption.receiverSharedKeyDerivation = function (senderPublicStringXValue,
+                senderPublicStringYValue, receiverPrivateKey) {
+
+                var receiverDerivedKey = {};
+                var curve = this.get_curve();
+                var P = new EllipticCurve.PointFp(curve,
+                    curve.fromBigInteger(new BigInteger(senderPublicStringXValue)),
+                    curve.fromBigInteger(new BigInteger(senderPublicStringYValue)));
+                var a = new BigInteger(receiverPrivateKey);
+                var S = P.multiply(a);
+
+                receiverDerivedKey.XValue = S.getX().toBigInteger().toString();
+                receiverDerivedKey.YValue = S.getY().toBigInteger().toString();
+
+                return receiverDerivedKey;
+            }
+
+        })("secp256k1");
+
+
         // secrets.js - by Alexander Stetsyuk - released under MIT License
         (function (exports, global) {
             var defaults = {
@@ -8117,25 +9629,308 @@
             exports.init();
         })(typeof module !== 'undefined' && module['exports'] ? module['exports'] : (window['shamirSecretShare'] = {}),
             typeof global !== 'undefined' ? global : window);
+
+        //For diff base
+        /*
+        Functions available:
+        diff(originalObj, updatedObj) returns the difference of the original and updated objects
+        addedDiff(original, updatedObj) returns only the values added to the updated object
+        deletedDiff(original, updatedObj) returns only the values deleted in the updated object
+        updatedDiff(original, updatedObj) returns only the values that have been changed in the updated object
+        findDiff(original, updatedObj) returns an object with the added, deleted and updated differences  
+        mergeRecursive(original, diff) returns a new object that will merge difference to old object
+        mergeDiff(original, allDiff) returns a new object from original object merged with all differences (allDiff is returned object of findDiff)
+        */
+        (function () {
+            const isDate = d => d instanceof Date;
+            const isEmpty = o => Object.keys(o).length === 0;
+            const isObject = o => o != null && typeof o === 'object';
+            const properObject = o => isObject(o) && !o.hasOwnProperty ? { ...o } : o;
+            const getLargerArray = (l, r) => l.length > r.length ? l : r;
+
+            const preserve = (diff, left, right) => {
+                if (!isObject(diff)) return diff;
+                return Object.keys(diff).reduce((acc, key) => {
+                    const leftArray = left[key];
+                    const rightArray = right[key];
+                    if (Array.isArray(leftArray) && Array.isArray(rightArray)) {
+                        const array = [...getLargerArray(leftArray, rightArray)];
+                        return {
+                            ...acc,
+                            [key]: array.reduce((acc2, item, index) => {
+                                if (diff[key].hasOwnProperty(index)) {
+                                    acc2[index] = preserve(diff[key][index], leftArray[index], rightArray[index]); // diff recurse and check for nested arrays
+                                    return acc2;
+                                }
+                                delete acc2[index]; // no diff aka empty
+                                return acc2;
+                            }, array)
+                        };
+                    }
+                    return {
+                        ...acc,
+                        [key]: diff[key]
+                    };
+                }, {});
+            };
+
+            const updatedDiff = (lhs, rhs) => {
+                if (lhs === rhs) return {};
+                if (!isObject(lhs) || !isObject(rhs)) return rhs;
+                const l = properObject(lhs);
+                const r = properObject(rhs);
+                if (isDate(l) || isDate(r)) {
+                    if (l.valueOf() == r.valueOf()) return {};
+                    return r;
+                }
+                return Object.keys(r).reduce((acc, key) => {
+                    if (l.hasOwnProperty(key)) {
+                        const difference = updatedDiff(l[key], r[key]);
+                        if (isObject(difference) && isEmpty(difference) && !isDate(difference)) return acc;
+                        return { ...acc, [key]: difference };
+                    }
+                    return acc;
+                }, {});
+            };
+
+
+            const diff = (lhs, rhs) => {
+                if (lhs === rhs) return {}; // equal return no diff
+                if (!isObject(lhs) || !isObject(rhs)) return rhs; // return updated rhs
+                const l = properObject(lhs);
+                const r = properObject(rhs);
+                const deletedValues = Object.keys(l).reduce((acc, key) => {
+                    return r.hasOwnProperty(key) ? acc : { ...acc, [key]: null };
+                }, {});
+                if (isDate(l) || isDate(r)) {
+                    if (l.valueOf() == r.valueOf()) return {};
+                    return r;
+                }
+                return Object.keys(r).reduce((acc, key) => {
+                    if (!l.hasOwnProperty(key)) return { ...acc, [key]: r[key] }; // return added r key
+                    const difference = diff(l[key], r[key]);
+                    if (isObject(difference) && isEmpty(difference) && !isDate(difference)) return acc; // return no diff
+                    return { ...acc, [key]: difference }; // return updated key
+                }, deletedValues);
+            };
+
+            const addedDiff = (lhs, rhs) => {
+                if (lhs === rhs || !isObject(lhs) || !isObject(rhs)) return {};
+                const l = properObject(lhs);
+                const r = properObject(rhs);
+                return Object.keys(r).reduce((acc, key) => {
+                    if (l.hasOwnProperty(key)) {
+                        const difference = addedDiff(l[key], r[key]);
+                        if (isObject(difference) && isEmpty(difference)) return acc;
+                        return { ...acc, [key]: difference };
+                    }
+                    return { ...acc, [key]: r[key] };
+                }, {});
+            };
+
+            const arrayDiff = (lhs, rhs) => {
+                if (lhs === rhs) return {}; // equal return no diff
+                if (!isObject(lhs) || !isObject(rhs)) return rhs; // return updated rhs
+                const l = properObject(lhs);
+                const r = properObject(rhs);
+                const deletedValues = Object.keys(l).reduce((acc, key) => {
+                    return r.hasOwnProperty(key) ? acc : { ...acc, [key]: null };
+                }, {});
+                if (isDate(l) || isDate(r)) {
+                    if (l.valueOf() == r.valueOf()) return {};
+                    return r;
+                }
+                if (Array.isArray(r) && Array.isArray(l)) {
+                    const deletedValues = l.reduce((acc, item, index) => {
+                        return r.hasOwnProperty(index) ? acc.concat(item) : acc.concat(null);
+                    }, []);
+                    return r.reduce((acc, rightItem, index) => {
+                        if (!deletedValues.hasOwnProperty(index)) {
+                            return acc.concat(rightItem);
+                        }
+                        const leftItem = l[index];
+                        const difference = diff(rightItem, leftItem);
+                        if (isObject(difference) && isEmpty(difference) && !isDate(difference)) {
+                            delete acc[index];
+                            return acc; // return no diff
+                        }
+                        return acc.slice(0, index).concat(rightItem).concat(acc.slice(index + 1)); // return updated key
+                    }, deletedValues);
+                }
+
+                return Object.keys(r).reduce((acc, key) => {
+                    if (!l.hasOwnProperty(key)) return { ...acc, [key]: r[key] }; // return added r key
+                    const difference = diff(l[key], r[key]);
+                    if (isObject(difference) && isEmpty(difference) && !isDate(difference)) return acc; // return no diff
+                    return { ...acc, [key]: difference }; // return updated key
+                }, deletedValues);
+            };
+
+            const deletedDiff = (lhs, rhs) => {
+                if (lhs === rhs || !isObject(lhs) || !isObject(rhs)) return {};
+                const l = properObject(lhs);
+                const r = properObject(rhs);
+                return Object.keys(l).reduce((acc, key) => {
+                    if (r.hasOwnProperty(key)) {
+                        const difference = deletedDiff(l[key], r[key]);
+                        if (isObject(difference) && isEmpty(difference)) return acc;
+                        return { ...acc, [key]: difference };
+                    }
+                    return { ...acc, [key]: null };
+                }, {});
+            };
+            window.findDiff = (lhs, rhs) => ({
+                added: addedDiff(lhs, rhs),
+                deleted: deletedDiff(lhs, rhs),
+                updated: updatedDiff(lhs, rhs),
+            });
+
+            const mergeRecursive = (obj1, obj2) => {
+                for (var p in obj2) {
+                    try {
+                        if (obj2[p].constructor == Object)
+                            obj1[p] = mergeRecursive(obj1[p], obj2[p]);
+                        // Property in destination object set; update its value.
+                        else if (Ext.isArray(obj2[p])) {
+                            // obj1[p] = [];
+                            if (obj2[p].length < 1)
+                                obj1[p] = obj2[p];
+                            else
+                                obj1[p] = mergeRecursive(obj1[p], obj2[p]);
+                        } else
+                            obj1[p] = obj2[p];
+                    } catch (e) {
+                        // Property in destination object not set; create it and set its value.
+                        obj1[p] = obj2[p];
+                    }
+                }
+                return obj1;
+            }
+
+            const cleanse = (obj) => {
+                Object.keys(obj).forEach(key => {
+                    var value = obj[key];
+                    if (typeof value === "object" && value !== null) {
+                        // Recurse...
+                        cleanse(value);
+                        // ...and remove if now "empty" (NOTE: insert your definition of "empty" here)
+                        //if (!Object.keys(value).length) 
+                        //  delete obj[key];
+                    }
+                    else if (value === null)
+                        delete obj[key];// null, remove it
+                });
+                if (obj.constructor.toString().indexOf("Array") != -1) {
+                    obj = obj.filter(function (el) {
+                        return el != null;
+                    });
+                }
+                return obj;
+            }
+
+            /*obj is original object or array, diff is the output of findDiff */
+            window.mergeDiff = (obj, diff) => {
+                if (Object.keys(diff.updated).length !== 0)
+                    obj = mergeRecursive(obj, diff.updated)
+                if (Object.keys(diff.deleted).length !== 0) {
+                    obj = mergeRecursive(obj, diff.deleted)
+                    obj = cleanse(obj)
+                }
+                if (Object.keys(diff.added).length !== 0)
+                    obj = mergeRecursive(obj, diff.added)
+                return obj
+            }
+        })();
     </script>
 
-    <script>
+    <script id="floCrypto" version="2.0.1">
         /* FLO Crypto Operators*/
         const floCrypto = {
 
-            p: BigInteger("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F", 16),
+            util: {
+                p: BigInteger("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F", 16),
 
-            ecparams: EllipticCurve.getSECCurveByName("secp256k1"),
+                ecparams: EllipticCurve.getSECCurveByName("secp256k1"),
 
-            exponent1: function () {
-                return this.p.add(BigInteger.ONE).divide(BigInteger("4"))
-            },
+                asciiAlternatives: `‘ '\n’ '\n“ "\n” "\n– --\n— ---\n≥ >=\n≤ <=\n≠ !=\n× *\n÷ /\n← <-\n→ ->\n↔ <->\n⇒ =>\n⇐ <=\n⇔ <=>`,
 
-            calculateY: function (x) {
-                let p = this.p;
-                let exp = this.exponent1();
-                // x is x value of public key in BigInteger format without 02 or 03 or 04 prefix
-                return x.modPow(BigInteger("3"), p).add(BigInteger("7")).mod(p).modPow(exp, p)
+                exponent1: function () {
+                    return this.p.add(BigInteger.ONE).divide(BigInteger("4"))
+                },
+
+                calculateY: function (x) {
+                    let p = this.p;
+                    let exp = this.exponent1();
+                    // x is x value of public key in BigInteger format without 02 or 03 or 04 prefix
+                    return x.modPow(BigInteger("3"), p).add(BigInteger("7")).mod(p).modPow(exp, p)
+                },
+                getUncompressedPublicKey: function (compressedPublicKey) {
+                    const p = this.p;
+                    // Fetch x from compressedPublicKey
+                    let pubKeyBytes = Crypto.util.hexToBytes(compressedPublicKey);
+                    const prefix = pubKeyBytes.shift() // remove prefix
+                    let prefix_modulus = prefix % 2;
+                    pubKeyBytes.unshift(0) // add prefix 0
+                    let x = new BigInteger(pubKeyBytes)
+                    let xDecimalValue = x.toString()
+                    // Fetch y
+                    let y = this.calculateY(x);
+                    let yDecimalValue = y.toString();
+                    // verify y value
+                    let resultBigInt = y.mod(BigInteger("2"));
+                    let check = resultBigInt.toString() % 2;
+                    if (prefix_modulus !== check)
+                        yDecimalValue = y.negate().mod(p).toString();
+                    return {
+                        x: xDecimalValue,
+                        y: yDecimalValue
+                    };
+                },
+
+                getSenderPublicKeyString: function () {
+                    privateKey = ellipticCurveEncryption.senderRandom();
+                    senderPublicKeyString = ellipticCurveEncryption.senderPublicString(privateKey);
+                    return {
+                        privateKey: privateKey,
+                        senderPublicKeyString: senderPublicKeyString
+                    }
+                },
+
+                deriveSharedKeySender: function (receiverCompressedPublicKey, senderPrivateKey) {
+                    let receiverPublicKeyString = this.getUncompressedPublicKey(receiverCompressedPublicKey);
+                    var senderDerivedKey = ellipticCurveEncryption.senderSharedKeyDerivation(
+                        receiverPublicKeyString.x, receiverPublicKeyString.y, senderPrivateKey);
+                    return senderDerivedKey;
+                },
+
+                deriveReceiverSharedKey: function (senderPublicKeyString, receiverPrivateKey) {
+                    return ellipticCurveEncryption.receiverSharedKeyDerivation(
+                        senderPublicKeyString.XValuePublicString, senderPublicKeyString.YValuePublicString, receiverPrivateKey);
+                },
+
+                getReceiverPublicKeyString: function (privateKey) {
+                    return ellipticCurveEncryption.receiverPublicString(privateKey);
+                },
+
+                deriveSharedKeyReceiver: function (senderPublicKeyString, receiverPrivateKey) {
+                    return ellipticCurveEncryption.receiverSharedKeyDerivation(
+                        senderPublicKeyString.XValuePublicString, senderPublicKeyString.YValuePublicString, receiverPrivateKey);
+                },
+
+                wifToDecimal: function (pk_wif, isPubKeyCompressed = false) {
+                    let pk = Bitcoin.Base58.decode(pk_wif)
+                    pk.shift()
+                    pk.splice(-4, 4)
+                    //If the private key corresponded to a compressed public key, also drop the last byte (it should be 0x01).
+                    if (isPubKeyCompressed == true) pk.pop()
+                    pk.unshift(0)
+                    privateKeyDecimal = BigInteger(pk).toString()
+                    privateKeyHex = Crypto.util.bytesToHex(pk)
+                    return {
+                        privateKeyDecimal: privateKeyDecimal,
+                        privateKeyHex: privateKeyHex
+                    }
+                }
             },
 
             //generate a random Interger within range
@@ -8146,107 +9941,23 @@
             },
 
             //generate a random String within length (options : alphaNumeric chars only)
-            randString: function (length, alphaNumeric = false) {
+            randString: function (length, alphaNumeric = true) {
                 var result = '';
                 if (alphaNumeric)
                     var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
                 else
-                    var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_+-./*?@#&$<>=[]{}():';
+                    var characters =
+                        'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_+-./*?@#&$<>=[]{}():';
                 for (var i = 0; i < length; i++)
                     result += characters.charAt(Math.floor(Math.random() * characters.length));
                 return result;
             },
 
-            getUncompressedPublicKey: function (compressedPublicKey) {
-
-                const p = this.p;
-
-                // Fetch x from compressedPublicKey
-                let pubKeyBytes = Crypto.util.hexToBytes(compressedPublicKey);
-                const prefix = pubKeyBytes.shift() // remove prefix
-                let prefix_modulus = prefix % 2;
-                pubKeyBytes.unshift(0) // add prefix 0
-                let x = new BigInteger(pubKeyBytes)
-                let xDecimalValue = x.toString()
-
-                // Fetch y
-                let y = this.calculateY(x);
-                let yDecimalValue = y.toString();
-
-                // verify y value
-                let resultBigInt = y.mod(BigInteger("2"));
-
-                let check = resultBigInt.toString() % 2;
-
-                if (prefix_modulus !== check) {
-                    yDecimalValue = y.negate().mod(p).toString();
-                }
-
-                return {
-                    x: xDecimalValue,
-                    y: yDecimalValue
-                };
-            },
-
-            getSenderPublicKeyString: function () {
-                privateKey = ellipticCurveEncryption.senderRandom();
-                senderPublicKeyString = ellipticCurveEncryption.senderPublicString(privateKey);
-                return {
-                    privateKey: privateKey,
-                    senderPublicKeyString: senderPublicKeyString
-                }
-            },
-
-            deriveSharedKeySender: function (receiverCompressedPublicKey, senderPrivateKey) {
-                try {
-                    let receiverPublicKeyString = this.getUncompressedPublicKey(receiverCompressedPublicKey);
-                    var senderDerivedKey = ellipticCurveEncryption.senderSharedKeyDerivation(
-                        receiverPublicKeyString.x, receiverPublicKeyString.y, senderPrivateKey);
-                    return senderDerivedKey;
-                } catch (error) {
-                    return new Error(error);
-                }
-            },
-
-            deriveReceiverSharedKey: function (senderPublicKeyString, receiverPrivateKey) {
-                return ellipticCurveEncryption.receiverSharedKeyDerivation(
-                    senderPublicKeyString.XValuePublicString, senderPublicKeyString.YValuePublicString,
-                    receiverPrivateKey);
-            },
-
-            getReceiverPublicKeyString: function (privateKey) {
-                return ellipticCurveEncryption.receiverPublicString(privateKey);
-            },
-
-            deriveSharedKeyReceiver: function (senderPublicKeyString, receiverPrivateKey) {
-                try {
-                    return ellipticCurveEncryption.receiverSharedKeyDerivation(senderPublicKeyString.XValuePublicString,
-                        senderPublicKeyString.YValuePublicString, receiverPrivateKey);
-
-                } catch (error) {
-                    return new Error(error);
-                }
-            },
-
-            wifToDecimal: function (pk_wif, isPubKeyCompressed = false) {
-                let pk = Bitcoin.Base58.decode(pk_wif)
-                pk.shift()
-                pk.splice(-4, 4)
-                //If the private key corresponded to a compressed public key, also drop the last byte (it should be 0x01).
-                if (isPubKeyCompressed == true) pk.pop()
-                pk.unshift(0)
-                privateKeyDecimal = BigInteger(pk).toString()
-                privateKeyHex = Crypto.util.bytesToHex(pk)
-                return {
-                    privateKeyDecimal: privateKeyDecimal,
-                    privateKeyHex: privateKeyHex
-                }
-            },
-
             //Encrypt Data using public-key
             encryptData: function (data, receiverCompressedPublicKey) {
-                var senderECKeyData = this.getSenderPublicKeyString();
-                var senderDerivedKey = this.deriveSharedKeySender(receiverCompressedPublicKey, senderECKeyData.privateKey);
+                var senderECKeyData = this.util.getSenderPublicKeyString();
+                var senderDerivedKey = this.util.deriveSharedKeySender(receiverCompressedPublicKey, senderECKeyData
+                    .privateKey);
                 let senderKey = senderDerivedKey.XValue + senderDerivedKey.YValue;
                 let secret = Crypto.AES.encrypt(data, senderKey);
                 return {
@@ -8260,13 +9971,14 @@
                 var receiverECKeyData = {};
                 if (typeof myPrivateKey !== "string") throw new Error("No private key found.");
 
-                let privateKey = this.wifToDecimal(myPrivateKey, true);
+                let privateKey = this.util.wifToDecimal(myPrivateKey, true);
                 if (typeof privateKey.privateKeyDecimal !== "string") throw new Error(
                     "Failed to detremine your private key.");
                 receiverECKeyData.privateKey = privateKey.privateKeyDecimal;
 
-                var receiverDerivedKey = this.deriveReceiverSharedKey(data.senderPublicKeyString, receiverECKeyData
-                    .privateKey);
+                var receiverDerivedKey = this.util.deriveReceiverSharedKey(data.senderPublicKeyString,
+                    receiverECKeyData
+                        .privateKey);
 
                 let receiverKey = receiverDerivedKey.XValue + receiverDerivedKey.YValue;
                 let decryptMsg = Crypto.AES.decrypt(data.secret, receiverKey);
@@ -8297,7 +10009,7 @@
                 var sigBytes = Crypto.util.hexToBytes(signatureHex);
                 var signature = Bitcoin.ECDSA.parseSig(sigBytes);
 
-                var publicKeyPoint = this.ecparams.getCurve().decodePointHex(publicKeyHex);
+                var publicKeyPoint = this.util.ecparams.getCurve().decodePointHex(publicKeyHex);
 
                 var verify = Bitcoin.ECDSA.verifyRaw(messageHashBigInteger, signature.r, signature.s,
                     publicKeyPoint);
@@ -8315,31 +10027,39 @@
                         privKey: key.getBitcoinWalletImportFormat()
                     }
                 } catch (e) {
-                    console.log(e);
+                    console.error(e);
                 }
             },
 
             //Returns public-key from private-key
             getPubKeyHex: function (privateKeyHex) {
+                if (!privateKeyHex)
+                    return null;
                 var key = new Bitcoin.ECKey(privateKeyHex);
-                if (key.priv == null) {
-                    alert("Invalid Private key");
-                    return;
-                }
+                if (key.priv == null)
+                    return null;
                 key.setCompressed(true);
-                var pubkeyHex = key.getPubKeyHex();
-                return pubkeyHex;
+                return key.getPubKeyHex();
             },
 
-            //Returns flo-ID from public-key
-            getFloIDfromPubkeyHex: function (pubkeyHex) {
-                var key = new Bitcoin.ECKey().setPub(pubkeyHex);
-                var floID = key.getBitcoinAddress();
-                return floID;
+            //Returns flo-ID from public-key or private-key
+            getFloID: function (keyHex) {
+                if (!keyHex)
+                    return null;
+                try {
+                    var key = new Bitcoin.ECKey(keyHex);
+                    if (key.priv == null)
+                        key.setPub(keyHex);
+                    return key.getBitcoinAddress();
+                } catch (e) {
+                    return null;
+                }
             },
 
             //Verify the private-key for the given public-key or flo-ID
             verifyPrivKey: function (privateKeyHex, pubKey_floID, isfloID = true) {
+                if (!privateKeyHex || !pubKey_floID)
+                    return false;
                 try {
                     var key = new Bitcoin.ECKey(privateKeyHex);
                     if (key.priv == null)
@@ -8352,12 +10072,14 @@
                     else
                         return false;
                 } catch (e) {
-                    console.log(e);
+                    console.error(e);
                 }
             },
 
             //Check if the given Address is valid or not
             validateAddr: function (inpAddr) {
+                if (!inpAddr)
+                    return false;
                 try {
                     var addr = new Bitcoin.Address(inpAddr);
                     return true;
@@ -8366,6 +10088,7 @@
                 }
             },
 
+            //Split the str using shamir's Secret and Returns the shares 
             createShamirsSecretShares: function (str, total_shares, threshold_limit) {
                 try {
                     if (str.length > 0) {
@@ -8379,10 +10102,12 @@
                 }
             },
 
+            //Verifies the shares and str
             verifyShamirsSecret: function (sharesArray, str) {
                 return (str && this.retrieveShamirSecret(sharesArray) === str)
             },
 
+            //Returns the retrived secret by combining the shamirs shares
             retrieveShamirSecret: function (sharesArray) {
                 try {
                     if (sharesArray.length > 0) {
@@ -8392,22 +10117,81 @@
                     }
                     return false;
                 } catch {
-                    return false
+                    return false;
                 }
+            },
+
+            validateASCII: function (string, bool = true) {
+                if (typeof string !== "string")
+                    return null;
+                if (bool) {
+                    let x;
+                    for (let i = 0; i < string.length; i++) {
+                        x = string.charCodeAt(i);
+                        if (x < 32 || x > 127)
+                            return false;
+                    }
+                    return true;
+                } else {
+                    let x, invalids = {};
+                    for (let i = 0; i < string.length; i++) {
+                        x = string.charCodeAt(i);
+                        if (x < 32 || x > 127)
+                            if (x in invalids)
+                                invalids[string[i]].push(i)
+                            else
+                                invalids[string[i]] = [i];
+                    }
+                    if (Object.keys(invalids).length)
+                        return invalids;
+                    else
+                        return true;
+                }
+            },
+
+            convertToASCII: function (string, mode = 'soft-remove') {
+                let chars = this.validateASCII(string, false);
+                if (chars === true)
+                    return string;
+                else if (chars === null)
+                    return null;
+                let convertor, result = string,
+                    refAlt = {};
+                this.util.asciiAlternatives.split('\n').forEach(a => refAlt[a[0]] = a.slice(2));
+                mode = mode.toLowerCase();
+                if (mode === "hard-unicode")
+                    convertor = (c) => `\\u${('000' + c.charCodeAt().toString(16)).slice(-4)}`;
+                else if (mode === "soft-unicode")
+                    convertor = (c) => refAlt[c] || `\\u${('000' + c.charCodeAt().toString(16)).slice(-4)}`;
+                else if (mode === "hard-remove")
+                    convertor = c => "";
+                else if (mode === "soft-remove")
+                    convertor = c => refAlt[c] || "";
+                else
+                    return null;
+                for (let c in chars)
+                    result = result.replaceAll(c, convertor(c));
+                return result;
+            },
+
+            revertUnicode: function (string) {
+                return string.replace(/\\u[\dA-F]{4}/gi,
+                    m => String.fromCharCode(parseInt(m.replace(/\\u/g, ''), 16)));
             }
         }
     </script>
-    <script>
+    <script id="floBlockchainAPI" version="2.1.1a">
         /* FLO Blockchain Operator to send/receive data from blockchain using API calls*/
         const floBlockchainAPI = {
 
             util: {
                 serverList: floGlobals.apiURL[floGlobals.blockchain].slice(0),
                 curPos: floCrypto.randInt(0, floGlobals.apiURL[floGlobals.blockchain].length - 1),
-                fetch_retry: function (apicall) {
+                fetch_retry: function (apicall, rm_flosight) {
                     return new Promise((resolve, reject) => {
-                        this.serverList.splice(this.curPos, 1);
-                        this.curPos = floCrypto.randInt(0, this.serverList.length - 1)
+                        let i = this.serverList.indexOf(rm_flosight)
+                        if (i != -1) this.serverList.splice(i, 1);
+                        this.curPos = floCrypto.randInt(0, this.serverList.length - 1);
                         this.fetch_api(apicall)
                             .then(result => resolve(result))
                             .catch(error => reject(error));
@@ -8416,30 +10200,35 @@
                 fetch_api: function (apicall) {
                     return new Promise((resolve, reject) => {
                         if (this.serverList.length === 0)
-                            reject("No floSight server working")
+                            reject("No floSight server working");
                         else {
-                            fetch(this.serverList[this.curPos] + apicall).then(response => {
+                            let flosight = this.serverList[this.curPos];
+                            fetch(flosight + apicall).then(response => {
                                 if (response.ok)
                                     response.json().then(data => resolve(data));
                                 else {
-                                    this.fetch_retry(apicall)
+                                    this.fetch_retry(apicall, flosight)
                                         .then(result => resolve(result))
                                         .catch(error => reject(error));
                                 }
                             }).catch(error => {
-                                this.fetch_retry(apicall)
+                                this.fetch_retry(apicall, flosight)
                                     .then(result => resolve(result))
                                     .catch(error => reject(error));
                             })
                         }
                     })
+                },
+
+                current: function () {
+                    return this.serverList[this.curPos];
                 }
             },
 
             //Promised function to get data from API
             promisedAPI: function (apicall) {
                 return new Promise((resolve, reject) => {
-                    console.log(apicall)
+                    //console.log(apicall);
                     this.util.fetch_api(apicall)
                         .then(result => resolve(result))
                         .catch(error => reject(error));
@@ -8456,55 +10245,77 @@
             },
 
             //Write Data into blockchain
-            writeData: function (senderAddr, data, privKey, receiverAddr) {
+            writeData: function (senderAddr, data, privKey, receiverAddr = floGlobals.adminID, strict_utxo = true) {
                 return new Promise((resolve, reject) => {
-                    this.sendTx(senderAddr, receiverAddr, floGlobals.sendAmt, privKey, data)
+                    if (typeof data != "string")
+                        data = JSON.stringify(data);
+                    this.sendTx(senderAddr, receiverAddr, floGlobals.sendAmt, privKey, data, strict_utxo)
                         .then(txid => resolve(txid))
-                        .catch(error => reject(error))
+                        .catch(error => reject(error));
                 });
             },
 
             //Send Tx to blockchain 
-            sendTx: function (senderAddr, receiverAddr, sendAmt, privKey, floData = '') {
+            sendTx: function (senderAddr, receiverAddr, sendAmt, privKey, floData = '', strict_utxo = true) {
                 return new Promise((resolve, reject) => {
-                    if (!floCrypto.validateAddr(senderAddr))
-                        reject(`Invalid address : ${senderAddr}`);
+                    if (!floCrypto.validateASCII(floData))
+                        return reject("Invalid FLO_Data: only printable ASCII characters are allowed");
+                    else if (!floCrypto.validateAddr(senderAddr))
+                        return reject(`Invalid address : ${senderAddr}`);
                     else if (!floCrypto.validateAddr(receiverAddr))
-                        reject(`Invalid address : ${receiverAddr}`);
-                    if (privKey.length < 1 || !floCrypto.verifyPrivKey(privKey, senderAddr))
-                        reject("Invalid Private key!");
+                        return reject(`Invalid address : ${receiverAddr}`);
+                    else if (privKey.length < 1 || !floCrypto.verifyPrivKey(privKey, senderAddr))
+                        return reject("Invalid Private key!");
                     else if (typeof sendAmt !== 'number' || sendAmt <= 0)
-                        reject(`Invalid sendAmt : ${sendAmt}`);
-                    else {
-                        var trx = bitjs.transaction();
-                        var utxoAmt = 0.0;
-                        var fee = floGlobals.fee;
-                        this.promisedAPI(`api/addr/${senderAddr}/utxo`).then(utxos => {
-                            for (var i = utxos.length - 1;
-                                (i >= 0) && (utxoAmt < sendAmt + fee); i--) {
-                                if (utxos[i].confirmations) {
-                                    trx.addinput(utxos[i].txid, utxos[i].vout, utxos[i].scriptPubKey)
-                                    utxoAmt += utxos[i].amount;
-                                } else break;
-                            }
-                            if (utxoAmt < sendAmt + fee)
-                                reject("Insufficient balance!");
-                            else {
-                                trx.addoutput(receiverAddr, sendAmt);
-                                var change = utxoAmt - sendAmt - fee;
-                                if (change > 0)
-                                    trx.addoutput(senderAddr, change);
-                                trx.addflodata(floData.replace(/\n/g, ' '));
-                                var signedTxHash = trx.sign(privKey, 1);
-                                this.broadcastTx(signedTxHash)
-                                    .then(txid => resolve(txid))
-                                    .catch(error => reject(error))
-                            }
+                        return reject(`Invalid sendAmt : ${sendAmt}`);
+
+                    //get unconfirmed tx list
+                    this.promisedAPI(`api/addr/${senderAddr}`).then(result => {
+                        this.readTxs(senderAddr, 0, result.unconfirmedTxApperances).then(result => {
+                            let unconfirmedSpent = {};
+                            for (let tx of result.items)
+                                if (tx.confirmations == 0)
+                                    for (let vin of tx.vin)
+                                        if (vin.addr === senderAddr) {
+                                            if (Array.isArray(unconfirmedSpent[vin.txid]))
+                                                unconfirmedSpent[vin.txid].push(vin.vout);
+                                            else
+                                                unconfirmedSpent[vin.txid] = [vin.vout];
+                                        }
+                            //get utxos list
+                            this.promisedAPI(`api/addr/${senderAddr}/utxo`).then(utxos => {
+                                //form/construct the transaction data
+                                var trx = bitjs.transaction();
+                                var utxoAmt = 0.0;
+                                var fee = floGlobals.fee;
+                                for (var i = utxos.length - 1;
+                                    (i >= 0) && (utxoAmt < sendAmt + fee); i--) {
+                                    //use only utxos with confirmations (strict_utxo mode)
+                                    if (utxos[i].confirmations || !strict_utxo) {
+                                        if (utxos[i].txid in unconfirmedSpent && unconfirmedSpent[utxos[i].txid].includes(utxos[i].vout))
+                                            continue; //A transaction has already used this utxo, but is unconfirmed.
+                                        trx.addinput(utxos[i].txid, utxos[i].vout, utxos[i].scriptPubKey);
+                                        utxoAmt += utxos[i].amount;
+                                    };
+                                }
+                                if (utxoAmt < sendAmt + fee)
+                                    reject("Insufficient FLO balance!");
+                                else {
+                                    trx.addoutput(receiverAddr, sendAmt);
+                                    var change = utxoAmt - sendAmt - fee;
+                                    if (change > 0)
+                                        trx.addoutput(senderAddr, change);
+                                    trx.addflodata(floData.replace(/\n/g, ' '));
+                                    var signedTxHash = trx.sign(privKey, 1);
+                                    this.broadcastTx(signedTxHash)
+                                        .then(txid => resolve(txid))
+                                        .catch(error => reject(error))
+                                }
+                            }).catch(error => reject(error))
                         }).catch(error => reject(error))
-                    }
+                    }).catch(error => reject(error))
                 });
             },
-
 
             //merge all UTXOs of a given floID into a single UTXO
             mergeUTXOs: function (floID, privKey, floData = '') {
@@ -8512,19 +10323,18 @@
                     if (!floCrypto.validateAddr(floID))
                         return reject(`Invalid floID`);
                     if (!floCrypto.verifyPrivKey(privKey, floID))
-                        return reject("Invalid Private Key")
-
+                        return reject("Invalid Private Key");
+                    if (!floCrypto.validateASCII(floData))
+                        return reject("Invalid FLO_Data: only printable ASCII characters are allowed");
                     var trx = bitjs.transaction();
                     var utxoAmt = 0.0;
                     var fee = floGlobals.fee;
                     this.promisedAPI(`api/addr/${floID}/utxo`).then(utxos => {
-                        for (var i = utxos.length - 1; i >= 0; i--) {
+                        for (var i = utxos.length - 1; i >= 0; i--)
                             if (utxos[i].confirmations) {
-                                trx.addinput(utxos[i].txid, utxos[i].vout, utxos[i]
-                                    .scriptPubKey)
+                                trx.addinput(utxos[i].txid, utxos[i].vout, utxos[i].scriptPubKey);
                                 utxoAmt += utxos[i].amount;
                             }
-                        }
                         trx.addoutput(floID, utxoAmt - fee);
                         trx.addflodata(floData.replace(/\n/g, ' '));
                         var signedTxHash = trx.sign(privKey, 1);
@@ -8539,21 +10349,21 @@
              * @param  {Array} senderPrivKeys List of sender private-keys
              * @param  {string} data FLO data of the txn
              * @param  {Array} receivers List of receivers
-             * @param  {float} sendAmt (optional) amount to be sent to receivers (default value: floGlobals.sendAmt)
+             * @param  {boolean} preserveRatio (optional) preserve ratio or equal contribution
              * @return {Promise}
              */
-            writeDataMultiple: function (senderPrivKeys, data, receivers, preserveRatio = true) {
+            writeDataMultiple: function (senderPrivKeys, data, receivers = [floGlobals.adminID], preserveRatio = true) {
                 return new Promise((resolve, reject) => {
                     if (!Array.isArray(senderPrivKeys))
-                        return reject("Invalid senderPrivKeys: SenderPrivKeys must be Array")
+                        return reject("Invalid senderPrivKeys: SenderPrivKeys must be Array");
                     if (!preserveRatio) {
                         let tmp = {};
                         let amount = (floGlobals.sendAmt * receivers.length) / senderPrivKeys.length;
                         senderPrivKeys.forEach(key => tmp[key] = amount);
-                        senderPrivKeys = tmp
+                        senderPrivKeys = tmp;
                     }
                     if (!Array.isArray(receivers))
-                        return reject("Invalid receivers: Receivers must be Array")
+                        return reject("Invalid receivers: Receivers must be Array");
                     else {
                         let tmp = {};
                         let amount = floGlobals.sendAmt;
@@ -8576,8 +10386,10 @@
              */
             sendTxMultiple: function (senderPrivKeys, receivers, floData = '') {
                 return new Promise((resolve, reject) => {
-
-                    let senders = {}, preserveRatio;
+                    if (!floCrypto.validateASCII(floData))
+                        return reject("Invalid FLO_Data: only printable ASCII characters are allowed");
+                    let senders = {},
+                        preserveRatio;
                     //check for argument validations
                     try {
                         let invalids = {
@@ -8586,7 +10398,8 @@
                             InvalidReceiverIDs: [],
                             InvalidReceiveAmountFor: []
                         }
-                        let inputVal = 0, outputVal = 0;
+                        let inputVal = 0,
+                            outputVal = 0;
                         //Validate sender privatekeys (and send amount if passed)
                         //conversion when only privateKeys are passed (preserveRatio mode)
                         if (Array.isArray(senderPrivKeys)) {
@@ -8595,7 +10408,7 @@
                                     if (!key)
                                         invalids.InvalidSenderPrivKeys.push(key);
                                     else {
-                                        let floID = floCrypto.getFloIDfromPubkeyHex(floCrypto.getPubKeyHex(key));
+                                        let floID = floCrypto.getFloID(key);
                                         senders[floID] = {
                                             wif: key
                                         }
@@ -8614,10 +10427,10 @@
                                         invalids.InvalidSenderPrivKeys.push(key);
                                     else {
                                         if (typeof senderPrivKeys[key] !== 'number' || senderPrivKeys[key] <= 0)
-                                            invalids.InvalidSenderAmountFor.push(key)
+                                            invalids.InvalidSenderAmountFor.push(key);
                                         else
                                             inputVal += senderPrivKeys[key];
-                                        let floID = floCrypto.getFloIDfromPubkeyHex(floCrypto.getPubKeyHex(key));
+                                        let floID = floCrypto.getFloID(key);
                                         senders[floID] = {
                                             wif: key,
                                             coins: senderPrivKeys[key]
@@ -8632,9 +10445,9 @@
                         //Validate the receiver IDs and receive amount
                         for (let floID in receivers) {
                             if (!floCrypto.validateAddr(floID))
-                                invalids.InvalidReceiverIDs.push(floID)
+                                invalids.InvalidReceiverIDs.push(floID);
                             if (typeof receivers[floID] !== 'number' || receivers[floID] <= 0)
-                                invalids.InvalidReceiveAmountFor.push(floID)
+                                invalids.InvalidReceiveAmountFor.push(floID);
                             else
                                 outputVal += receivers[floID];
                         }
@@ -8646,14 +10459,14 @@
                             return reject(invalids);
                         //Reject if given inputVal and outputVal are not equal
                         if (!preserveRatio && inputVal != outputVal)
-                            return reject(`Input Amount (${inputVal}) not equal to Output Amount (${outputVal})`)
+                            return reject(`Input Amount (${inputVal}) not equal to Output Amount (${outputVal})`);
                     } catch (error) {
                         return reject(error)
                     }
                     //Get balance of senders
-                    let promises = []
+                    let promises = [];
                     for (let floID in senders)
-                        promises.push(this.getBalance(floID))
+                        promises.push(this.getBalance(floID));
                     Promise.all(promises).then(results => {
                         let totalBalance = 0,
                             totalFee = floGlobals.fee,
@@ -8665,22 +10478,25 @@
                         let insufficient = [];
                         for (let floID in senders) {
                             balance[floID] = parseFloat(results.shift());
-                            if (isNaN(balance[floID]) || (preserveRatio && balance[floID] <= totalFee) || (!preserveRatio && balance[floID] < senders[floID].coins + dividedFee))
-                                insufficient.push(floID)
+                            if (isNaN(balance[floID]) || (preserveRatio && balance[floID] <= totalFee) ||
+                                (!preserveRatio && balance[floID] < senders[floID].coins + dividedFee))
+                                insufficient.push(floID);
                             totalBalance += balance[floID];
                         }
                         if (insufficient.length)
-                            return reject({ InsufficientBalance: insufficient })
+                            return reject({
+                                InsufficientBalance: insufficient
+                            })
                         //Calculate totalSentAmount and check if totalBalance is sufficient
                         let totalSendAmt = totalFee;
                         for (floID in receivers)
                             totalSendAmt += receivers[floID];
                         if (totalBalance < totalSendAmt)
-                            return reject("Insufficient total Balance")
+                            return reject("Insufficient total Balance");
                         //Get the UTXOs of the senders
-                        let promises = []
+                        let promises = [];
                         for (floID in senders)
-                            promises.push(this.promisedAPI(`api/addr/${floID}/utxo`))
+                            promises.push(this.promisedAPI(`api/addr/${floID}/utxo`));
                         Promise.all(promises).then(results => {
                             let wifSeq = [];
                             var trx = bitjs.transaction();
@@ -8697,8 +10513,7 @@
                                 for (let i = utxos.length - 1;
                                     (i >= 0) && (utxoAmt < sendAmt); i--) {
                                     if (utxos[i].confirmations) {
-                                        trx.addinput(utxos[i].txid, utxos[i].vout, utxos[i]
-                                            .scriptPubKey)
+                                        trx.addinput(utxos[i].txid, utxos[i].vout, utxos[i].scriptPubKey);
                                         wifSeq.push(wif);
                                         utxoAmt += utxos[i].amount;
                                     }
@@ -8723,15 +10538,12 @@
                 })
             },
 
-
-
-
             //Broadcast signed Tx in blockchain using API
             broadcastTx: function (signedTxHash) {
                 return new Promise((resolve, reject) => {
                     var request = new XMLHttpRequest();
                     var url = this.util.serverList[this.util.curPos] + 'api/tx/send';
-                    console.log(url)
+                    console.log(url);
                     if (signedTxHash.length < 1)
                         reject("Empty Signature");
                     else {
@@ -8751,40 +10563,124 @@
                 })
             },
 
-            //Get new Tx in blockchain since last sync using API
-            getNewTxs: function (addr, ignoreOld) {
+            getTx: function (txid) {
+                return new Promise((resolve, reject) => {
+                    this.promisedAPI(`api/tx/${txid}`)
+                        .then(response => resolve(response))
+                        .catch(error => reject(error))
+                })
+            },
+
+            //Read Txs of Address between from and to
+            readTxs: function (addr, from, to) {
+                return new Promise((resolve, reject) => {
+                    this.promisedAPI(`api/addrs/${addr}/txs?from=${from}&to=${to}`)
+                        .then(response => resolve(response))
+                        .catch(error => reject(error))
+                });
+            },
+
+            //Read All Txs of Address (newest first)
+            readAllTxs: function (addr) {
                 return new Promise((resolve, reject) => {
                     this.promisedAPI(`api/addrs/${addr}/txs?from=0&to=1`).then(response => {
-                        var newItems = response.totalItems - ignoreOld;
-                        if (newItems) {
-                            this.promisedAPI(`api/addrs/${addr}/txs?from=0&to=${newItems * 2}`).then(response => {
-                                var filteredData = [];
-                                for (i = response.totalItems - ignoreOld - 1; i >= 0; i--) {
-                                    if (response.items[i].isCoinBase) {
-                                        var item = {
-                                            time: response.items[i].time,
-                                            txid: response.items[i].txid,
-                                            sender: '(mined)' + response.items[i].vin[0].coinbase,
-                                            receiver: addr,
-                                            floData: response.items[i].floData
-                                        }
-                                    } else {
-                                        var item = {
-                                            time: response.items[i].time,
-                                            txid: response.items[i].txid,
-                                            sender: response.items[i].vin[0].addr,
-                                            receiver: response.items[i].vout[0].scriptPubKey.addresses[0],
-                                            floData: response.items[i].floData
-                                        }
+                        this.promisedAPI(`api/addrs/${addr}/txs?from=0&to=${response.totalItems}0`)
+                            .then(response => resolve(response.items))
+                            .catch(error => reject(error));
+                    }).catch(error => reject(error))
+                });
+            },
+
+            /*Read flo Data from txs of given Address
+            options can be used to filter data
+            limit       : maximum number of filtered data (default = 1000, negative  = no limit)
+            ignoreOld   : ignore old txs (default = 0)
+            sentOnly    : filters only sent data
+            receivedOnly: filters only received data
+            pattern     : filters data that with JSON pattern
+            filter      : custom filter funtion for floData (eg . filter: d => {return d[0] == '$'})
+            tx          : (boolean) resolve tx data or not (resolves an Array of Object with tx details)
+            sender      : flo-id(s) of sender
+            receiver    : flo-id(s) of receiver
+            */
+            readData: function (addr, options = {}) {
+                options.limit = options.limit || 0;
+                options.ignoreOld = options.ignoreOld || 0;
+                if (typeof options.sender === "string") options.sender = [options.sender];
+                if (typeof options.receiver === "string") options.receiver = [options.receiver];
+                return new Promise((resolve, reject) => {
+                    this.promisedAPI(`api/addrs/${addr}/txs?from=0&to=1`).then(response => {
+                        var newItems = response.totalItems - options.ignoreOld;
+                        this.promisedAPI(`api/addrs/${addr}/txs?from=0&to=${newItems * 2}`).then(response => {
+                            if (options.limit <= 0)
+                                options.limit = response.items.length;
+                            var filteredData = [];
+                            for (let i = 0; i < (response.totalItems - options.ignoreOld) && filteredData.length < options.limit; i++) {
+                                if (options.pattern) {
+                                    try {
+                                        let jsonContent = JSON.parse(response.items[i].floData);
+                                        if (!Object.keys(jsonContent).includes(options.pattern))
+                                            continue;
+                                    } catch (error) {
+                                        continue;
                                     }
-                                    filteredData.push(item);
                                 }
-                                resolve({ totalItems: response.totalItems, items: filteredData });
-                            }).catch(error => {
-                                reject(error);
+                                if (options.sentOnly) {
+                                    let flag = false;
+                                    for (let vin of response.items[i].vin)
+                                        if (vin.addr === addr) {
+                                            flag = true;
+                                            break;
+                                        }
+                                    if (!flag) continue;
+                                }
+                                if (Array.isArray(options.sender)) {
+                                    let flag = false;
+                                    for (let vin of response.items[i].vin)
+                                        if (options.sender.includes(vin.addr)) {
+                                            flag = true;
+                                            break;
+                                        }
+                                    if (!flag) continue;
+                                }
+                                if (options.receivedOnly) {
+                                    let flag = false;
+                                    for (let vout of response.items[i].vout)
+                                        if (vout.scriptPubKey.addresses[0] === addr) {
+                                            flag = true;
+                                            break;
+                                        }
+                                    if (!flag) continue;
+                                }
+                                if (Array.isArray(options.receiver)) {
+                                    let flag = false;
+                                    for (let vout of response.items[i].vout)
+                                        if (options.receiver.includes(vout.scriptPubKey.addresses[0])) {
+                                            flag = true;
+                                            break;
+                                        }
+                                    if (!flag) continue;
+                                }
+                                if (options.filter && !options.filter(response.items[i].floData))
+                                    continue;
+
+                                if (options.tx) {
+                                    let d = {}
+                                    d.txid = response.items[i].txid;
+                                    d.time = response.items[i].time;
+                                    d.blockheight = response.items[i].blockheight;
+                                    d.data = response.items[i].floData;
+                                    filteredData.push(d);
+                                } else
+                                    filteredData.push(response.items[i].floData);
+                            }
+                            resolve({
+                                totalTxs: response.totalItems,
+                                data: filteredData
                             });
-                        } else
-                            resolve({ totalItems: response.totalItems, items: [] })
+                        }).catch(error => {
+                            reject(error);
+                        });
                     }).catch(error => {
                         reject(error);
                     });
@@ -8792,7 +10688,7 @@
             }
         }
     </script>
-    <script>
+    <script id="compactIDB" version="2.0.1">
         /* Compact IndexedDB operations */
 
         window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
@@ -8805,46 +10701,88 @@
         const compactIDB = {
 
             setDefaultDB: function (dbName) {
-                this.dbName = dbName;
+                this.defaultDB = dbName;
+            },
+
+            upgradeDB: function (dbName, createList = null, deleteList = null) {
+                return new Promise((resolve, reject) => {
+                    this.getDBversion(dbName).then(version => {
+                        var idb = indexedDB.open(dbName, version + 1);
+                        idb.onerror = (event) => reject("Error in opening IndexedDB");
+                        idb.onupgradeneeded = (event) => {
+                            let db = event.target.result;
+                            if (createList instanceof Object) {
+                                if (Array.isArray(createList)) {
+                                    let tmp = {}
+                                    createList.forEach(o => tmp[o] = {})
+                                    createList = tmp
+                                }
+                                for (let o in createList) {
+                                    let obs = db.createObjectStore(o, createList[o].options ||
+                                        {});
+                                    if (createList[o].indexes instanceof Object)
+                                        for (let i in createList[o].indexes)
+                                            obs.createIndex(i, i, createList[o].indexes || {});
+                                }
+                            }
+                            if (Array.isArray(deleteList))
+                                deleteList.forEach(o => db.deleteObjectStore(o));
+                            resolve('Database upgraded')
+                        }
+                        idb.onsuccess = (event) => event.target.result.close();
+                    }).catch(error => reject(error))
+                })
             },
 
             initDB: function (dbName, objectStores = {}) {
                 return new Promise((resolve, reject) => {
-                    this.dbName = this.dbName || dbName;
+                    if (!(objectStores instanceof Object))
+                        return reject('ObjectStores must be an object or array')
+                    this.defaultDB = this.defaultDB || dbName;
                     var idb = indexedDB.open(dbName);
-                    idb.onerror = (event) => {
-                        reject("Error in opening IndexedDB!");
-                    };
-                    idb.onupgradeneeded = (event) => {
-                        var db = event.target.result;
-                        for (obs in objectStores) {
-                            var objectStore = db.createObjectStore(obs, objectStores[obs].options || {});
-                            if (objectStores[obs].indexes && typeof objectStores[obs].indexes === 'object')
-                                for (i in objectStores[obs].indexes)
-                                    objectStore.createIndex(i, i, objectStores[obs].indexes[i] || {});
-                        }
-                    }
+                    idb.onerror = (event) => reject("Error in opening IndexedDB");
                     idb.onsuccess = (event) => {
                         var db = event.target.result;
-                        if (JSON.stringify(Object.values(db.objectStoreNames).sort()) === JSON.stringify(Object.keys(
-                            objectStores).sort()))
+                        let cList = Object.values(db.objectStoreNames);
+                        var obs = {},
+                            a_obs = {},
+                            d_obs = [];
+                        if (!Array.isArray(objectStores))
+                            var obs = objectStores
+                        else
+                            objectStores.forEach(o => obs[o] = {})
+                        let nList = Object.keys(obs)
+                        for (let o of nList)
+                            if (!cList.includes(o))
+                                a_obs[o] = obs[o]
+                        for (let o of cList)
+                            if (!nList.includes(o))
+                                d_obs.push(o)
+                        if (!Object.keys(a_obs).length && !d_obs.length)
                             resolve("Initiated IndexedDB");
                         else
-                            reject("IndexedDB already exist with different ObjectStores!");
+                            this.upgradeDB(dbName, a_obs, d_obs)
+                                .then(result => resolve(result))
+                                .catch(error => reject(error))
                         db.close();
                     }
                 });
             },
 
-            openDB: function (dbName = this.dbName) {
+            openDB: function (dbName = this.defaultDB) {
                 return new Promise((resolve, reject) => {
                     var idb = indexedDB.open(dbName);
-                    idb.onerror = (event) => reject("Error in opening IndexedDB!");
+                    idb.onerror = (event) => reject("Error in opening IndexedDB");
+                    idb.onupgradeneeded = (event) => {
+                        event.target.result.close();
+                        this.deleteDB(dbName)
+                        reject("Datebase not found")
+                    }
                     idb.onsuccess = (event) => resolve(event.target.result);
                 });
             },
 
-            deleteDB: function (dbName = this.dbName) {
+            deleteDB: function (dbName = this.defaultDB) {
                 return new Promise((resolve, reject) => {
                     var deleteReq = indexedDB.deleteDatabase(dbName);;
                     deleteReq.onerror = (event) => reject("Error deleting database!");
@@ -8852,59 +10790,84 @@
                 });
             },
 
-            writeData: function (obsName, data, key = false, dbName = this.dbName) {
+            getDBversion: function (dbName = this.defaultDB) {
+                return new Promise((resolve, reject) => {
+                    this.openDB(dbName).then(db => {
+                        resolve(db.version)
+                        db.close()
+                    }).catch(error => reject(error))
+                })
+            },
+
+            writeData: function (obsName, data, key = false, dbName = this.defaultDB) {
                 return new Promise((resolve, reject) => {
                     this.openDB(dbName).then(db => {
                         var obs = db.transaction(obsName, "readwrite").objectStore(obsName);
                         let writeReq = (key ? obs.put(data, key) : obs.put(data));
                         writeReq.onsuccess = (evt) => resolve(`Write data Successful`);
                         writeReq.onerror = (evt) => reject(
-                            `Write data unsuccessful [${evt.target.error.name}] ${evt.target.error.message}`);
+                            `Write data unsuccessful [${evt.target.error.name}] ${evt.target.error.message}`
+                        );
                         db.close();
                     }).catch(error => reject(error));
                 });
             },
 
-            addData: function (obsName, data, key = false, dbName = this.dbName) {
+            addData: function (obsName, data, key = false, dbName = this.defaultDB) {
                 return new Promise((resolve, reject) => {
                     this.openDB(dbName).then(db => {
                         var obs = db.transaction(obsName, "readwrite").objectStore(obsName);
                         let addReq = (key ? obs.add(data, key) : obs.add(data));
                         addReq.onsuccess = (evt) => resolve(`Add data successful`);
                         addReq.onerror = (evt) => reject(
-                            `Add data unsuccessful [${evt.target.error.name}] ${evt.target.error.message}`);
+                            `Add data unsuccessful [${evt.target.error.name}] ${evt.target.error.message}`
+                        );
                         db.close();
                     }).catch(error => reject(error));
                 });
             },
 
-            removeData: function (obsName, key, dbName = this.dbName) {
+            removeData: function (obsName, key, dbName = this.defaultDB) {
                 return new Promise((resolve, reject) => {
                     this.openDB(dbName).then(db => {
                         var obs = db.transaction(obsName, "readwrite").objectStore(obsName);
                         let delReq = obs.delete(key);
                         delReq.onsuccess = (evt) => resolve(`Removed Data ${key}`);
                         delReq.onerror = (evt) => reject(
-                            `Remove data unsuccessful [${evt.target.error.name}] ${evt.target.error.message}`);
+                            `Remove data unsuccessful [${evt.target.error.name}] ${evt.target.error.message}`
+                        );
                         db.close();
                     }).catch(error => reject(error));
                 });
             },
 
-            readData: function (obsName, key, dbName = this.dbName) {
+            clearData: function (obsName, dbName = this.defaultDB) {
+                return new Promise((resolve, reject) => {
+                    this.openDB(dbName).then(db => {
+                        var obs = db.transaction(obsName, "readwrite").objectStore(obsName);
+                        let clearReq = obs.clear();
+                        clearReq.onsuccess = (evt) => resolve(`Clear data Successful`);
+                        clearReq.onerror = (evt) => reject(`Clear data Unsuccessful`);
+                        db.close();
+                    }).catch(error => reject(error));
+                });
+            },
+
+            readData: function (obsName, key, dbName = this.defaultDB) {
                 return new Promise((resolve, reject) => {
                     this.openDB(dbName).then(db => {
                         var obs = db.transaction(obsName, "readonly").objectStore(obsName);
                         let getReq = obs.get(key);
                         getReq.onsuccess = (evt) => resolve(evt.target.result);
                         getReq.onerror = (evt) => reject(
-                            `Read data unsuccessful [${evt.target.error.name}] ${evt.target.error.message}`);
+                            `Read data unsuccessful [${evt.target.error.name}] ${evt.target.error.message}`
+                        );
                         db.close();
                     }).catch(error => reject(error));
                 });
             },
 
-            readAllData: function (obsName, dbName = this.dbName) {
+            readAllData: function (obsName, dbName = this.defaultDB) {
                 return new Promise((resolve, reject) => {
                     this.openDB(dbName).then(db => {
                         var obs = db.transaction(obsName, "readonly").objectStore(obsName);
@@ -8919,29 +10882,59 @@
                                 resolve(tmpResult);
                         }
                         curReq.onerror = (evt) => reject(
-                            `Read-All data unsuccessful [${evt.target.error.name}] ${evt.target.error.message}`);
+                            `Read-All data unsuccessful [${evt.target.error.name}] ${evt.target.error.message}`
+                        );
                         db.close();
                     }).catch(error => reject(error));
                 });
             },
 
-            searchData: function (obsName, patternEval, dbName = this.dbName) {
+            /*searchData: function (obsName, options = {}, dbName = this.defaultDB) {
+                
                 return new Promise((resolve, reject) => {
                     this.openDB(dbName).then(db => {
                         var obs = db.transaction(obsName, "readonly").objectStore(obsName);
                         var filteredResult = {}
-                        let curReq = obs.openCursor();
+                        let keyRange;
+                        if(options.lowerKey!==null && options.upperKey!==null)
+                            keyRange = IDBKeyRange.bound(options.lowerKey, options.upperKey);
+                        else if(options.lowerKey!==null)
+                            keyRange = IDBKeyRange.lowerBound(options.lowerKey);
+                        else if (options.upperKey!==null)
+                            keyRange = IDBKeyRange.upperBound(options.upperBound);
+                        else if (options.atKey)
+                        let curReq = obs.openCursor(keyRange, )
+                    }).catch(error => reject(error))
+                })
+            },*/
+
+            searchData: function (obsName, options = {}, dbName = this.defaultDB) {
+                options.lowerKey = options.atKey || options.lowerKey || 0
+                options.upperKey = options.atKey || options.upperKey || false
+                options.patternEval = options.patternEval || ((k, v) => {
+                    return true
+                })
+                options.limit = options.limit || false;
+                options.lastOnly = options.lastOnly || false
+                return new Promise((resolve, reject) => {
+                    this.openDB(dbName).then(db => {
+                        var obs = db.transaction(obsName, "readonly").objectStore(obsName);
+                        var filteredResult = {}
+                        let curReq = obs.openCursor(
+                            options.upperKey ? IDBKeyRange.bound(options.lowerKey, options.upperKey) : IDBKeyRange.lowerBound(options.lowerKey),
+                            options.lastOnly ? "prev" : "next");
                         curReq.onsuccess = (evt) => {
                             var cursor = evt.target.result;
                             if (cursor) {
-                                if (patternEval(cursor.primaryKey, cursor.value))
+                                if (options.patternEval(cursor.primaryKey, cursor.value)) {
                                     filteredResult[cursor.primaryKey] = cursor.value;
-                                cursor.continue();
+                                    options.lastOnly ? resolve(filteredResult) : cursor.continue();
+                                } else
+                                    cursor.continue();
                             } else
                                 resolve(filteredResult);
                         }
-                        curReq.onerror = (evt) => reject(
-                            `Search unsuccessful [${evt.target.error.name}] ${evt.target.error.message}`);
+                        curReq.onerror = (evt) => reject(`Search unsuccessful [${evt.target.error.name}] ${evt.target.error.message}`);
                         db.close();
                     }).catch(error => reject(error));
                 });
@@ -8951,6 +10944,49 @@
     <script>
         /*FLO Web Wallet operations*/
         floWebWallet = {
+
+            util: {
+                //Get new Tx in blockchain since last sync using API
+                getNewTxs: function (addr, ignoreOld) {
+                    return new Promise((resolve, reject) => {
+                        floBlockchainAPI.readTxs(addr, 0, 1).then(response => {
+                            var newItems = response.totalItems - ignoreOld;
+                            if (newItems) {
+                                floBlockchainAPI.readTxs(addr, 0, newItems * 2).then(response => {
+                                    var filteredData = [];
+                                    for (i = 0; i < newItems; i++) {
+                                        var item = {
+                                            time: response.items[i].time,
+                                            txid: response.items[i].txid,
+                                            floData: response.items[i].floData
+                                        }
+                                        if (response.items[i].isCoinBase) {
+                                            item.sender = '(mined)' + response.items[i].vin[0].coinbase;
+                                            item.receiver = addr;
+                                        } else {
+                                            item.sender = response.items[i].vin[0].addr;
+                                            item.receiver = response.items[i].vout[0].scriptPubKey.addresses[0];
+                                        }
+                                        filteredData.unshift(item);
+                                    }
+                                    resolve({
+                                        totalItems: response.totalItems,
+                                        items: filteredData
+                                    });
+                                }).catch(error => {
+                                    reject(error);
+                                });
+                            } else
+                                resolve({
+                                    totalItems: response.totalItems,
+                                    items: []
+                                })
+                        }).catch(error => {
+                            reject(error);
+                        });
+                    });
+                }
+            },
 
             //generate a new Address triplet : resolves Object(floID,pubKey,privKey)
             generateNewAddr: function () {
@@ -8971,7 +11007,7 @@
                         var triplet = {}
                         triplet.privKey = privKey;
                         triplet.pubKey = floCrypto.getPubKeyHex(triplet.privKey);
-                        triplet.floID = floCrypto.getFloIDfromPubkeyHex(triplet.pubKey);
+                        triplet.floID = floCrypto.getFloID(triplet.pubKey);
                         resolve(triplet);
                     } catch (error) {
                         reject(error);
@@ -8991,7 +11027,7 @@
             //send transaction to the blockchain using API : resolves (txid)
             sendTransaction: function (sender, receiver, amount, floData, privKey) {
                 return new Promise((resolve, reject) => {
-                    floBlockchainAPI.sendTx(sender, receiver, amount, privKey, floData)
+                    floBlockchainAPI.sendTx(sender, receiver, amount, privKey, floData, preventUnconfirmedUTXO)
                         .then(txid => resolve(txid))
                         .catch(error => reject(error))
                 })
@@ -9002,7 +11038,7 @@
                 return new Promise((resolve, reject) => {
                     compactIDB.readData('lastSync', addr).then(lastSync => {
                         lastSync = lastSync | 0;
-                        floBlockchainAPI.getNewTxs(addr, lastSync).then(APIresult => {
+                        this.util.getNewTxs(addr, lastSync).then(APIresult => {
                             compactIDB.readData('transactions', addr).then(IDBresult => {
                                 if (IDBresult === undefined)
                                     var promise1 = compactIDB.addData('transactions', APIresult.items, addr)
