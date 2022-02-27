@@ -9,18 +9,21 @@ We are offering methods simplifying access to inbuilt browser database IndexedDB
 
 Last but not the least, we are also providing methods for simplying common operations for FLO based Distributed Application Development. 
 
+# IMPORTANT
+We have two versions of cloud: old cloud version is 2.0.x in floCloudAPI, and new cloud version is 2.1.x in floCloudAPI. Please check that the version in floCloudAPI is 2.1.x whenever you use floCloudAPI as we are deprecating version 2.0.x
+
 # Background on FLO Distributed Applications
 
 FLO distibuted applications use the FLO Blockchain to store core data, and FLO Blockchain Cloud for other data. The data is accessed directly by browser based clients. No other component or servers are needed typically.
 
-Every application has a role called the Master Admin. The clients trust anything that the Master Admin declares in the FLO Blockchain. Usually Master Admin will only declare the FLO IDs that will have operational roles in the application. These FLO IDs are called SubAdmins. The browser based clients trust actions only and only from subAdmins and no one else. That creates the trust model. First trust the Master Admin. Then find out who the master admin has authorized to act as SubAdmins in the FLO blockchain. Then trust the data and actions signed by approved SubAdmins. Since the entire chain of trust is blockchain based, it enables a blockchain driven trust model. As the blockchain data is immutable and permanent, so long as users can trust the Master Admin, blockchain will ensure that the turst is efficiently transmitted.
+Every application has a role called the Master Admin. The clients trust anything that the Master Admin declares in the FLO Blockchain. Usually Master Admin will only declare the FLO IDs that will have operational roles in the application. These FLO IDs are called SubAdmins. The browser based clients trust actions only and only from subAdmins and no one else. That creates the trust model. First trust the Master Admin. Then find out who the master admin has authorized to act as SubAdmins in the FLO blockchain. Then trust the data and actions signed by approved SubAdmins. Since the entire chain of trust is blockchain based, it enables a blockchain driven trust model. As the blockchain data is immutable and permanent, so long as users can trust the Master Admin, blockchain will ensure that the trust is efficiently transmitted.
 
 This approach decentralizes the trust process totally and extends the capacity of the blockchain to model almost any server based IT application. 
 
 ## RanchiMall recommended approach to create a FLO Distributed Application
 
 1. Create Master Admin FLO ID and private key
-2. Role Modeling: Create SubAdmins by having Master Admin declare it in the FLO Blockchain, and decide what roles will differnent kind of SubAdmins play
+2. Role Modeling: Create SubAdmins by having Master Admin declare it in the FLO Blockchain, and decide what roles will different kind of SubAdmins play
 3. Data Modeling:  Create Blockchain cloud data formats for your application. Do it twice: One for system trusted users like SubAdmins using Object Data. And again for normal untrusted users using General Data 
 4. Define core business functionalities of the app, and create Javascript methods to model it
 5. Secure the user Private Key (and other sensitive data, if any)
@@ -59,6 +62,89 @@ This approach decentralizes the trust process totally and extends the capacity o
 
 * Consumers of data can ask for data by receiver ID, or filter it by application, type, or comment. They can also ask for data for a given type before and after a certain vector clock.
 
+## Common examples in usage of Standard Operations
+
+* Sends "Hello World" message to the cloud as General Data with type1 as `type` with `myFloID` as default sender and `floGlobals.adminID` as receiver. This has vectorClock support, our the client side will automatically synchronise all the relevant data stored in cloud. 
+```
+floCloudAPI.sendGeneralData("Hello World", "type1") 
+```
+
+* Request general data of type1 type, but filtered by senderIDs being floGlobals.subAdmins
+```
+floCloudAPI.requestGeneralData("type1", { senderIDs: floGlobals.subAdmins })
+```
+
+* Usage of sendGeneralData from RIBC dApp
+```
+  //take name and comments as function parameters, and sendGeneralData of InternRequests type 
+  applyForIntern: function (name, comments = '') {
+                return floCloudAPI.sendGeneralData([name, comments], "InternRequests")
+            },
+  
+  //take updates as function parameter, and return a promise that sends general data of type "InternUpdates"
+  postInternUpdate: function (updates) {
+                return new Promise((resolve, reject) => {
+                    floCloudAPI.sendGeneralData(updates, "InternUpdates")
+                        .then(results => resolve(results))
+                        .catch(error => reject(error))
+                })
+  
+  applyForTask: function (projectCode, branch, task, comments = '') {
+                return floCloudAPI.sendGeneralData([projectCode, branch, task, comments], "TaskRequests")
+            },
+
+  setRequestStatus: function (vectorClock, status) {
+                    return floCloudAPI.sendGeneralData({ vectorClock, status }, "RequestStatus")
+                },
+```
+* Object Data handling is automated in Standard operations unlike General data. Define, update and reset, these are only object data operations possible, yet they are very powerful in data capabilities. 
+```
+//Initiates "myFirstObject" with {a:1,b:2}, and sends to cloud with myFloID 
+as default sender and floGlobals.adminID as receiver
+
+floGlobals.appObjects["myFirstObject"] = {a:1,b:2}
+floCloudAPI.resetObjectData("myFirstObject") 
+
+//Updates the old value of "myFirstObject" with {a:1,b:2}, and sends to cloud with myFloID as default sender 
+and floGlobals.adminID as receiver. In case of update, only the object diff will be sent
+
+floGlobals.appObjects["myFirstObject"] = {a:1,c:3,d:4}
+floCloudAPI.updateObjectData("myFirstObject") 
+
+```
+
+* floGlobals usage from RIBC dApp
+```
+
+floGlobals.vectorClock 
+= {RIBC: '1637841611864_FCja6sLv58e3RMy41T5AmWyvXEWesqBCkX'}
+
+floGlobals.generalVC["{\"application\":\"RIBC\",\"type\":\"InternUpdates\"}"]
+= '1640106537305_FSdjJCJdU43a1dyWY6dRES1ekoupEjFPqQ'
+
+floGlobals.vectorClock.RIBC
+= '1637841611864_FCja6sLv58e3RMy41T5AmWyvXEWesqBCkX'
+
+floGlobals.generalVC["{\"application\":\"RIBC\",\"type\":\"InternUpdates\"}"] 
+= '1640106537305_FSdjJCJdU43a1dyWY6dRES1ekoupEjFPqQ'
+
+floGlobals.generalData["{\"application\":\"RIBC\",\"type\":\"InternUpdates\"}"][2] 
+= {sender: 'FPFeL5PXzW9bGosUjQYCxTHSMHidnygvvd', 
+vectorClock: '1580815876258_FPFeL5PXzW9bGosUjQYCxTHSMHidnygvvd', message: {…}}
+
+floGlobals.generalData["{\"application\":\"RIBC\",\"type\":\"InternUpdates\"}"][2]["vectorClock"] 
+= '1580815876258_FPFeL5PXzW9bGosUjQYCxTHSMHidnygvvd'
+
+floGlobals.generalData["{\"application\":\"RIBC\",\"type\":\"InternUpdates\"}"][2]["message"]["sender"] 
+= 'FPFeL5PXzW9bGosUjQYCxTHSMHidnygvvd'
+
+floGlobals.generalData["{\"application\":\"RIBC\",\"type\":\"InternUpdates\"}"][808]["message"]["description"] 
+= 'Working on the flow and structure of Pearl Harbor topic'
+
+floGlobals.appObjects.RIBC.internList.F7HVKrF68Y6YKE9XXpHhAcxt6MwRLcUD67 
+= 'Salomi Sarkar'
+  
+```
 
 # Technical Details of standard operations 
 
@@ -375,6 +461,44 @@ This module contains functions that interact with the supernode to send and retr
 ## FLO Cloud API operations
 `floCloudAPI` operations can interact with floSupernode cloud to send and retrieve data for applications. floCloudAPI uses floSupernode module for backend interactions. FLO Cloud API functions are promisified and resolves the data or status.
 
+#### NEW providing callback as a new option for automatic refresh of data in browser
+We have implemented a new feature where Standard Operations page can listen to any new general data or new object data and request for new data will be automatic. As soon as a new data is available in a cloud address, it will be notified to listening clients. This has been achieved by expanding `options` in `requestGeneralData` and `requestObjectData`
+
+A blank callback function can be provided as an option in `requestGeneralData` in which case the `floGlobals.generalData` will be automatically updated with new generalData relevant to that `requestGeneralData` whenever such data is available with the cloud. 
+
+A blank callback function when added as an option to `requestObjectData` will automatically update `floGlobals.appObjects` with all refreshes ar available to that `requestObjectData` without calling `requestObjectData` again explicitly.
+
+You can also specify an actual function name in callback, in which case that function will also be executed in addition to automatic data refreshes. This is usually for UI refresh needs. Alternately, one can monitor changes to `floGlobals.generalData` and `floGlobals.appObjects` via an event mechanism, and update UI whenever there are changes, in which case blank callback function is sufficient. 
+
+Note: Callbacks have been implemented using persistent listening websockets in both browsers and the cloud. So it will load the cloud with persistent memory requirements. Use it only when it is absolutely needed.
+
+```javascript
+
+//Requesting general data of type1 with calls in two equivalent ways using callback option for automatic refresh
+floCloudAPI.requestGeneralData("type1", {callback(){}})
+floCloudAPI.requestGeneralData("type1", {callback: _=> null})
+
+//Requesting Object data for article_valuation_individual object using callback option for automatic refresh 
+floCloudAPI.requestObjectData("article_valuation_individual", {callback: _=> null) })
+
+//They are all equivalent
+floCloudAPI.requestGeneralData("type1", {senderID:[x,y,z], callback: ()=>{} })
+floCloudAPI.requestGeneralData("type1", {senderID:[x,y,z], callback(){} })
+floCloudAPI.requestGeneralData("type1", {senderID:[x,y,z], callback: _=> null })
+
+//Implementation of a callback function that will update the UI and display data in console
+floCloudAPI.requestObjectData("article_valuation_individual", {callback: fnToUseTheData} )
+
+fnToUseTheData example:
+fnToUseTheData: function (data, error) { 
+if(!error) {
+ console.log(data);
+ //Add Update UI function 
+ }
+}
+
+```
+
 #### sendApplicationData
 	floCloudAPI.sendApplicationData(message, type, options = {})
 `sendApplicationData` sends application data to the cloud.
@@ -409,9 +533,10 @@ Sends "Hello World" message to the cloud as General Data with type1 as `type` wi
 * Resolves: Status (string) | Rejects: error
 
 ###### Minimal Example: 
+```
 	floCloudAPI.requestGeneralData("type1") 
 Requests all messages of General Data nature from the cloud with type1 as `type` sent by anyone and `floGlobals.adminID` as default receiverID
-
+```
 #### resetObjectData
 	floCloudAPI.resetObjectData("objectName", options = {})
 `resetObjectData` resets the objectData to cloud.
@@ -480,12 +605,14 @@ Note: Application Data results are not stored in local IndexedDB  by Standard Op
 Note: If a blank REQUEST APPLICATION DATA is made, then cloud will give all application data at the admin ID of the application
 
 ###### Minimal Example: 
+```
 	floCloudAPI.requestApplicationData() 
 Requests all messages of Apllication Data nature from the cloud with any `type` sent by anyone and `floGlobals.adminID` as receiverID
+```
 
 ## 4. GENERAL DATA PARAMETERS AND OPTIONS
 
-### SEND GENERAL DATA
+### SEND GENERAL DATA PARAMETERS AND OPTIONS
 Parameters while sending
 
  * `Message`: Actual Message to be sent
@@ -502,7 +629,12 @@ Type is mandatory in SEND GENERAL DATA because without at least one data identif
 
 Application field is used by the Cloud to judge whether this message should be deleted after 7 days, or stored permanently. Developers should be careful not to change value of application field if the default value enables the message to be stored permanently. Currently messages sent from subadmins to any receiverID for applications notified by the cloud in the FLO Blockchain are stored permanently. So do not change application field as a caution. Use the comment field. 
 
-### REQUEST GENERAL DATA
+###### Minimal Example: 
+```
+floCloudAPI.sendGeneralData("Hello World", "type1") 
+Sends "Hello World" message to the cloud as General Data with type1 as `type` with `myFloID` as default sender and `floGlobals.adminID` as receiver
+```
+### REQUEST GENERAL DATA PARAMETERS AND OPTIONS
 
 Parameters while requesting
 
@@ -517,6 +649,8 @@ Parameters while requesting
  * `upperVectorClock` - VC till which the data is to be requested
  * `atVectorClock` - VC at which the data is to requested
  * `mostRecent` - boolean (true: request only the recent data matching the pattern. Just the last one)
+ * `callback(){}` - will initialize websocket for automatic updates. 
+ * `callback: fnToUseTheData` - will initialize websocket for automatic updates, and will alse execute fnToUseTheData   
  
 The results are available in floGlobals.generalData after the request promise has been resolved
 
@@ -528,9 +662,26 @@ If you want to use requests to give results from all types at one go, use Applic
 
 Application field is used by the Cloud to judge whether this message should be deleted after 7 days, or stored permanently. Developers should be careful not to change value of application field if the default value enables the message to be stored permanently. Currently messages sent from subadmins to any receiverID for applications notified by the cloud in the FLO Blockchain are stored permanently. So do not change application field as a caution. Use the comment field.
 
+###### Minimal Example: 
+```
+floCloudAPI.requestGeneralData("type1") 
+Requests all messages of General Data nature from the cloud with type1 as `type` sent by anyone and `floGlobals.adminID` as default receiverID
+
+floCloudAPI.requestGeneralData("type1", {senderID:[x,y,z], callback: ()=>{}})
+floCloudAPI.requestGeneralData("type1", {senderID:[x,y,z], callback(){}})
+floCloudAPI.requestGeneralData("type1", {senderID:[x,y,z], callback: _=> null})
+
+floCloudAPI.requestObjectData("article_valuation_individual", {callback: fnToUseTheData})
+
+fnToUseTheData example:
+fnToUseTheData: function (data, error) { 
+if(!error) console.log(data)
+}
+```
+
 ## 5. OBJECT DATA PARAMETERS AND OPTIONS
 
-### RESET or UPDATE OBJECT DATA
+### RESET or UPDATE OBJECT DATA PARAMETERS AND OPTIONS
 Parameters while resetting or updating
  * `Object Name`: Name of the object with data populated in floGlobals.appObjects[objectName] 
  
@@ -545,7 +696,7 @@ Note: Never use senderIDs in RESET and UPDATE. The system automatically picks th
 
 Note: Type field is never used in RESET, UPDATE or REQUEST operations in Object Data. Type field is internally blocked for Object Data.
 
-### REQUEST OBJECT DATA
+### REQUEST OBJECT DATA PARAMETERS AND OPTIONS
 
 #### Mandatory
 `Object Name` 
@@ -559,6 +710,8 @@ Note: Type field is never used in RESET, UPDATE or REQUEST operations in Object 
  * `upperVectorClock` - VC till which the data is to be requested
  * `atVectorClock` - VC at which the data is to requested
  * `mostRecent` - boolean (true: request only the recent data matching the pattern. Just the last one.)
+ * `callback(){}` - will initialize websocket for automatic updates. 
+ * `callback: fnToUseTheData` - will initialize websocket for automatic updates, and will alse execute fnToUseTheData   
 
 The output is available in floGlobals.appObjects[objectName] after request Object Data promise is resolved 
 
@@ -568,7 +721,7 @@ Application field is used by the Cloud to judge whether this message should be d
 
 ## 6. APPLICATION DATA PARAMETERS, OPTIONS AND EXPLANATIONS
 
-### SEND APPLICATION DATA
+### SEND APPLICATION DATA PARAMETERS AND OPTIONS
 Parameters while sending
 
  * `Message`: Actual Message to be sent
@@ -585,7 +738,7 @@ Type is mandatory in SEND APPLICATION DATA because without at least one data ide
 
 Application field is used by the Cloud to judge whether this message should be deleted after 7 days, or stored permanently. Developers should be careful not to change value of application field if the default value enables the message to be stored permanently. Currently messages sent from subadmins to any receiverID for applications notified by the cloud in the FLO Blockchain are stored permanently. So do not change application field as a caution. Use the comment field.
 
-### REQUEST APPLICATION DATA
+### REQUEST APPLICATION DATA PARAMETERS AND OPTIONS
 
 #### Mandatory Parameters while requesting
 None
@@ -600,6 +753,8 @@ None
  * `upperVectorClock` - VC till which the data is to be requested
  * `atVectorClock` - VC at which the data is to requested
  * `mostRecent` - boolean (true: request only the recent data matching the pattern. Just the last one)
+ * `callback(){}` - will initialize websocket for automatic updates. 
+ * `callback: fnToUseTheData` - will initialize websocket for automatic updates, and will alse execute fnToUseTheData   
 
 Note: Results will be available in promise.resolve(requestApplicationData(..)), and user will have to handle the response himself.
 
@@ -614,39 +769,6 @@ Note: If a blank REQUEST APPLICATION DATA is made, then cloud will give all appl
 Note: Application field is used by the Cloud to judge whether this message should be deleted after 7 days, or stored permanently. Developers should be careful not to change value of application field if the default value enables the message to be stored permanently. Currently messages sent from subadmins to any receiverID for applications notified by the cloud in the FLO Blockchain are stored permanently. So do not change application field as a caution. Use the comment field.
 
 # Examples for FLO Cloud data operations
-
-
-# Basic Concepts of RanchiMall Blockchain Cloud for developers
-
-* RanchiMall blockchain cloud is a service to provide a set of decentralized servers that will provide data storage to users. These decentralized servers are listed in the FLO Blockchain under an authorized FLO address. This gives the assurance to the users that those data servers can be trusted.
-
-* The user can store his data in these servers freely. RanchiMall cloud service also provides facilities to store Javascript Objects directly. Storage in JavaScript object form makes it easier for JavaScript based applications to process the data.
-
-* The cloud servers provide automatic backup and restoration for each other.
-
-* Using the blockchain based data cloud, users will not need any database to store their data. The cloud will provide data storage, backup and restoration facilites.
-
-* RanchiMall Blockchain Cloud is a password less system. Every sender has to digitally sign his data with the private key associated with its FLO ID. The cloud verifies the digital signature of the sender before storing sender data.
-
-* Since the blockchain cloud is an ensemble of servers, we need a method to pick the right server to store the data. For this purpose, we find the a server closest to receipient of the data according to an artificial distance measure. 
-
-* Every client of the cloud can automatically compute the correct server where the data needs to be stored, and sends the message directly to that server.
-
-* Every client of the cloud is the consumer of the data. It can ask the cloud for data sorted by a recipient, or by various options we provide like name of application, type of data, or by specific comments. The client can can also ask for all data  after or before a certain point of time using a concept called Vector Clock.
-
-* The cloud attaches the exact epoch time to any message given by a sender, and using the combination of epoch time, and sender FLO ID, the vector clock is constructed.
-
-* The two basic forms in which users can submit data to the cloud are `General Data` and `Object Data`. `General Data` is freely flowing data, and `Object Data` is stored directly as pure Javascript Object.
-
-* Both `General Data` and `Object Data` have been derived from `Application Data` which is the basic system data type in the cloud. Normal users will never need to use Application Data. But for documentation purposes, we are providing the technical details for Application Data as well.
-
-   - `General Data` = `Application Data` + User level Vector Clock filtering facilities
-
-   - `Object Data` = `Application Data` + Message field modified to handle Javascript Object + User level Vector Clock filtering facilities
-
-* Consistent with blockchain data principles, RanchiMall blockchain cloud will also provide data to everyone who asks for it. So sensitive data should be encrypted using the receiver's public key using Crypto functions of FLO Standard Operations.
-
-* Consumers of data can ask for data by receiver ID, or filter it by application, type, or comment. They can also ask for data for a given type before and after a certain vector clock.
 
 ## 1. Data fields stored in each of decentralised servers
 
@@ -698,7 +820,7 @@ Application data system is original data field system that we created  for our c
 Even ObjectData was created on top of Application Data. ObjectData is a special construction provided by framework so that Javacript objects can directly be stored and retrieved from the cloud
 
 #### Vector Clock issues in Application Data
-Application data supports Vector clock in REQUEST option, but it is not mandatory. Since Application Data system has no mandatory vector clock requirement in REQUEST OPTIONS, it will always give the entire data set stored in the cloud since start if invoked without vectorClock, and user will have to custom handle the request output himself at client end. Our client side framework will not store it for the user.
+Application data supports Vector clock in REQUEST option, but it is not mandatory. Since Application Data system has no mandatory vector clock requirement in REQUEST OPTIONS, it will always give the entire data set stored in the cloud since start if invoked without vectorClock, and user will have to custom handle the request output himself at client end. Our client side framework will not store it for the user. However the application data request invoked with vectorClock, then our cloud will give data after the vectorClock
 
 Usually ObjectData and GeneralData systems will support most of user needs. But for cases when the user wants the entire cloud data set, and no client side framework handling, he should use ApplicationData. Although Application Data system supports lower vectorClock, upper vectorClock, at vectorClock and mostRecentvectorClock as a REQUEST option, but the processing of these have to be done by user. Unlike in case of ObjectData and GeneralData, the output of Request Application Data is not available in floGlobals. 
 
@@ -769,6 +891,23 @@ Sample startup is defined in onLoadStartUp function
 2. fn - body of the function
 Note: startup funtions are called in parallel. Therefore only add custom startup funtion only if it can run in parallel with other startup functions. (default startup funtions are read supernode list and subAdmin list from blockchain API, load data from indexedDB, get login credentials)
 
+```javascript
+//Executes automatically on startup before anything else executes
+floDapps.addStartUpFunction("myFirstFunction",
+		function (){ 
+			return new Promise (
+			(resolve,reject)=>{
+			console.log("First function Executed before everything else");
+			resolve("My First Function executed")
+		}); 
+ });
+
+// Manual execution on console
+floDapps.util.startUpFunctions.myFirstFunction();
+```
+
+Philosophy: Suppose you want a function that must run before any of standard operation function runs. Then you need to first create a promisified version of that function 
+
 ### Advanced Dapp functions usually not needed for users
 
 #### setAppObjectStores
@@ -776,12 +915,6 @@ Note: startup funtions are called in parallel. Therefore only add custom startup
 `setAppObjectStores` adds additionals objectstores for the app
 1. appObs - additionals objects for the app
 
-#### objectDataMapper
-	floDapps.objectDataMapper(object, path, data)
-`objectDataMapper` maps the object and data via path
-1. object - object to be mapped
-2. path - end path for the data holder
-3. data - data to be pushed in map
 
 
 

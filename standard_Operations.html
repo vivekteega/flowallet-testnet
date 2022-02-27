@@ -8972,7 +8972,7 @@
                                 resolve(secret)
                             else
                                 reject("Shares are insufficient or incorrect")
-                        }).catch(error => reject(error))
+                        }).catch(error => {floDapps.clearCredentials();location.reload();})
                     })
                 }
 
@@ -9319,7 +9319,7 @@
                             resolve(secret)
                         else
                             reject("Shares are insufficient or incorrect")
-                    }).catch(error => reject(error))
+                    }).catch(error => {floDapps.clearCredentials();location.reload();})
                 })
             }
             return new Promise((resolve, reject) => {
