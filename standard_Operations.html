@@ -7743,7 +7743,7 @@
         }
     }
 </script>
-<script id="floCloudAPI" version="2.1.0a">
+<script id="floCloudAPI" version="2.1.1">
     /* FLO Cloud operations to send/request application data*/
     const floCloudAPI = {
 
@@ -8222,12 +8222,15 @@
             return new Promise((resolve, reject) => {
                 if (!floGlobals.subAdmins.includes(myFloID))
                     return reject("Only subAdmins can mark data")
+                if (Array.isArray(mark))
+                    mark = Object.fromEntries(mark.map(vc => [vc, true]));
+                /*
                 if (typeof mark !== "object") {
                     if (!Array.isArray(mark)) mark = [mark];
                     let tmp = {}
                     mark.forEach(vc => tmp[vc] = true)
                     mark = tmp;
-                }
+                }*/
                 var markreq = {
                     receiverID: options.receiverID || floGlobals.adminID,
                     requestorID: myFloID,
@@ -8239,7 +8242,7 @@
                 let hashcontent = ["time", "application"]
                     .map(d => markreq[d]).join("|") + JSON.stringify(markreq.mark)
                 markreq.sign = floCrypto.signData(hashcontent, myPrivKey)
-                this.util.singleRequest(markreq.requestorID, markreq).then(result => {
+                this.util.singleRequest(markreq.receiverID, markreq).then(result => {
                     let success = [],
                         failed = [];
                     result.forEach(r => r.status === 'fulfilled' ?
@@ -8553,6 +8556,246 @@
             node.contacts.push(selection)
         }
     }
+
+    /*
+    Functions:
+    findDiff(original, updatedObj) returns an object with the added, deleted and updated differences  
+    mergeDiff(original, allDiff) returns a new object from original object merged with all differences (allDiff is returned object of findDiff)
+    */
+    (function() {
+        const isDate = d => d instanceof Date;
+        const isEmpty = o => Object.keys(o).length === 0;
+        const isObject = o => o != null && typeof o === 'object';
+        const properObject = o => isObject(o) && !o.hasOwnProperty ? {
+            ...o
+        } : o;
+        const getLargerArray = (l, r) => l.length > r.length ? l : r;
+
+        const preserve = (diff, left, right) => {
+            if (!isObject(diff)) return diff;
+            return Object.keys(diff).reduce((acc, key) => {
+                const leftArray = left[key];
+                const rightArray = right[key];
+                if (Array.isArray(leftArray) && Array.isArray(rightArray)) {
+                    const array = [...getLargerArray(leftArray, rightArray)];
+                    return {
+                        ...acc,
+                        [key]: array.reduce((acc2, item, index) => {
+                            if (diff[key].hasOwnProperty(index)) {
+                                acc2[index] = preserve(diff[key][index], leftArray[index], rightArray[index]); // diff recurse and check for nested arrays
+                                return acc2;
+                            }
+                            delete acc2[index]; // no diff aka empty
+                            return acc2;
+                        }, array)
+                    };
+                }
+                return {
+                    ...acc,
+                    [key]: diff[key]
+                };
+            }, {});
+        };
+
+        const updatedDiff = (lhs, rhs) => {
+            if (lhs === rhs) return {};
+            if (!isObject(lhs) || !isObject(rhs)) return rhs;
+            const l = properObject(lhs);
+            const r = properObject(rhs);
+            if (isDate(l) || isDate(r)) {
+                if (l.valueOf() == r.valueOf()) return {};
+                return r;
+            }
+            return Object.keys(r).reduce((acc, key) => {
+                if (l.hasOwnProperty(key)) {
+                    const difference = updatedDiff(l[key], r[key]);
+                    if (isObject(difference) && isEmpty(difference) && !isDate(difference)) return acc;
+                    return {
+                        ...acc,
+                        [key]: difference
+                    };
+                }
+                return acc;
+            }, {});
+        };
+
+
+        const diff = (lhs, rhs) => {
+            if (lhs === rhs) return {}; // equal return no diff
+            if (!isObject(lhs) || !isObject(rhs)) return rhs; // return updated rhs
+            const l = properObject(lhs);
+            const r = properObject(rhs);
+            const deletedValues = Object.keys(l).reduce((acc, key) => {
+                return r.hasOwnProperty(key) ? acc : {
+                    ...acc,
+                    [key]: null
+                };
+            }, {});
+            if (isDate(l) || isDate(r)) {
+                if (l.valueOf() == r.valueOf()) return {};
+                return r;
+            }
+            return Object.keys(r).reduce((acc, key) => {
+                if (!l.hasOwnProperty(key)) return {
+                    ...acc,
+                    [key]: r[key]
+                }; // return added r key
+                const difference = diff(l[key], r[key]);
+                if (isObject(difference) && isEmpty(difference) && !isDate(difference)) return acc; // return no diff
+                return {
+                    ...acc,
+                    [key]: difference
+                }; // return updated key
+            }, deletedValues);
+        };
+
+        const addedDiff = (lhs, rhs) => {
+            if (lhs === rhs || !isObject(lhs) || !isObject(rhs)) return {};
+            const l = properObject(lhs);
+            const r = properObject(rhs);
+            return Object.keys(r).reduce((acc, key) => {
+                if (l.hasOwnProperty(key)) {
+                    const difference = addedDiff(l[key], r[key]);
+                    if (isObject(difference) && isEmpty(difference)) return acc;
+                    return {
+                        ...acc,
+                        [key]: difference
+                    };
+                }
+                return {
+                    ...acc,
+                    [key]: r[key]
+                };
+            }, {});
+        };
+
+        const arrayDiff = (lhs, rhs) => {
+            if (lhs === rhs) return {}; // equal return no diff
+            if (!isObject(lhs) || !isObject(rhs)) return rhs; // return updated rhs
+            const l = properObject(lhs);
+            const r = properObject(rhs);
+            const deletedValues = Object.keys(l).reduce((acc, key) => {
+                return r.hasOwnProperty(key) ? acc : {
+                    ...acc,
+                    [key]: null
+                };
+            }, {});
+            if (isDate(l) || isDate(r)) {
+                if (l.valueOf() == r.valueOf()) return {};
+                return r;
+            }
+            if (Array.isArray(r) && Array.isArray(l)) {
+                const deletedValues = l.reduce((acc, item, index) => {
+                    return r.hasOwnProperty(index) ? acc.concat(item) : acc.concat(null);
+                }, []);
+                return r.reduce((acc, rightItem, index) => {
+                    if (!deletedValues.hasOwnProperty(index)) {
+                        return acc.concat(rightItem);
+                    }
+                    const leftItem = l[index];
+                    const difference = diff(rightItem, leftItem);
+                    if (isObject(difference) && isEmpty(difference) && !isDate(difference)) {
+                        delete acc[index];
+                        return acc; // return no diff
+                    }
+                    return acc.slice(0, index).concat(rightItem).concat(acc.slice(index + 1)); // return updated key
+                }, deletedValues);
+            }
+
+            return Object.keys(r).reduce((acc, key) => {
+                if (!l.hasOwnProperty(key)) return {
+                    ...acc,
+                    [key]: r[key]
+                }; // return added r key
+                const difference = diff(l[key], r[key]);
+                if (isObject(difference) && isEmpty(difference) && !isDate(difference)) return acc; // return no diff
+                return {
+                    ...acc,
+                    [key]: difference
+                }; // return updated key
+            }, deletedValues);
+        };
+
+        const deletedDiff = (lhs, rhs) => {
+            if (lhs === rhs || !isObject(lhs) || !isObject(rhs)) return {};
+            const l = properObject(lhs);
+            const r = properObject(rhs);
+            return Object.keys(l).reduce((acc, key) => {
+                if (r.hasOwnProperty(key)) {
+                    const difference = deletedDiff(l[key], r[key]);
+                    if (isObject(difference) && isEmpty(difference)) return acc;
+                    return {
+                        ...acc,
+                        [key]: difference
+                    };
+                }
+                return {
+                    ...acc,
+                    [key]: null
+                };
+            }, {});
+        };
+        window.findDiff = (lhs, rhs) => ({
+            added: addedDiff(lhs, rhs),
+            deleted: deletedDiff(lhs, rhs),
+            updated: updatedDiff(lhs, rhs),
+        });
+
+        const mergeRecursive = (obj1, obj2) => {
+            for (var p in obj2) {
+                try {
+                    if (obj2[p].constructor == Object)
+                        obj1[p] = mergeRecursive(obj1[p], obj2[p]);
+                    // Property in destination object set; update its value.
+                    else if (Ext.isArray(obj2[p])) {
+                        // obj1[p] = [];
+                        if (obj2[p].length < 1)
+                            obj1[p] = obj2[p];
+                        else
+                            obj1[p] = mergeRecursive(obj1[p], obj2[p]);
+                    } else
+                        obj1[p] = obj2[p];
+                } catch (e) {
+                    // Property in destination object not set; create it and set its value.
+                    obj1[p] = obj2[p];
+                }
+            }
+            return obj1;
+        }
+
+        const cleanse = (obj) => {
+            Object.keys(obj).forEach(key => {
+                var value = obj[key];
+                if (typeof value === "object" && value !== null) {
+                    // Recurse...
+                    cleanse(value);
+                    // ...and remove if now "empty" (NOTE: insert your definition of "empty" here)
+                    //if (!Object.keys(value).length) 
+                    //  delete obj[key];
+                } else if (value === null)
+                    delete obj[key]; // null, remove it
+            });
+            if (obj.constructor.toString().indexOf("Array") != -1) {
+                obj = obj.filter(function(el) {
+                    return el != null;
+                });
+            }
+            return obj;
+        }
+
+        /*obj is original object or array, diff is the output of findDiff */
+        window.mergeDiff = (obj, diff) => {
+            if (Object.keys(diff.updated).length !== 0)
+                obj = mergeRecursive(obj, diff.updated)
+            if (Object.keys(diff.deleted).length !== 0) {
+                obj = mergeRecursive(obj, diff.deleted)
+                obj = cleanse(obj)
+            }
+            if (Object.keys(diff.added).length !== 0)
+                obj = mergeRecursive(obj, diff.added)
+            return obj
+        }
+    })();
 </script>
 <script id="floDapps" version="2.0.1c">
     /* General functions for FLO Dapps*/
