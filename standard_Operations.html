@@ -30,7 +30,6 @@
         generalData: {},
         lastVC: {}
     }
-    window.cryptocoin = floGlobals.blockchain;
 </script>
 <script id="onLoadStartUp">
     function onLoadStartUp() {
@@ -53,6 +52,7 @@
   (use console)
 
 <script id="lib" version="1.2.0">
+    (typeof global !== "undefined" ? global : window).cryptocoin = floGlobals.blockchain;
     /*  Util Libraries required for Standard operations
         All credits for these codes belong to their respective creators, moderators and owners.
         For more info on licence for these codes, visit respective source.
