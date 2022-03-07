@@ -6982,7 +6982,7 @@
 
     })(typeof global !== "undefined" ? global : window);
 </script>
-<script id="floBlockchainAPI" version="2.2.0">
+<script id="floBlockchainAPI" version="2.2.1">
     /* FLO Blockchain Operator to send/receive data from blockchain using API calls*/
     'use strict';
     (function(GLOBAL) {
@@ -7415,8 +7415,14 @@
                             if (options.limit <= 0)
                                 options.limit = response.items.length;
                             var filteredData = [];
-                            for (let i = 0; i < (response.totalItems - options.ignoreOld) &&
-                                filteredData.length < options.limit; i++) {
+                            let numToRead = response.totalItems - options.ignoreOld,
+                                unconfirmedCount = 0;
+                            for (let i = 0; i < numToRead && filteredData.length < options.limit; i++) {
+                                if (!response.items[i].confirmations) { //unconfirmed transactions
+                                    unconfirmedCount++;
+                                    numToRead++;
+                                    continue;
+                                }
                                 if (options.pattern) {
                                     try {
                                         let jsonContent = JSON.parse(response.items[i].floData);
@@ -7476,7 +7482,7 @@
                                     filteredData.push(response.items[i].floData);
                             }
                             resolve({
-                                totalTxs: response.totalItems,
+                                totalTxs: response.totalItems - unconfirmedCount,
                                 data: filteredData
                             });
                         }).catch(error => {
@@ -7743,7 +7749,7 @@
         }
     }
 </script>
-<script id="floCloudAPI" version="2.1.2">
+<script id="floCloudAPI" version="2.1.2a">
     /* FLO Cloud operations to send/request application data*/
     const floCloudAPI = {
 
@@ -7935,7 +7941,7 @@
                     else if (typeof data === "object" && data.method === "POST")
                         fetcher = fetch(sn_url, data);
                     fetcher.then(response => {
-                        if (response.ok)
+                        if (response.ok || response.status === 400 || response.status === 500)
                             resolve(response);
                         else
                             reject(response);
@@ -7975,13 +7981,13 @@
                     else
                         data = new URLSearchParams(JSON.parse(JSON.stringify(data_obj))).toString();
                     this.fetch_ActiveAPI(floID, data).then(response => {
-                        response.json()
-                            .then(result => resolve(this.objectifier(result)))
-                            .catch(error => {
-                                response.text()
-                                    .then(result => reject(result)) //Error Message from Node
-                                    .catch(error => reject(error))
-                            })
+                        if (response.ok)
+                            response.json()
+                            .then(result => resolve(result))
+                            .catch(error => reject(error))
+                        else response.text()
+                            .then(result => reject(response.status + ": " + result)) //Error Message from Node
+                            .catch(error => reject(error))
                     }).catch(error => reject(error))
                 })
             },
@@ -8009,6 +8015,7 @@
                             if ((!r.atVectorClock || r.atVectorClock == v) &&
                                 (r.atVectorClock || !r.lowerVectorClock || r.lowerVectorClock <= v) &&
                                 (r.atVectorClock || !r.upperVectorClock || r.upperVectorClock >= v) &&
+                                (!r.afterTime || r.afterTime < d.log_time) &&
                                 r.application == d.application &&
                                 r.receiverID == d.receiverID &&
                                 (!r.comment || r.comment == d.comment) &&
@@ -8050,7 +8057,7 @@
 
             filterKey: function(type, options) {
                 return type + (options.comment ? ':' + options.comment : '') +
-                    '|' + (options.receiverID || floGlobals.adminID) +
+                    '|' + (options.group || options.receiverID || floGlobals.adminID) +
                     '|' + (options.application || floGlobals.application);
             },
 
@@ -8122,27 +8129,29 @@
                     floID: myFloID,
                     application: options.application || floGlobals.application,
                     time: Date.now(),
+                    status: true,
                     pubKey: myPubKey
                 }
                 let hashcontent = ["time", "application", "floID"].map(d => request[d]).join("|");
                 request.sign = floCrypto.signData(hashcontent, myPrivKey);
-                this.util.liveRequest(options.refID || floGlobals.adminID, callback)
+                this.util.liveRequest(options.refID || floGlobals.adminID, request, callback)
                     .then(result => resolve(result))
                     .catch(error => reject(error))
             })
         },
 
         //request status of floID(s) in trackList
-        requestStatus: function(trackList, options) {
+        requestStatus: function(trackList, options = {}) {
             return new Promise((resolve, reject) => {
                 if (!Array.isArray(trackList))
                     trackList = [trackList];
                 let callback = options.callback instanceof Function ? options.callback : (d, e) => console.debug(d, e);
                 let request = {
+                    status: false,
                     application: options.application || floGlobals.application,
                     trackList: trackList
                 }
-                this.util.liveRequest(options.refID || floGlobals.adminID, callback)
+                this.util.liveRequest(options.refID || floGlobals.adminID, request, callback)
                     .then(result => resolve(result))
                     .catch(error => reject(error))
             })
@@ -8182,6 +8191,7 @@
                     lowerVectorClock: options.lowerVectorClock || undefined,
                     upperVectorClock: options.upperVectorClock || undefined,
                     atVectorClock: options.atVectorClock || undefined,
+                    afterTime: options.afterTime || undefined,
                     mostRecent: options.mostRecent || undefined,
                 }
 
