@@ -6982,7 +6982,7 @@
 
     })(typeof global !== "undefined" ? global : window);
 </script>
-<script id="floBlockchainAPI" version="2.2.1">
+<script id="floBlockchainAPI" version="2.2.1a">
     /* FLO Blockchain Operator to send/receive data from blockchain using API calls*/
     'use strict';
     (function(GLOBAL) {
@@ -7420,7 +7420,8 @@
                             for (let i = 0; i < numToRead && filteredData.length < options.limit; i++) {
                                 if (!response.items[i].confirmations) { //unconfirmed transactions
                                     unconfirmedCount++;
-                                    numToRead++;
+                                    if (numToRead < response.items[i].length)
+                                        numToRead++;
                                     continue;
                                 }
                                 if (options.pattern) {
@@ -7749,7 +7750,7 @@
         }
     }
 </script>
-<script id="floCloudAPI" version="2.1.2a">
+<script id="floCloudAPI" version="2.1.3">
     /* FLO Cloud operations to send/request application data*/
     const floCloudAPI = {
 
@@ -8070,27 +8071,26 @@
                 }
             },
 
-            updateObject: function(dataSet) {
+            updateObject: function(objectName, dataSet) {
                 try {
                     console.log(dataSet)
-                    let updatedObjects = new Set()
-                    for (vc in dataSet) {
+                    let vcList = Object.keys(dataSet).sort();
+                    for (let vc of vcList) {
+                        if (vc < floGlobals.lastVC[objectName] || dataSet[vc].type !== objectName)
+                            continue;
                         switch (dataSet[vc].comment) {
                             case "RESET":
                                 if (dataSet[vc].message.reset)
-                                    floGlobals.appObjects[dataSet[vc].type] = dataSet[vc].message.reset;
+                                    floGlobals.appObjects[objectName] = dataSet[vc].message.reset;
                                 break;
                             case "UPDATE":
                                 if (dataSet[vc].message.diff)
-                                    floGlobals.appObjects[dataSet[vc].type] = mergeDiff(floGlobals.appObjects[dataSet[vc].type], dataSet[vc].message.diff)
+                                    floGlobals.appObjects[objectName] = mergeDiff(floGlobals.appObjects[objectName], dataSet[vc].message.diff);
                         }
-                        floGlobals.lastVC[dataSet[vc].type] = vc;
-                        updatedObjects.add(dataSet[vc].type)
+                        floGlobals.lastVC[objectName] = vc;
                     }
-                    updatedObjects.forEach(o => {
-                        compactIDB.writeData("appObjects", floGlobals.appObjects[o], o)
-                        compactIDB.writeData("lastVC", floGlobals.lastVC[o], o)
-                    });
+                    compactIDB.writeData("appObjects", floGlobals.appObjects[objectName], objectName);
+                    compactIDB.writeData("lastVC", floGlobals.lastVC[objectName], objectName);
                 } catch (error) {
                     console.error(error)
                 }
@@ -8101,9 +8101,11 @@
                     console.log(dataSet)
                     if (typeof floGlobals.generalData[fk] !== "object")
                         floGlobals.generalData[fk] = {}
-                    for (let vc in dataSet)
+                    for (let vc in dataSet) {
                         floGlobals.generalData[fk][vc] = dataSet[vc];
-                    floGlobals.lastVC[fk] = Object.keys(floGlobals.generalData[fk]).sort().pop()
+                        if (dataSet[vc].log_time > floGlobals.lastVC[fk])
+                            floGlobals.lastVC[fk] = dataSet[vc].log_time;
+                    }
                     compactIDB.writeData("lastVC", floGlobals.lastVC[fk], fk)
                     compactIDB.writeData("generalData", floGlobals.generalData[fk], fk)
                 } catch (error) {
@@ -8340,7 +8342,8 @@
         requestGeneralData: function(type, options = {}) {
             return new Promise((resolve, reject) => {
                 var fk = this.util.filterKey(type, options)
-                options.lowerVectorClock = options.lowerVectorClock || floGlobals.lastVC[fk] + 1;
+                floGlobals.lastVC[fk] = parseInt(floGlobals.lastVC[fk]) || 0;
+                options.afterTime = options.afterTime || floGlobals.lastVC[fk];
                 if (options.callback instanceof Function) {
                     let new_options = Object.create(options)
                     new_options.callback = (d, e) => {
@@ -8352,7 +8355,7 @@
                         .catch(error => reject(error))
                 } else {
                     this.requestApplicationData(type, options).then(dataSet => {
-                        this.util.storeGeneral(fk, dataSet)
+                        this.util.storeGeneral(fk, this.util.objectifier(dataSet))
                         resolve(dataSet)
                     }).catch(error => reject(error))
                 }
@@ -8362,8 +8365,7 @@
         //request an object data from supernode cloud
         requestObjectData: function(objectName, options = {}) {
             return new Promise((resolve, reject) => {
-                options.lowerVectorClock = options.lowerVectorClock || floGlobals.lastVC[objectName] +
-                    1;
+                options.lowerVectorClock = options.lowerVectorClock || floGlobals.lastVC[objectName] + 1;
                 options.senderID = [false, null].includes(options.senderID) ? null :
                     options.senderID || floGlobals.subAdmins;
                 options.mostRecent = true;
@@ -8371,25 +8373,25 @@
                 let callback = null;
                 if (options.callback instanceof Function) {
                     callback = (d, e) => {
-                        this.util.updateObject(d);
+                        this.util.updateObject(objectName, d);
                         options.callback(d, e);
                     }
                     delete options.callback;
                 }
                 this.requestApplicationData(objectName, options).then(dataSet => {
-                    this.util.updateObject(dataSet)
+                    this.util.updateObject(objectName, this.util.objectifier(dataSet));
                     delete options.comment;
-                    options.lowerVectorClock = floGlobals.lastVC[objectName] + 1
+                    options.lowerVectorClock = floGlobals.lastVC[objectName] + 1;
                     delete options.mostRecent;
                     if (callback) {
-                        let new_options = Object.create(options)
+                        let new_options = Object.create(options);
                         new_options.callback = callback;
                         this.requestApplicationData(objectName, new_options)
                             .then(result => resolve(result))
                             .catch(error => reject(error))
                     } else {
                         this.requestApplicationData(objectName, options).then(dataSet => {
-                            this.util.updateObject(dataSet)
+                            this.util.updateObject(objectName, this.util.objectifier(dataSet))
                             this.util.lastCommit("SET", objectName)
                             resolve(floGlobals.appObjects[objectName])
                         }).catch(error => reject(error))
