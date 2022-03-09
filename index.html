@@ -754,6 +754,7 @@
                 case 'get_private_key_popup':
                     getRef('get_private_key').classList.remove('hide')
                     getRef('transaction_result').classList.add('hide')
+                    getRef('confirm_transaction_button').classList.remove('hide')
                     getRef('confirm_transaction_button').nextElementSibling.classList.add('hide')
                     break;
             }
@@ -1523,6 +1524,7 @@
             const floData = getRef('flo_data_textarea').value.trim();
             const privKey = getRef('get_private_key_field').value.trim();
             getRef('confirm_transaction_button').disabled = true;
+            getRef('confirm_transaction_button').classList.add('hide')
             getRef('confirm_transaction_button').nextElementSibling.classList.remove('hide')
             floWebWallet.sendTransaction(sender, receiver, amount, floData, privKey).then((transactionId) => {
                 showTransactionResult('success', transactionId);
