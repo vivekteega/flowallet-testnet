@@ -632,7 +632,7 @@ textarea {
   margin-bottom: 1rem !important;
 }
 
-#get_private_key_field {
+.password-field {
   label {
     display: flex;
     input:checked ~ .visible {
@@ -988,8 +988,9 @@ textarea {
       bottom: auto;
     }
   }
-  #create_flo_id_popup {
-    --width: 28rem;
+  #create_flo_id_popup,
+  #retrieve_flo_id_popup {
+    --width: 26rem;
   }
   #send {
     sm-form::part(form) {

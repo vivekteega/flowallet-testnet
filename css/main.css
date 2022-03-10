@@ -672,13 +672,13 @@ textarea {
   margin-bottom: 1rem !important;
 }
 
-#get_private_key_field label {
+.password-field label {
   display: flex;
 }
-#get_private_key_field label input:checked ~ .visible {
+.password-field label input:checked ~ .visible {
   display: none;
 }
-#get_private_key_field label input:not(:checked) ~ .invisible {
+.password-field label input:not(:checked) ~ .invisible {
   display: none;
 }
 
@@ -1056,8 +1056,9 @@ textarea {
     bottom: auto;
   }
 
-  #create_flo_id_popup {
-    --width: 28rem;
+  #create_flo_id_popup,
+#retrieve_flo_id_popup {
+    --width: 26rem;
   }
 
   #send sm-form::part(form) {
