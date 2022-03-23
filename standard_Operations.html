@@ -7750,7 +7750,7 @@
         }
     }
 </script>
-<script id="floCloudAPI" version="2.1.3">
+<script id="floCloudAPI" version="2.1.3a">
     /* FLO Cloud operations to send/request application data*/
     const floCloudAPI = {
 
@@ -8089,6 +8089,7 @@
                         }
                         floGlobals.lastVC[objectName] = vc;
                     }
+                    this.lastCommit("SET", objectName);
                     compactIDB.writeData("appObjects", floGlobals.appObjects[objectName], objectName);
                     compactIDB.writeData("lastVC", floGlobals.lastVC[objectName], objectName);
                 } catch (error) {
@@ -8372,9 +8373,10 @@
                 options.comment = 'RESET';
                 let callback = null;
                 if (options.callback instanceof Function) {
+                    let old_callback = options.callback;
                     callback = (d, e) => {
                         this.util.updateObject(objectName, d);
-                        options.callback(d, e);
+                        old_callback(d, e);
                     }
                     delete options.callback;
                 }
@@ -8392,7 +8394,6 @@
                     } else {
                         this.requestApplicationData(objectName, options).then(dataSet => {
                             this.util.updateObject(objectName, this.util.objectifier(dataSet))
-                            this.util.lastCommit("SET", objectName)
                             resolve(floGlobals.appObjects[objectName])
                         }).catch(error => reject(error))
                     }
