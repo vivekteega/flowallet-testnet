@@ -521,64 +521,6 @@ h3 {
   cursor: pointer;
 }
 
-textarea {
-  color: inherit;
-  width: 100%;
-  font-size: 1em;
-  display: flex;
-  background-color: transparent;
-  padding: 1em;
-  border-radius: 0.3rem;
-  border: none;
-  font-family: inherit;
-  transition: box-shadow 0.2s;
-  outline: none;
-  caret-color: var(--accent-color, teal);
-  resize: none;
-  line-height: 1.6;
-}
-
-.textarea {
-  display: grid;
-  width: 100%;
-  align-self: flex-start;
-  position: relative;
-  border-radius: 0.3rem;
-  padding: 1rem 0.8rem;
-  background-color: rgba(var(--text-color), 0.06);
-  transition: box-shadow 0.2s;
-}
-.textarea > * {
-  padding: 0;
-  grid-area: 1/1/2/2;
-}
-.textarea .label {
-  align-self: flex-start;
-  pointer-events: none;
-  opacity: 0.6;
-  transition: transform 0.2s, color 0.2s;
-  -webkit-user-select: none;
-     -moz-user-select: none;
-      -ms-user-select: none;
-          user-select: none;
-  transform-origin: left;
-  will-change: transform;
-}
-.textarea.label-active .label {
-  opacity: 1;
-  transform: translateY(-60%) scale(0.8);
-  color: var(--accent-color);
-}
-.textarea.label-active textarea {
-  transform: translateY(0.5rem);
-}
-.textarea:focus-within {
-  box-shadow: 0 0 0 0.1rem var(--accent-color) inset;
-}
-.textarea:focus-within > * {
-  box-shadow: none;
-}
-
 #show_character_count {
   font-size: 0.8rem;
   margin-left: auto;

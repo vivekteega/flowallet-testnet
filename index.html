@@ -536,8 +536,8 @@
                     <h5>Recovered FLO ID</h5>
                     <sm-copy id="recovered_flo_id"></sm-copy>
                 </div>
-                <sm-input id="retrieve_flo_id_field" class="password-field" type="password"
-                    error-text="Invalid private key" placeholder="Private key" required autofocus>
+                <sm-input id="retrieve_flo_id_field" type="password" error-text="Invalid private key"
+                    placeholder="Private key" class="password-field" required autofocus>
                     <label slot="right" class="interact">
                         <input type="checkbox" class="hide" readonly onchange="togglePrivateKeyVisibility(this)">
                         <svg class="icon invisible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
@@ -606,7 +606,7 @@
             </svg>
             <h4>Enter sender's private key</h4>
             <sm-form>
-                <sm-input id="get_private_key_field" type="password" required autofocus>
+                <sm-input id="get_private_key_field" class="password-field " type="password" required autofocus>
                     <label slot="right" class="interact">
                         <input type="checkbox" class="hide" readonly onchange="togglePrivateKeyVisibility(this)">
                         <svg class="icon invisible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
@@ -1221,7 +1221,8 @@
         function handleMobileChange(e) {
             isMobileView = e.matches
         }
-        mobileQuery.addListener(handleMobileChange)
+        mobileQuery.addEventListener('change', handleMobileChange)
+
         handleMobileChange(mobileQuery)
     </script>
     <script>
