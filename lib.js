@@ -1,5 +1,4 @@
-//lib v1.2.1
-(function(GLOBAL) {
+(function(GLOBAL) { //lib v1.2.2
     'use strict';
     /* Utility Libraries required for Standard operations
      * All credits for these codes belong to their respective creators, moderators and owners.
@@ -6590,10 +6589,22 @@
 
     //kbucket.js
     (function() {
+        const getRandomValues = function(buf) {
+            if (typeof require === 'function') {
+                var bytes = require('crypto').randomBytes(buf.length);
+                buf.set(bytes)
+                return buf;
+            } else if (GLOBAL.crypto && GLOBAL.crypto.getRandomValues)
+                return GLOBAL.crypto.getRandomValues(buf);
+            else
+                return null;
+        }
         // Kademlia DHT K-bucket implementation as a binary tree.
         // by 'Tristan Slominski' under 'MIT License'
-        GLOBAL.BuildKBucket = function BuildKBucket(options = {}) {
-            this.localNodeId = options.localNodeId || window.crypto.getRandomValues(new Uint8Array(20))
+        GLOBAL.BuildKBucket = function KBucket(options = {}) {
+            if (!(this instanceof KBucket))
+                return new KBucket(options);
+            this.localNodeId = options.localNodeId || getRandomValues(new Uint8Array(20))
             this.numberOfNodesPerKBucket = options.numberOfNodesPerKBucket || 20
             this.numberOfNodesToPing = options.numberOfNodesToPing || 3
             this.distance = options.distance || this.distance
