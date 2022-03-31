@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>FLO Standard Operators</title>
+    <script id="floGlobals">
+        /* Constants for FLO blockchain operations !!Make sure to add this at begining!! */
+        const floGlobals = {
+
+            //Required for all
+            blockchain: "FLO",
+
+            //Required for blockchain API operators
+            apiURL: {
+                FLO: ['https://livenet.flocha.in/', 'https://flosight.duckdns.org/'],
+                FLO_TEST: ['https://testnet-flosight.duckdns.org/', 'https://testnet.flocha.in/']
+            },
+            adminID: "FKAEdnPfjXLHSYwrXQu377ugN4tXU7VGdf",
+            sendAmt: 0.001,
+            fee: 0.0005,
+
+            //Required for Supernode operations
+            SNStorageID: "FNaN9McoBAEFUjkRmNQRYLmBF8SpS7Tgfk",
+            supernodes: {}, //each supnernode must be stored as floID : {uri:<uri>,pubKey:<publicKey>}
+
+            //for cloud apps
+            subAdmins: [],
+            application: "TEST_MODE",
+            appObjects: {},
+            generalData: {},
+            lastVC: {}
+        }
+    </script>
+    <script src="lib.js"></script>
+    <script src="floCrypto.js"></script>
+    <script src="floBlockchainAPI.js"></script>
+    <script src="compactIDB.js"></script>
+    <script src="floCloudAPI.js"></script>
+    <script src="floDapps.js"></script>
+    <script id="onLoadStartUp">
+        function onLoadStartUp() {
+
+            //floDapps.addStartUpFunction('Sample', Promised Function)
+            //floDapps.setAppObjectStores({sampleObs1:{}, sampleObs2:{options{autoIncrement:true, keyPath:'SampleKey'}, Indexes:{sampleIndex:{}}}})
+            //floDapps.setCustomPrivKeyInput( () => { FUNCTION BODY *must resolve private key* } )
+
+            floDapps.launchStartUp().then(result => {
+                console.log(result)
+                alert(`Welcome FLO_ID: ${myFloID}`)
+                //App functions....
+            }).catch(error => console.error(error))
+        }
+    </script>
+</head>
+
+<body onload="onLoadStartUp()">
+    TEST_MODE
+    (use console)
+</body>
+
+</html>
