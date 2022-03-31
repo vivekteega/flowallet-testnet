@@ -1,4 +1,4 @@
-(function(EXPORTS) { //floCrypto v2.3.0
+(function(EXPORTS) { //floCrypto v2.3.0a
     /* FLO Crypto Operators */
     'use strict';
     const floCrypto = EXPORTS;
@@ -203,7 +203,7 @@
     }
 
     //Check if the given Address is valid or not
-    floCrypto.validateAddr = function(inpAddr) {
+    floCrypto.validateFloID = floCrypto.validateAddr = function(inpAddr) {
         if (!inpAddr)
             return false;
         try {

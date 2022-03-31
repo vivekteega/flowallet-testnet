@@ -1,9 +1,9 @@
-(function(EXPORTS) { //floCloudAPI v2.2.0
+(function(EXPORTS) { //floCloudAPI v2.2.0a
     /* FLO Cloud operations to send/request application data*/
     'use strict';
     const floCloudAPI = EXPORTS;
 
-    var Kbucket;
+    var kBucket;
     const K_Bucket = floCloudAPI.K_Bucket = function(masterID, nodeList) {
 
         const decodeID = floID => {
@@ -102,7 +102,7 @@
         return new Promise((resolve, reject) => {
             try {
                 nodeList = nodeList || Object.keys(floGlobals.supernodes);
-                Kbucket = new K_Bucket(SNStorageID, nodeList);
+                kBucket = new K_Bucket(SNStorageID, nodeList);
                 resolve('Cloud init successful');
             } catch (error) {
                 reject(error);
@@ -110,8 +110,8 @@
         })
     }
 
-    Object.defineProperty(floCloudAPI, 'Kbucket', {
-        get: () => Kbucket
+    Object.defineProperty(floCloudAPI, 'kBucket', {
+        get: () => kBucket
     });
 
     const _inactive = new Set();
@@ -252,7 +252,8 @@
                 let randID = floCrypto.randString(5);
                 node.send(JSON.stringify(request));
                 node.onmessage = (evt) => {
-                    let d = e = null;
+                    let d = null,
+                        e = null;
                     try {
                         d = filterData(JSON.parse(evt.data));
                     } catch (error) {
@@ -314,7 +315,7 @@
                         break;
                     case "UPDATE":
                         if (dataSet[vc].message.diff)
-                            floGlobals.appObjects[objectName] = mergeDiff(floGlobals.appObjects[objectName], dataSet[vc].message.diff);
+                            floGlobals.appObjects[objectName] = diff.merge(floGlobals.appObjects[objectName], dataSet[vc].message.diff);
                 }
                 floGlobals.lastVC[objectName] = vc;
             }
