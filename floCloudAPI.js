@@ -917,4 +917,4 @@
     })();
 
 
-})('object' === typeof module ? module.exports : window.floCloudAPI = {})
+})('object' === typeof module ? module.exports : window.floCloudAPI = {});

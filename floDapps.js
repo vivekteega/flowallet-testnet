@@ -1,4 +1,4 @@
-(function(EXPORTS) { //floDapps v2.2.0
+(function(EXPORTS) { //floDapps v2.2.0a
     /* General functions for FLO Dapps*/
     //'use strict';
     const floDapps = EXPORTS;
@@ -146,16 +146,15 @@
         })
     });
 
-    function getCredentials() {
+    var keyInput = type => new Promise((resolve, reject) => {
+        let inputVal = prompt(`Enter ${type}: `)
+        if (inputVal === null)
+            reject(null)
+        else
+            resolve(inputVal)
+    });
 
-        const inputFn = getCredentials.privKeyInput ||
-            (type => new Promise((resolve, reject) => {
-                let inputVal = prompt(`Enter ${type}: `)
-                if (inputVal === null)
-                    reject(null)
-                else
-                    resolve(inputVal)
-            }));
+    function getCredentials() {
 
         const readSharesFromIDB = indexArr => new Promise((resolve, reject) => {
             var promises = []
@@ -195,7 +194,7 @@
                     .catch(error => reject(error))
             } else {
                 var privKey;
-                inputFn("PRIVATE_KEY").then(result => {
+                keyInput("PRIVATE_KEY").then(result => {
                     if (!result)
                         return reject("Empty Private Key")
                     var floID = floCrypto.getFloID(result)
@@ -229,7 +228,7 @@
             if (key.length == 52)
                 resolve(key)
             else {
-                inputFn("PIN/Password").then(pwd => {
+                keyInput("PIN/Password").then(pwd => {
                     try {
                         let privKey = Crypto.AES.decrypt(key, pwd);
                         resolve(privKey)
@@ -327,7 +326,7 @@
 
     floDapps.setCustomStartupLogger = fn => fn instanceof Function ? startUpLog = fn : false;
 
-    floDapps.setCustomPrivKeyInput = fn => fn instanceof Function ? customFn = fn : false;
+    floDapps.setCustomPrivKeyInput = fn => fn instanceof Function ? keyInput = fn : false;
 
     floDapps.setAppObjectStores = appObs => initIndexedDB.appObs = appObs;
 
@@ -600,4 +599,4 @@
                 .catch(error => reject(error))
         }).catch(error => reject(error))
     });
-})('object' === typeof module ? module.exports : window.floDapps = {})
+})('object' === typeof module ? module.exports : window.floDapps = {});

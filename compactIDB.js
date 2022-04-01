@@ -256,4 +256,4 @@
     }
 
 
-})(window.compactIDB = {})
+})(window.compactIDB = {});
