@@ -4,7 +4,7 @@
      * All credits for these codes belong to their respective creators, moderators and owners.
      * For more info (including license and terms of use), please visit respective source.
      */
-    GLOBAL.cryptocoin = floGlobals.blockchain;
+    GLOBAL.cryptocoin = floGlobals.blockchain || 'FLO';
 
     //Crypto.js
     (function() {
