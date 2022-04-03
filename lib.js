@@ -1,10 +1,10 @@
-(function(GLOBAL) { //lib v1.2.2
+(function(GLOBAL) { //lib v1.2.2a
     'use strict';
     /* Utility Libraries required for Standard operations
      * All credits for these codes belong to their respective creators, moderators and owners.
      * For more info (including license and terms of use), please visit respective source.
      */
-    GLOBAL.cryptocoin = floGlobals.blockchain || 'FLO';
+    GLOBAL.cryptocoin = (typeof floGlobals === 'undefined' ? null : floGlobals.blockchain) || 'FLO';
 
     //Crypto.js
     (function() {
