@@ -1,7 +1,46 @@
-(function(EXPORTS) { //floCloudAPI v2.2.0a
+(function(EXPORTS) { //floCloudAPI v2.3.0
     /* FLO Cloud operations to send/request application data*/
     'use strict';
     const floCloudAPI = EXPORTS;
+
+    const DEFAULT = {
+        SNStorageID: floGlobals.SNStorageID || "FNaN9McoBAEFUjkRmNQRYLmBF8SpS7Tgfk",
+        adminID: floGlobals.adminID,
+        application: floGlobals.application
+    };
+
+    Object.defineProperties(floCloudAPI, {
+        SNStorageID: {
+            get: () => DEFAULT.SNStorageID
+        },
+        adminID: {
+            get: () => DEFAULT.adminID
+        },
+        application: {
+            get: () => DEFAULT.application
+        }
+    });
+
+    var appObjects, generalData, lastVC;
+    Object.defineProperties(floGlobals, {
+        appObjects: {
+            get: () => appObjects,
+            set: obj => appObjects = obj
+        },
+        generalData: {
+            get: () => generalData,
+            set: data => generalData = data
+        },
+        lastVC: {
+            get: () => lastVC,
+            set: vc => lastVC = vc
+        }
+    });
+
+    var supernodes = {}; //each supnernode must be stored as floID : {uri:<uri>,pubKey:<publicKey>}
+    Object.defineProperty(floCloudAPI, 'nodes', {
+        get: () => JSON.parse(JSON.stringify(supernodes))
+    });
 
     var kBucket;
     const K_Bucket = floCloudAPI.K_Bucket = function(masterID, nodeList) {
@@ -98,11 +137,11 @@
         }
     }
 
-    floCloudAPI.init = function startCloudProcess(SNStorageID = floGlobals.SNStorageID, nodeList = null) {
+    floCloudAPI.init = function startCloudProcess(nodes) {
         return new Promise((resolve, reject) => {
             try {
-                nodeList = nodeList || Object.keys(floGlobals.supernodes);
-                kBucket = new K_Bucket(SNStorageID, nodeList);
+                supernodes = nodes;
+                kBucket = new K_Bucket(DEFAULT.SNStorageID, Object.keys(supernodes));
                 resolve('Cloud init successful');
             } catch (error) {
                 reject(error);
@@ -118,11 +157,11 @@
 
     function ws_connect(snID) {
         return new Promise((resolve, reject) => {
-            if (!(snID in floGlobals.supernodes))
+            if (!(snID in supernodes))
                 return reject(`${snID} is not a supernode`)
             if (_inactive.has(snID))
                 return reject(`${snID} is not active`)
-            var wsConn = new WebSocket("wss://" + floGlobals.supernodes[snID].uri + "/");
+            var wsConn = new WebSocket("wss://" + supernodes[snID].uri + "/");
             wsConn.onopen = evt => resolve(wsConn);
             wsConn.onerror = evt => {
                 _inactive.add(snID)
@@ -135,7 +174,7 @@
         return new Promise((resolve, reject) => {
             if (_inactive.size === kBucket.list.length)
                 return reject('Cloud offline');
-            if (!(snID in floGlobals.supernodes))
+            if (!(snID in supernodes))
                 snID = kBucket.closestNode(snID);
             ws_connect(snID)
                 .then(node => resolve(node))
@@ -155,7 +194,7 @@
         return new Promise((resolve, reject) => {
             if (_inactive.has(snID))
                 return reject(`${snID} is not active`);
-            let fetcher, sn_url = "https://" + floGlobals.supernodes[snID].uri;
+            let fetcher, sn_url = "https://" + supernodes[snID].uri;
             if (typeof data === "string")
                 fetcher = fetch(sn_url + "?" + data);
             else if (typeof data === "object" && data.method === "POST")
@@ -173,7 +212,7 @@
         return new Promise((resolve, reject) => {
             if (_inactive.size === kBucket.list.length)
                 return reject('Cloud offline');
-            if (!(snID in floGlobals.supernodes))
+            if (!(snID in supernodes))
                 snID = kBucket.closestNode(snID);
             fetch_API(snID, data)
                 .then(result => resolve(result))
@@ -289,8 +328,8 @@
 
     const filterKey = util.filterKey = function(type, options) {
         return type + (options.comment ? ':' + options.comment : '') +
-            '|' + (options.group || options.receiverID || floGlobals.adminID) +
-            '|' + (options.application || floGlobals.application);
+            '|' + (options.group || options.receiverID || DEFAULT.adminID) +
+            '|' + (options.application || DEFAULT.application);
     }
 
     const lastCommit = {};
@@ -298,7 +337,7 @@
         value: objName => JSON.parse(lastCommit[objName])
     });
     Object.defineProperty(lastCommit, 'set', {
-        value: objName => lastCommit[objName] = JSON.stringify(floGlobals.appObjects[objName])
+        value: objName => lastCommit[objName] = JSON.stringify(appObjects[objName])
     });
 
     function updateObject(objectName, dataSet) {
@@ -306,22 +345,22 @@
             console.log(dataSet)
             let vcList = Object.keys(dataSet).sort();
             for (let vc of vcList) {
-                if (vc < floGlobals.lastVC[objectName] || dataSet[vc].type !== objectName)
+                if (vc < lastVC[objectName] || dataSet[vc].type !== objectName)
                     continue;
                 switch (dataSet[vc].comment) {
                     case "RESET":
                         if (dataSet[vc].message.reset)
-                            floGlobals.appObjects[objectName] = dataSet[vc].message.reset;
+                            appObjects[objectName] = dataSet[vc].message.reset;
                         break;
                     case "UPDATE":
                         if (dataSet[vc].message.diff)
-                            floGlobals.appObjects[objectName] = diff.merge(floGlobals.appObjects[objectName], dataSet[vc].message.diff);
+                            appObjects[objectName] = diff.merge(appObjects[objectName], dataSet[vc].message.diff);
                 }
-                floGlobals.lastVC[objectName] = vc;
+                lastVC[objectName] = vc;
             }
             lastCommit.set(objectName);
-            compactIDB.writeData("appObjects", floGlobals.appObjects[objectName], objectName);
-            compactIDB.writeData("lastVC", floGlobals.lastVC[objectName], objectName);
+            compactIDB.writeData("appObjects", appObjects[objectName], objectName);
+            compactIDB.writeData("lastVC", lastVC[objectName], objectName);
         } catch (error) {
             console.error(error)
         }
@@ -330,15 +369,15 @@
     function storeGeneral(fk, dataSet) {
         try {
             console.log(dataSet)
-            if (typeof floGlobals.generalData[fk] !== "object")
-                floGlobals.generalData[fk] = {}
+            if (typeof generalData[fk] !== "object")
+                generalData[fk] = {}
             for (let vc in dataSet) {
-                floGlobals.generalData[fk][vc] = dataSet[vc];
-                if (dataSet[vc].log_time > floGlobals.lastVC[fk])
-                    floGlobals.lastVC[fk] = dataSet[vc].log_time;
+                generalData[fk][vc] = dataSet[vc];
+                if (dataSet[vc].log_time > lastVC[fk])
+                    lastVC[fk] = dataSet[vc].log_time;
             }
-            compactIDB.writeData("lastVC", floGlobals.lastVC[fk], fk)
-            compactIDB.writeData("generalData", floGlobals.generalData[fk], fk)
+            compactIDB.writeData("lastVC", lastVC[fk], fk)
+            compactIDB.writeData("generalData", generalData[fk], fk)
         } catch (error) {
             console.error(error)
         }
@@ -359,14 +398,14 @@
             let callback = options.callback instanceof Function ? options.callback : (d, e) => console.debug(d, e);
             var request = {
                 floID: myFloID,
-                application: options.application || floGlobals.application,
+                application: options.application || DEFAULT.application,
                 time: Date.now(),
                 status: true,
                 pubKey: myPubKey
             }
             let hashcontent = ["time", "application", "floID"].map(d => request[d]).join("|");
             request.sign = floCrypto.signData(hashcontent, myPrivKey);
-            liveRequest(options.refID || floGlobals.adminID, request, callback)
+            liveRequest(options.refID || DEFAULT.adminID, request, callback)
                 .then(result => resolve(result))
                 .catch(error => reject(error))
         })
@@ -380,10 +419,10 @@
             let callback = options.callback instanceof Function ? options.callback : (d, e) => console.debug(d, e);
             let request = {
                 status: false,
-                application: options.application || floGlobals.application,
+                application: options.application || DEFAULT.application,
                 trackList: trackList
             }
-            liveRequest(options.refID || floGlobals.adminID, request, callback)
+            liveRequest(options.refID || DEFAULT.adminID, request, callback)
                 .then(result => resolve(result))
                 .catch(error => reject(error))
         })
@@ -394,11 +433,11 @@
         return new Promise((resolve, reject) => {
             var data = {
                 senderID: myFloID,
-                receiverID: options.receiverID || floGlobals.adminID,
+                receiverID: options.receiverID || DEFAULT.adminID,
                 pubKey: myPubKey,
                 message: encodeMessage(message),
                 time: Date.now(),
-                application: options.application || floGlobals.application,
+                application: options.application || DEFAULT.application,
                 type: type,
                 comment: options.comment || ""
             }
@@ -415,9 +454,9 @@
     const requestApplicationData = floCloudAPI.requestApplicationData = function(type, options = {}) {
         return new Promise((resolve, reject) => {
             var request = {
-                receiverID: options.receiverID || floGlobals.adminID,
+                receiverID: options.receiverID || DEFAULT.adminID,
                 senderID: options.senderID || undefined,
-                application: options.application || floGlobals.application,
+                application: options.application || DEFAULT.application,
                 type: type,
                 comment: options.comment || undefined,
                 lowerVectorClock: options.lowerVectorClock || undefined,
@@ -451,7 +490,7 @@
                 pubKey: myPubKey,
                 time: Date.now(),
                 delete: (Array.isArray(vectorClocks) ? vectorClocks : [vectorClocks]),
-                application: options.application || floGlobals.application
+                application: options.application || DEFAULT.application
             }
             let hashcontent = ["time", "application", "delete"]
                 .map(d => delreq[d]).join("|")
@@ -517,7 +556,7 @@
             if (!floGlobals.subAdmins.includes(myFloID))
                 return reject("Only subAdmins can tag data")
             var request = {
-                receiverID: options.receiverID || floGlobals.adminID,
+                receiverID: options.receiverID || DEFAULT.adminID,
                 requestorID: myFloID,
                 pubKey: myPubKey,
                 time: Date.now(),
@@ -536,7 +575,7 @@
     floCloudAPI.noteApplicationData = function(vectorClock, note, options = {}) {
         return new Promise((resolve, reject) => {
             var request = {
-                receiverID: options.receiverID || floGlobals.adminID,
+                receiverID: options.receiverID || DEFAULT.adminID,
                 requestorID: myFloID,
                 pubKey: myPubKey,
                 time: Date.now(),
@@ -569,8 +608,8 @@
     floCloudAPI.requestGeneralData = function(type, options = {}) {
         return new Promise((resolve, reject) => {
             var fk = filterKey(type, options)
-            floGlobals.lastVC[fk] = parseInt(floGlobals.lastVC[fk]) || 0;
-            options.afterTime = options.afterTime || floGlobals.lastVC[fk];
+            lastVC[fk] = parseInt(lastVC[fk]) || 0;
+            options.afterTime = options.afterTime || lastVC[fk];
             if (options.callback instanceof Function) {
                 let new_options = Object.create(options)
                 new_options.callback = (d, e) => {
@@ -592,7 +631,7 @@
     //request an object data from supernode cloud
     floCloudAPI.requestObjectData = function(objectName, options = {}) {
         return new Promise((resolve, reject) => {
-            options.lowerVectorClock = options.lowerVectorClock || floGlobals.lastVC[objectName] + 1;
+            options.lowerVectorClock = options.lowerVectorClock || lastVC[objectName] + 1;
             options.senderID = [false, null].includes(options.senderID) ? null :
                 options.senderID || floGlobals.subAdmins;
             options.mostRecent = true;
@@ -609,7 +648,7 @@
             requestApplicationData(objectName, options).then(dataSet => {
                 updateObject(objectName, objectifier(dataSet));
                 delete options.comment;
-                options.lowerVectorClock = floGlobals.lastVC[objectName] + 1;
+                options.lowerVectorClock = lastVC[objectName] + 1;
                 delete options.mostRecent;
                 if (callback) {
                     let new_options = Object.create(options);
@@ -620,7 +659,7 @@
                 } else {
                     requestApplicationData(objectName, options).then(dataSet => {
                         updateObject(objectName, objectifier(dataSet))
-                        resolve(floGlobals.appObjects[objectName])
+                        resolve(appObjects[objectName])
                     }).catch(error => reject(error))
                 }
             }).catch(error => reject(error))
@@ -644,7 +683,7 @@
     floCloudAPI.resetObjectData = function(objectName, options = {}) {
         return new Promise((resolve, reject) => {
             let message = {
-                reset: floGlobals.appObjects[objectName]
+                reset: appObjects[objectName]
             }
             options.comment = 'RESET';
             sendApplicationData(message, objectName, options).then(result => {
@@ -658,7 +697,7 @@
     floCloudAPI.updateObjectData = function(objectName, options = {}) {
         return new Promise((resolve, reject) => {
             let message = {
-                diff: diff.find(lastCommit.get(objectName), floGlobals.appObjects[
+                diff: diff.find(lastCommit.get(objectName), appObjects[
                     objectName])
             }
             options.comment = 'UPDATE';

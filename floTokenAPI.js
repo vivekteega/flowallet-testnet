@@ -1,12 +1,29 @@
-(function(EXPORTS) { //floTokenAPI v1.0.1
+(function(EXPORTS) { //floTokenAPI v1.0.2
     /* Token Operator to send/receive tokens via blockchain using API calls*/
     'use strict';
     const tokenAPI = EXPORTS;
 
+    const DEFAULT = {
+        apiURL: floGlobals.tokenURL || "https://ranchimallflo.duckdns.org/",
+        currency: "rupee"
+    }
+
+    Object.defineProperties(tokenAPI, {
+        URL: {
+            get: () => DEFAULT.apiURL
+        },
+        currency: {
+            get: () => DEFAULT.currency,
+            set: currency => DEFAULT.currency = currency
+        }
+    });
+
+    if (floGlobals.currency) tokenAPI.currency = floGlobals.currency;
+
     const fetch_api = tokenAPI.fetch = function(apicall) {
         return new Promise((resolve, reject) => {
-            console.log(floGlobals.tokenURL + apicall);
-            fetch(floGlobals.tokenURL + apicall).then(response => {
+            console.log(DEFAULT.apiURL + apicall);
+            fetch(DEFAULT.apiURL + apicall).then(response => {
                 if (response.ok)
                     response.json().then(data => resolve(data));
                 else
@@ -15,7 +32,7 @@
         })
     }
 
-    const getBalance = tokenAPI.getBalance = function(floID, token = floGlobals.currency) {
+    const getBalance = tokenAPI.getBalance = function(floID, token = DEFAULT.currency) {
         return new Promise((resolve, reject) => {
             fetch_api(`api/v1.0/getFloAddressBalance?token=${token}&floAddress=${floID}`)
                 .then(result => resolve(result.balance || 0))
@@ -38,7 +55,7 @@
         })
     }
 
-    tokenAPI.sendToken = function(privKey, amount, receiverID, message = "", token = floGlobals.currency, options = {}) {
+    tokenAPI.sendToken = function(privKey, amount, receiverID, message = "", token = DEFAULT.currency, options = {}) {
         return new Promise((resolve, reject) => {
             let senderID = floCrypto.getFloID(privKey);
             if (typeof amount !== "number" || amount <= 0)

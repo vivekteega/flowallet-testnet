@@ -1,9 +1,52 @@
-(function(EXPORTS) { //floBlockchainAPI v2.3.1
+(function(EXPORTS) { //floBlockchainAPI v2.3.2
     /* FLO Blockchain Operator to send/receive data from blockchain using API calls*/
     'use strict';
     const floBlockchainAPI = EXPORTS;
 
-    const serverList = floGlobals.apiURL[floGlobals.blockchain].slice(0);
+    const DEFAULT = {
+        blockchain: floGlobals.blockchain,
+        apiURL: {
+            FLO: ['https://livenet.flocha.in/', 'https://flosight.duckdns.org/'],
+            FLO_TEST: ['https://testnet-flosight.duckdns.org', 'https://testnet.flocha.in/']
+        },
+        sendAmt: 0.001,
+        fee: 0.0005,
+        receiverID: floGlobals.adminID
+    };
+
+    Object.defineProperties(floBlockchainAPI, {
+        sendAmt: {
+            get: () => DEFAULT.sendAmt,
+            set: amt => !isNaN(amt) ? DEFAULT.sendAmt = amt : null
+        },
+        fee: {
+            get: () => DEFAULT.fee,
+            set: fee => !isNaN(fee) ? DEFAULT.fee = fee : null
+        },
+        defaultReceiver: {
+            get: () => DEFAULT.receiverID,
+            set: floID => DEFAULT.receiverID = floID
+        },
+        blockchain: {
+            get: () => DEFAULT.blockchain
+        }
+    });
+
+    if (floGlobals.sendAmt) floBlockchainAPI.sendAmt = floGlobals.sendAmt;
+    if (floGlobals.fee) floBlockchainAPI.fee = floGlobals.fee;
+
+    Object.defineProperties(floGlobals, {
+        sendAmt: {
+            get: () => DEFAULT.sendAmt,
+            set: amt => !isNaN(amt) ? DEFAULT.sendAmt = amt : null
+        },
+        fee: {
+            get: () => DEFAULT.fee,
+            set: fee => !isNaN(fee) ? DEFAULT.fee = fee : null
+        }
+    });
+
+    const serverList = Array.from(floGlobals.apiURL && floGlobals.apiURL[DEFAULT.blockchain] ? floGlobals.apiURL[DEFAULT.blockchain] : DEFAULT.apiURL[DEFAULT.blockchain]);
     var curPos = floCrypto.randInt(0, serverList - 1);
 
     function fetch_retry(apicall, rm_flosight) {
@@ -40,8 +83,13 @@
         })
     }
 
-    Object.defineProperty(floBlockchainAPI, 'current_server', {
-        get: () => serverList[curPos]
+    Object.defineProperties(floBlockchainAPI, {
+        serverList: {
+            get: () => Array.from(serverList)
+        },
+        current_server: {
+            get: () => serverList[curPos]
+        }
     });
 
     //Promised function to get data from API
@@ -95,7 +143,7 @@
                         //form/construct the transaction data
                         var trx = bitjs.transaction();
                         var utxoAmt = 0.0;
-                        var fee = floGlobals.fee;
+                        var fee = DEFAULT.fee;
                         for (var i = utxos.length - 1;
                             (i >= 0) && (utxoAmt < sendAmt + fee); i--) {
                             //use only utxos with confirmations (strict_utxo mode)
@@ -126,9 +174,9 @@
     }
 
     //Write Data into blockchain
-    floBlockchainAPI.writeData = function(senderAddr, data, privKey, receiverAddr = floGlobals.adminID, options = {}) {
+    floBlockchainAPI.writeData = function(senderAddr, data, privKey, receiverAddr = DEFAULT.receiverID, options = {}) {
         let strict_utxo = options.strict_utxo === false ? false : true,
-            sendAmt = isNaN(options.sendAmt) ? floGlobals.sendAmt : options.sendAmt;
+            sendAmt = isNaN(options.sendAmt) ? DEFAULT.sendAmt : options.sendAmt;
         return new Promise((resolve, reject) => {
             if (typeof data != "string")
                 data = JSON.stringify(data);
@@ -149,7 +197,7 @@
                 return reject("Invalid FLO_Data: only printable ASCII characters are allowed");
             var trx = bitjs.transaction();
             var utxoAmt = 0.0;
-            var fee = floGlobals.fee;
+            var fee = DEFAULT.fee;
             promisedAPI(`api/addr/${floID}/utxo`).then(utxos => {
                 for (var i = utxos.length - 1; i >= 0; i--)
                     if (utxos[i].confirmations) {
@@ -173,13 +221,13 @@
      * @param  {boolean} preserveRatio (optional) preserve ratio or equal contribution
      * @return {Promise}
      */
-    floBlockchainAPI.writeDataMultiple = function(senderPrivKeys, data, receivers = [floGlobals.adminID], preserveRatio = true) {
+    floBlockchainAPI.writeDataMultiple = function(senderPrivKeys, data, receivers = [DEFAULT.receiverID], preserveRatio = true) {
         return new Promise((resolve, reject) => {
             if (!Array.isArray(senderPrivKeys))
                 return reject("Invalid senderPrivKeys: SenderPrivKeys must be Array");
             if (!preserveRatio) {
                 let tmp = {};
-                let amount = (floGlobals.sendAmt * receivers.length) / senderPrivKeys.length;
+                let amount = (DEFAULT.sendAmt * receivers.length) / senderPrivKeys.length;
                 senderPrivKeys.forEach(key => tmp[key] = amount);
                 senderPrivKeys = tmp;
             }
@@ -187,7 +235,7 @@
                 return reject("Invalid receivers: Receivers must be Array");
             else {
                 let tmp = {};
-                let amount = floGlobals.sendAmt;
+                let amount = DEFAULT.sendAmt;
                 receivers.forEach(floID => tmp[floID] = amount);
                 receivers = tmp
             }
@@ -290,7 +338,7 @@
                 promises.push(getBalance(floID));
             Promise.all(promises).then(results => {
                 let totalBalance = 0,
-                    totalFee = floGlobals.fee,
+                    totalFee = DEFAULT.fee,
                     balance = {};
                 //Divide fee among sender if not for preserveRatio
                 if (!preserveRatio)

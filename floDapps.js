@@ -1,4 +1,4 @@
-(function(EXPORTS) { //floDapps v2.2.0a
+(function(EXPORTS) { //floDapps v2.2.1
     /* General functions for FLO Dapps*/
     //'use strict';
     const floDapps = EXPORTS;
@@ -72,8 +72,8 @@
 
     startUpFunctions.push(function readSupernodeListFromAPI() {
         return new Promise((resolve, reject) => {
-            compactIDB.readData("lastTx", floGlobals.SNStorageID, "floDapps").then(lastTx => {
-                floBlockchainAPI.readData(floGlobals.SNStorageID, {
+            compactIDB.readData("lastTx", floCloudAPI.SNStorageID, "floDapps").then(lastTx => {
+                floBlockchainAPI.readData(floCloudAPI.SNStorageID, {
                     ignoreOld: lastTx,
                     sentOnly: true,
                     pattern: "SuperNodeStorage"
@@ -85,10 +85,9 @@
                         for (sn in content.newNodes)
                             compactIDB.writeData("supernodes", content.newNodes[sn], sn, "floDapps");
                     }
-                    compactIDB.writeData("lastTx", result.totalTxs, floGlobals.SNStorageID, "floDapps");
+                    compactIDB.writeData("lastTx", result.totalTxs, floCloudAPI.SNStorageID, "floDapps");
                     compactIDB.readAllData("supernodes", "floDapps").then(result => {
-                        floGlobals.supernodes = result;
-                        floCloudAPI.init()
+                        floCloudAPI.init(result)
                             .then(result => resolve("Loaded Supernode list\n" + result))
                             .catch(error => reject(error))
                     })
