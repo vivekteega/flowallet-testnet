@@ -1,4 +1,4 @@
-(function(EXPORTS) { //floBlockchainAPI v2.3.0
+(function(EXPORTS) { //floBlockchainAPI v2.3.1
     /* FLO Blockchain Operator to send/receive data from blockchain using API calls*/
     'use strict';
     const floBlockchainAPI = EXPORTS;
@@ -45,7 +45,7 @@
     });
 
     //Promised function to get data from API
-    const promisedAPI = floBlockchainAPI.promisedAPI = function(apicall) {
+    const promisedAPI = floBlockchainAPI.promisedAPI = floBlockchainAPI.fetch = function(apicall) {
         return new Promise((resolve, reject) => {
             //console.log(apicall);
             fetch_api(apicall)
@@ -126,11 +126,13 @@
     }
 
     //Write Data into blockchain
-    floBlockchainAPI.writeData = function(senderAddr, data, privKey, receiverAddr = floGlobals.adminID, strict_utxo = true) {
+    floBlockchainAPI.writeData = function(senderAddr, data, privKey, receiverAddr = floGlobals.adminID, options = {}) {
+        let strict_utxo = options.strict_utxo === false ? false : true,
+            sendAmt = isNaN(options.sendAmt) ? floGlobals.sendAmt : options.sendAmt;
         return new Promise((resolve, reject) => {
             if (typeof data != "string")
                 data = JSON.stringify(data);
-            sendTx(senderAddr, receiverAddr, floGlobals.sendAmt, privKey, data, strict_utxo)
+            sendTx(senderAddr, receiverAddr, sendAmt, privKey, data, strict_utxo)
                 .then(txid => resolve(txid))
                 .catch(error => reject(error));
         });
