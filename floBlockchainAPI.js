@@ -1,4 +1,4 @@
-(function(EXPORTS) { //floBlockchainAPI v2.3.2
+(function(EXPORTS) { //floBlockchainAPI v2.3.2a
     /* FLO Blockchain Operator to send/receive data from blockchain using API calls*/
     'use strict';
     const floBlockchainAPI = EXPORTS;
@@ -125,48 +125,52 @@
             else if (typeof sendAmt !== 'number' || sendAmt <= 0)
                 return reject(`Invalid sendAmt : ${sendAmt}`);
 
-            //get unconfirmed tx list
-            promisedAPI(`api/addr/${senderAddr}`).then(result => {
-                readTxs(senderAddr, 0, result.unconfirmedTxApperances).then(result => {
-                    let unconfirmedSpent = {};
-                    for (let tx of result.items)
-                        if (tx.confirmations == 0)
-                            for (let vin of tx.vin)
-                                if (vin.addr === senderAddr) {
-                                    if (Array.isArray(unconfirmedSpent[vin.txid]))
-                                        unconfirmedSpent[vin.txid].push(vin.vout);
-                                    else
-                                        unconfirmedSpent[vin.txid] = [vin.vout];
-                                }
-                    //get utxos list
-                    promisedAPI(`api/addr/${senderAddr}/utxo`).then(utxos => {
-                        //form/construct the transaction data
-                        var trx = bitjs.transaction();
-                        var utxoAmt = 0.0;
-                        var fee = DEFAULT.fee;
-                        for (var i = utxos.length - 1;
-                            (i >= 0) && (utxoAmt < sendAmt + fee); i--) {
-                            //use only utxos with confirmations (strict_utxo mode)
-                            if (utxos[i].confirmations || !strict_utxo) {
-                                if (utxos[i].txid in unconfirmedSpent && unconfirmedSpent[utxos[i].txid].includes(utxos[i].vout))
-                                    continue; //A transaction has already used the utxo, but is unconfirmed.
-                                trx.addinput(utxos[i].txid, utxos[i].vout, utxos[i].scriptPubKey);
-                                utxoAmt += utxos[i].amount;
-                            };
-                        }
-                        if (utxoAmt < sendAmt + fee)
-                            reject("Insufficient FLO balance!");
-                        else {
-                            trx.addoutput(receiverAddr, sendAmt);
-                            var change = utxoAmt - sendAmt - fee;
-                            if (change > 0)
-                                trx.addoutput(senderAddr, change);
-                            trx.addflodata(floData.replace(/\n/g, ' '));
-                            var signedTxHash = trx.sign(privKey, 1);
-                            broadcastTx(signedTxHash)
-                                .then(txid => resolve(txid))
-                                .catch(error => reject(error))
-                        }
+            getBalance(senderAddr).then(balance => {
+                var fee = DEFAULT.fee;
+                if (balance < sendAmt + fee)
+                    return reject("Insufficient FLO balance!");
+                //get unconfirmed tx list
+                promisedAPI(`api/addr/${senderAddr}`).then(result => {
+                    readTxs(senderAddr, 0, result.unconfirmedTxApperances).then(result => {
+                        let unconfirmedSpent = {};
+                        for (let tx of result.items)
+                            if (tx.confirmations == 0)
+                                for (let vin of tx.vin)
+                                    if (vin.addr === senderAddr) {
+                                        if (Array.isArray(unconfirmedSpent[vin.txid]))
+                                            unconfirmedSpent[vin.txid].push(vin.vout);
+                                        else
+                                            unconfirmedSpent[vin.txid] = [vin.vout];
+                                    }
+                        //get utxos list
+                        promisedAPI(`api/addr/${senderAddr}/utxo`).then(utxos => {
+                            //form/construct the transaction data
+                            var trx = bitjs.transaction();
+                            var utxoAmt = 0.0;
+                            for (var i = utxos.length - 1;
+                                (i >= 0) && (utxoAmt < sendAmt + fee); i--) {
+                                //use only utxos with confirmations (strict_utxo mode)
+                                if (utxos[i].confirmations || !strict_utxo) {
+                                    if (utxos[i].txid in unconfirmedSpent && unconfirmedSpent[utxos[i].txid].includes(utxos[i].vout))
+                                        continue; //A transaction has already used the utxo, but is unconfirmed.
+                                    trx.addinput(utxos[i].txid, utxos[i].vout, utxos[i].scriptPubKey);
+                                    utxoAmt += utxos[i].amount;
+                                };
+                            }
+                            if (utxoAmt < sendAmt + fee)
+                                reject("Insufficient FLO: Some UTXOs are unconfirmed");
+                            else {
+                                trx.addoutput(receiverAddr, sendAmt);
+                                var change = utxoAmt - sendAmt - fee;
+                                if (change > 0)
+                                    trx.addoutput(senderAddr, change);
+                                trx.addflodata(floData.replace(/\n/g, ' '));
+                                var signedTxHash = trx.sign(privKey, 1);
+                                broadcastTx(signedTxHash)
+                                    .then(txid => resolve(txid))
+                                    .catch(error => reject(error))
+                            }
+                        }).catch(error => reject(error))
                     }).catch(error => reject(error))
                 }).catch(error => reject(error))
             }).catch(error => reject(error))
