@@ -1,4 +1,4 @@
-(function(EXPORTS) { //floTokenAPI v1.0.2
+(function(EXPORTS) { //floTokenAPI v1.0.3
     /* Token Operator to send/receive tokens via blockchain using API calls*/
     'use strict';
     const tokenAPI = EXPORTS;
@@ -68,6 +68,28 @@
                     .catch(error => reject(error))
             }).catch(error => reject(error))
         });
+    }
+
+    tokenAPI.getAllTxs = function(floID, token = DEFAULT.currency) {
+        return new Promise((resolve, reject) => {
+            fetch_api(`api/v1.0/getFloAddressTransactions?token=${token}&floAddress=${floID}`)
+                .then(result => resolve(result))
+                .catch(error => reject(error))
+        })
+    }
+
+    const util = tokenAPI.util = {};
+
+    util.parseTxData = function(txData) {
+        let parsedData = {};
+        for (let p in txData.parsedFloData)
+            parsedData[p] = txData.parsedFloData[p];
+        parsedData.sender = txData.transactionDetails.vin[0].addr;
+        for (let vout of txData.transactionDetails.vout)
+            if (vout.scriptPubKey.addresses[0] !== parsedData.sender)
+                parsedData.receiver = vout.scriptPubKey.addresses[0];
+        parsedData.time = txData.transactionDetails.time;
+        return parsedData;
     }
 
 })('object' === typeof module ? module.exports : window.floTokenAPI = {});
