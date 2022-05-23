@@ -1,4 +1,4 @@
-(function(EXPORTS) { //floBlockchainAPI v2.3.2a
+(function(EXPORTS) { //floBlockchainAPI v2.3.3
     /* FLO Blockchain Operator to send/receive data from blockchain using API calls*/
     'use strict';
     const floBlockchainAPI = EXPORTS;
@@ -46,7 +46,9 @@
         }
     });
 
-    const serverList = Array.from(floGlobals.apiURL && floGlobals.apiURL[DEFAULT.blockchain] ? floGlobals.apiURL[DEFAULT.blockchain] : DEFAULT.apiURL[DEFAULT.blockchain]);
+    const allServerList = new Set(floGlobals.apiURL && floGlobals.apiURL[DEFAULT.blockchain] ? floGlobals.apiURL[DEFAULT.blockchain] : DEFAULT.apiURL[DEFAULT.blockchain]);
+
+    var serverList = Array.from(allServerList);
     var curPos = floCrypto.randInt(0, serverList - 1);
 
     function fetch_retry(apicall, rm_flosight) {
@@ -54,17 +56,24 @@
             let i = serverList.indexOf(rm_flosight)
             if (i != -1) serverList.splice(i, 1);
             curPos = floCrypto.randInt(0, serverList.length - 1);
-            fetch_api(apicall)
+            fetch_api(apicall, false)
                 .then(result => resolve(result))
                 .catch(error => reject(error));
         })
     }
 
-    function fetch_api(apicall) {
+    function fetch_api(apicall, ic = true) {
         return new Promise((resolve, reject) => {
-            if (serverList.length === 0)
-                reject("No floSight server working");
-            else {
+            if (serverList.length === 0) {
+                if (ic) {
+                    serverList = Array.from(allServerList);
+                    curPos = floCrypto.randInt(0, serverList.length - 1);
+                    fetch_api(apicall, false)
+                        .then(result => resolve(result))
+                        .catch(error => reject(error));
+                } else
+                    reject("No floSight server working");
+            } else {
                 let flosight = serverList[curPos];
                 fetch(flosight + apicall).then(response => {
                     if (response.ok)
