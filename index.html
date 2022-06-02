@@ -93,7 +93,7 @@
                             Generate FLO ID
                         </button>
                         <button id="retrieve_addr_btn" class="button primary-action interact"
-                            onclick="showPopup('retrieve_flo_id_popup')">
+                            onclick="openPopup('retrieve_flo_id_popup')">
                             <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
                                 width="24px" fill="#000000">
                                 <path d="M0 0h24v24H0V0z" fill="none" />
@@ -172,7 +172,7 @@
                         </div>
                     </section>
                 </div>
-                <button id="add_address_button" class="button interact fab" onclick="showPopup('add_address_popup')">
+                <button id="add_address_button" class="button interact fab" onclick="openPopup('add_address_popup')">
                     <svg class="icon margin-right-0-5" xmlns="http://www.w3.org/2000/svg" height="24px"
                         viewBox="0 0 24 24" width="24px" fill="#000000">
                         <path d="M0 0h24v24H0V0z" fill="none" />
@@ -328,7 +328,7 @@
                         <button class="button button--primary hide" id="fix_invalid_button"
                             onclick="removeInvalid()">Fix</button>
                         <button class="button button--primary cta" id="sendBtn" type="submit"
-                            onclick="showPopup('get_private_key_popup')" disabled>Send</button>
+                            onclick="openPopup('get_private_key_popup')" disabled>Send</button>
                     </div>
                 </sm-form>
             </div>
@@ -416,7 +416,7 @@
     <sm-popup id="add_address_popup">
         <header slot="header" class="popup__header">
             <div class="flex align-center">
-                <button class="popup__header__close" onclick="hidePopup()">
+                <button class="popup__header__close" onclick="closePopup()">
                     <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
                         fill="#000000">
                         <path d="M0 0h24v24H0V0z" fill="none" />
@@ -438,7 +438,7 @@
     <sm-popup id="edit_saved_popup">
         <header slot="header" class="popup__header">
             <div class="flex align-center">
-                <button class="popup__header__close" onclick="hidePopup()">
+                <button class="popup__header__close" onclick="closePopup()">
                     <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
                         fill="#000000">
                         <path d="M0 0h24v24H0V0z" fill="none" />
@@ -472,7 +472,7 @@
     <sm-popup id="create_flo_id_popup">
         <header slot="header" class="popup__header">
             <div class="flex align-center">
-                <button class="popup__header__close" onclick="hidePopup()">
+                <button class="popup__header__close" onclick="closePopup()">
                     <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
                         fill="#000000">
                         <path d="M0 0h24v24H0V0z" fill="none" />
@@ -499,7 +499,7 @@
     <sm-popup id="retrieve_flo_id_popup">
         <header slot="header" class="popup__header">
             <div class="flex align-center">
-                <button class="popup__header__close" onclick="hidePopup()">
+                <button class="popup__header__close" onclick="closePopup()">
                     <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
                         fill="#000000">
                         <path d="M0 0h24v24H0V0z" fill="none" />
@@ -546,7 +546,7 @@
     <sm-popup id="saved_ids_popup">
         <header slot="header" class="popup__header">
             <div class="grid gap-1">
-                <button class="popup__header__close justify-self-start" onclick="hidePopup()">
+                <button class="popup__header__close justify-self-start" onclick="closePopup()">
                     <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
                         fill="#000000">
                         <path d="M0 0h24v24H0V0z" fill="none" />
@@ -567,7 +567,7 @@
     </sm-popup>
     <sm-popup id="get_private_key_popup">
         <header slot="header" class="popup__header">
-            <button class="popup__header__close justify-self-start" onclick="hidePopup()">
+            <button class="popup__header__close justify-self-start" onclick="closePopup()">
                 <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
                     fill="#000000">
                     <path d="M0 0h24v24H0V0z" fill="none" />
@@ -753,7 +753,7 @@
 
         let zIndex = 10
         // function required for popups or modals to appear
-        function showPopup(popupId, pinned) {
+        function openPopup(popupId, pinned) {
             zIndex++
             getRef(popupId).setAttribute('style', `z-index: ${zIndex}`)
             getRef(popupId).show({ pinned })
@@ -761,7 +761,7 @@
         }
 
         // hides the popup or modal
-        function hidePopup() {
+        function closePopup() {
             if (popupStack.peek() === undefined)
                 return;
             popupStack.peek().popup.hide()
@@ -806,7 +806,7 @@
         const getConfirmation = (title, options = {}) => {
             return new Promise(resolve => {
                 const { message, cancelText = 'Cancel', confirmText = 'OK' } = options
-                showPopup('confirmation_popup', true)
+                openPopup('confirmation_popup', true)
                 getRef('confirm_title').textContent = title;
                 getRef('confirm_message').textContent = message;
                 let cancelButton = getRef('confirmation_popup').children[2].children[0],
@@ -814,11 +814,11 @@
                 submitButton.textContent = confirmText
                 cancelButton.textContent = cancelText
                 submitButton.onclick = () => {
-                    hidePopup()
+                    closePopup()
                     resolve(true);
                 }
                 cancelButton.onclick = () => {
-                    hidePopup()
+                    closePopup()
                     resolve(false);
                 }
             })
@@ -894,7 +894,7 @@
             document.querySelectorAll('sm-input[data-private-key]').forEach(input => input.customValidation = floCrypto.getPubKeyHex)
             document.addEventListener('keyup', (e) => {
                 if (e.key === 'Escape') {
-                    hidePopup()
+                    closePopup()
                 }
             })
             document.addEventListener('copy', () => {
@@ -1334,7 +1334,7 @@
                 const target = e.target.closest('.saved-id');
                 getRef('edit_saved_id').setAttribute('value', target.dataset.floId)
                 getRef('newAddrLabel').value = target.dataset.name
-                showPopup('edit_saved_popup')
+                openPopup('edit_saved_popup')
             } else if (e.target.closest('.copy-saved-id')) {
                 const target = e.target.closest('.saved-id');
                 navigator.clipboard.writeText(target.dataset.floId)
@@ -1353,7 +1353,7 @@
             const target = e.target.closest('.saved-id');
             getRef(`${openSavedIdPopupFor === 'sender' ? 'getBal_addr' : 'receiver'}`).value = target.dataset.floId
             getRef(`${openSavedIdPopupFor === 'sender' ? 'getBal_addr' : 'receiver'}`).focusIn()
-            hidePopup()
+            closePopup()
         })
 
         getRef('filter_selector').addEventListener('change', async e => {
@@ -1414,13 +1414,13 @@
                 });
             getRef('created_flo_id').innerHTML = '';
             getRef('created_flo_id').append(card);
-            showPopup('create_flo_id_popup');
+            openPopup('create_flo_id_popup');
         });
 
         let openSavedIdPopupFor = null;
         function showFloIdPicker(type) {
             openSavedIdPopupFor = type;
-            showPopup('saved_ids_popup');
+            openPopup('saved_ids_popup');
         }
 
         // Create array of objects from object of objects
@@ -1483,7 +1483,7 @@
                 name = 'Unknown'
             compactIDB.addData('labels', name, floID).then((resolve) => {
                 insertElementAlphabetically(name, render.savedIdCard(floID, name))
-                hidePopup()
+                closePopup()
             }).catch((error) => {
                 notify('FLO ID already saved', 'error');
             })
@@ -1535,7 +1535,7 @@
                     potentialTarget.remove();
                     insertElementAlphabetically(name, clone)
                 }
-                hidePopup()
+                closePopup()
             }).catch((error) => {
                 console.error(error);
             })
@@ -1550,7 +1550,7 @@
                     if (toDelete)
                         toDelete.remove();
                     compactIDB.removeData('labels', getRef('edit_saved_id').value);
-                    hidePopup()
+                    closePopup()
                 }
             })
         }
