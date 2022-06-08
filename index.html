@@ -629,10 +629,7 @@
             </svg>
             <h3 id="transaction_result__title"></h3>
             <p id="transaction_result__description"></p>
-            <div class="grid" style="margin-top: 1.5rem;">
-                <span style="font-size: 0.8rem;">Transaction ID</span>
-                <sm-copy id="transactionId"></sm-copy>
-            </div>
+            <a id="transaction_link" style="margin-top: 1.5rem;" target="_blank">See transaction on blockchain</a>
         </div>
     </sm-popup>
     <template id="saved_id_template">
@@ -1589,14 +1586,14 @@
         function showTransactionResult(status, result) {
             getRef('transaction_result').className = status;
             if (status === 'success') {
-                getRef('transactionId').value = result
-                getRef('transactionId').parentNode.classList.remove('hide')
+                getRef('transaction_link').href = `https://flosight.duckdns.org/tx/${result}`
+                getRef('transaction_link').parentNode.classList.remove('hide')
                 getRef('transaction_result__title').textContent = 'Transaction request sent'
                 getRef('transaction_result__description').textContent = 'This might take upto 30 mins to complete and reflect on blockchain.'
             } else {
                 getRef('transaction_result__title').textContent = 'Transaction failed'
                 getRef('transaction_result__description').textContent = result
-                getRef('transactionId').parentNode.classList.add('hide')
+                getRef('transaction_link').parentNode.classList.add('hide')
             }
             getRef('get_private_key').classList.add('hide')
             getRef('transaction_result').classList.remove('hide')
