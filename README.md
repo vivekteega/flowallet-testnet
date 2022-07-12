@@ -455,9 +455,6 @@ Note: If passed as Array, then ratio of the balance of the senders are preserved
 2. dbName - Name of the database (optional, uses defaultDB if not specified)
 * Resolves: data (Object) | Rejects: error
 
-## FLO Supernode module
-This module contains functions that interact with the supernode to send and retrive data in the backend. Use floClouldAPI operations to send and receive data for application.
-
 ## FLO Cloud API operations
 `floCloudAPI` operations can interact with floSupernode cloud to send and retrieve data for applications. floCloudAPI uses floSupernode module for backend interactions. FLO Cloud API functions are promisified and resolves the data or status.
 
