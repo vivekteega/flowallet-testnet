@@ -1,4 +1,4 @@
-(function(EXPORTS) { //floCloudAPI v2.3.0
+(function(EXPORTS) { //floCloudAPI v2.4.0
     /* FLO Cloud operations to send/request application data*/
     'use strict';
     const floCloudAPI = EXPORTS;
@@ -6,8 +6,31 @@
     const DEFAULT = {
         SNStorageID: floGlobals.SNStorageID || "FNaN9McoBAEFUjkRmNQRYLmBF8SpS7Tgfk",
         adminID: floGlobals.adminID,
-        application: floGlobals.application
+        application: floGlobals.application,
+        callback: (d, e) => console.debug(d, e)
     };
+
+    var user_id, user_public, user_private;
+    const user = {
+        get id() {
+            if (!user_id)
+                throw "User not set";
+            return user_id;
+        },
+        get public() {
+            if (!user_public)
+                throw "User not set";
+            return user_public;
+        },
+        sign(msg) {
+            if (!user_private)
+                throw "User not set";
+            return floCrypto.signData(msg, user_private);
+        },
+        clear() {
+            user_id = user_public = user_private = undefined;
+        }
+    }
 
     Object.defineProperties(floCloudAPI, {
         SNStorageID: {
@@ -18,6 +41,21 @@
         },
         application: {
             get: () => DEFAULT.application
+        },
+        user: {
+            set: priv => {
+                if (!priv)
+                    user_id = user_public = user_private = undefined;
+                else {
+                    user_public = floCrypto.getPubKeyHex(priv);
+                    user_id = floCrypto.getFloID(user_public);
+                    if (!user_public || !user_id || !floCrypto.verifyPrivKey(priv, user_id))
+                        user_id = user_public = user_private = undefined;
+                    else
+                        user_private = priv;
+                }
+            },
+            get: () => user
         }
     });
 
@@ -392,19 +430,19 @@
         }));
     }
 
-    //set status as online for myFloID
+    //set status as online for user_id
     floCloudAPI.setStatus = function(options = {}) {
         return new Promise((resolve, reject) => {
-            let callback = options.callback instanceof Function ? options.callback : (d, e) => console.debug(d, e);
+            let callback = options.callback instanceof Function ? options.callback : DEFAULT.callback;
             var request = {
-                floID: myFloID,
+                floID: user.id,
                 application: options.application || DEFAULT.application,
                 time: Date.now(),
                 status: true,
-                pubKey: myPubKey
+                pubKey: user.public
             }
             let hashcontent = ["time", "application", "floID"].map(d => request[d]).join("|");
-            request.sign = floCrypto.signData(hashcontent, myPrivKey);
+            request.sign = user.sign(hashcontent);
             liveRequest(options.refID || DEFAULT.adminID, request, callback)
                 .then(result => resolve(result))
                 .catch(error => reject(error))
@@ -416,7 +454,7 @@
         return new Promise((resolve, reject) => {
             if (!Array.isArray(trackList))
                 trackList = [trackList];
-            let callback = options.callback instanceof Function ? options.callback : (d, e) => console.debug(d, e);
+            let callback = options.callback instanceof Function ? options.callback : DEFAULT.callback;
             let request = {
                 status: false,
                 application: options.application || DEFAULT.application,
@@ -432,9 +470,9 @@
     const sendApplicationData = floCloudAPI.sendApplicationData = function(message, type, options = {}) {
         return new Promise((resolve, reject) => {
             var data = {
-                senderID: myFloID,
+                senderID: user.id,
                 receiverID: options.receiverID || DEFAULT.adminID,
-                pubKey: myPubKey,
+                pubKey: user.public,
                 message: encodeMessage(message),
                 time: Date.now(),
                 application: options.application || DEFAULT.application,
@@ -443,7 +481,7 @@
             }
             let hashcontent = ["receiverID", "time", "application", "type", "message", "comment"]
                 .map(d => data[d]).join("|")
-            data.sign = floCrypto.signData(hashcontent, myPrivKey);
+            data.sign = user.sign(hashcontent);
             singleRequest(data.receiverID, data)
                 .then(result => resolve(result))
                 .catch(error => reject(error))
@@ -482,19 +520,20 @@
         })
     }
 
-    //(NEEDS UPDATE) delete data from supernode cloud (received only)
+    /*(NEEDS UPDATE)
+    //delete data from supernode cloud (received only)
     floCloudAPI.deleteApplicationData = function(vectorClocks, options = {}) {
         return new Promise((resolve, reject) => {
             var delreq = {
-                requestorID: myFloID,
-                pubKey: myPubKey,
+                requestorID: user.id,
+                pubKey: user.public,
                 time: Date.now(),
                 delete: (Array.isArray(vectorClocks) ? vectorClocks : [vectorClocks]),
                 application: options.application || DEFAULT.application
             }
             let hashcontent = ["time", "application", "delete"]
                 .map(d => delreq[d]).join("|")
-            delreq.sign = floCrypto.signData(hashcontent, myPrivKey)
+            delreq.sign = user.sign(hashcontent)
             singleRequest(delreq.requestorID, delreq).then(result => {
                 let success = [],
                     failed = [];
@@ -507,8 +546,9 @@
             }).catch(error => reject(error))
         })
     }
-
-    //(NEEDS UPDATE) edit comment of data in supernode cloud (mutable comments only)
+    */
+    /*(NEEDS UPDATE)
+    //edit comment of data in supernode cloud (mutable comments only)
     floCloudAPI.editApplicationData = function(vectorClock, newComment, oldData, options = {}) {
         return new Promise((resolve, reject) => {
             let p0
@@ -523,12 +563,12 @@
                     }
                 })
             p0.then(d => {
-                if (d.senderID != myFloID)
+                if (d.senderID != user.id)
                     return reject("Invalid requestorID")
                 else if (!d.comment.startsWith("EDIT:"))
                     return reject("Data immutable")
                 let data = {
-                    requestorID: myFloID,
+                    requestorID: user.id,
                     receiverID: d.receiverID,
                     time: Date.now(),
                     application: d.application,
@@ -542,29 +582,30 @@
                         "comment"
                     ]
                     .map(x => d[x]).join("|")
-                data.edit.sign = floCrypto.signData(hashcontent, myPrivKey)
+                data.edit.sign = user.sign(hashcontent)
                 singleRequest(data.receiverID, data)
                     .then(result => resolve("Data comment updated"))
                     .catch(error => reject(error))
             })
         })
     }
+    */
 
     //tag data in supernode cloud (subAdmin access only)
     floCloudAPI.tagApplicationData = function(vectorClock, tag, options = {}) {
         return new Promise((resolve, reject) => {
-            if (!floGlobals.subAdmins.includes(myFloID))
+            if (!floGlobals.subAdmins.includes(user.id))
                 return reject("Only subAdmins can tag data")
             var request = {
                 receiverID: options.receiverID || DEFAULT.adminID,
-                requestorID: myFloID,
-                pubKey: myPubKey,
+                requestorID: user.id,
+                pubKey: user.public,
                 time: Date.now(),
                 vectorClock: vectorClock,
                 tag: tag,
             }
             let hashcontent = ["time", "vectorClock", 'tag'].map(d => request[d]).join("|");
-            request.sign = floCrypto.signData(hashcontent, myPrivKey);
+            request.sign = user.sign(hashcontent);
             singleRequest(request.receiverID, request)
                 .then(result => resolve(result))
                 .catch(error => reject(error))
@@ -576,14 +617,14 @@
         return new Promise((resolve, reject) => {
             var request = {
                 receiverID: options.receiverID || DEFAULT.adminID,
-                requestorID: myFloID,
-                pubKey: myPubKey,
+                requestorID: user.id,
+                pubKey: user.public,
                 time: Date.now(),
                 vectorClock: vectorClock,
                 note: note,
             }
             let hashcontent = ["time", "vectorClock", 'note'].map(d => request[d]).join("|");
-            request.sign = floCrypto.signData(hashcontent, myPrivKey);
+            request.sign = user.sign(hashcontent);
             singleRequest(request.receiverID, request)
                 .then(result => resolve(result))
                 .catch(error => reject(error))
