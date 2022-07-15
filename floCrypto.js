@@ -1,4 +1,4 @@
-(function(EXPORTS) { //floCrypto v2.3.0a
+(function(EXPORTS) { //floCrypto v2.3.1
     /* FLO Crypto Operators */
     'use strict';
     const floCrypto = EXPORTS;
@@ -121,12 +121,8 @@
     //Sign data using private-key
     floCrypto.signData = function(data, privateKeyHex) {
         var key = new Bitcoin.ECKey(privateKeyHex);
-        key.setCompressed(true);
-        var privateKeyArr = key.getBitcoinPrivateKeyByteArray();
-        var privateKey = BigInteger.fromByteArrayUnsigned(privateKeyArr);
         var messageHash = Crypto.SHA256(data);
-        var messageHashBigInteger = new BigInteger(messageHash);
-        var messageSign = Bitcoin.ECDSA.sign(messageHashBigInteger, key.priv);
+        var messageSign = Bitcoin.ECDSA.sign(messageHash, key.priv);
         var sighex = Crypto.util.bytesToHex(messageSign);
         return sighex;
     }
@@ -134,11 +130,9 @@
     //Verify signatue of the data using public-key
     floCrypto.verifySign = function(data, signatureHex, publicKeyHex) {
         var msgHash = Crypto.SHA256(data);
-        var messageHashBigInteger = new BigInteger(msgHash);
         var sigBytes = Crypto.util.hexToBytes(signatureHex);
-        var signature = Bitcoin.ECDSA.parseSig(sigBytes);
         var publicKeyPoint = ecparams.getCurve().decodePointHex(publicKeyHex);
-        var verify = Bitcoin.ECDSA.verifyRaw(messageHashBigInteger, signature.r, signature.s, publicKeyPoint);
+        var verify = Bitcoin.ECDSA.verify(msgHash, sigBytes, publicKeyPoint);
         return verify;
     }
 
