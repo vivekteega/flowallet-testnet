@@ -1,4 +1,4 @@
-(function(EXPORTS) { //floDapps v2.3.0
+(function(EXPORTS) { //floDapps v2.3.1
     /* General functions for FLO Dapps*/
     'use strict';
     const floDapps = EXPORTS;
@@ -11,12 +11,12 @@
         adminID: floGlobals.adminID
     };
 
-    var raw_user_private; //private variable inside capsule
+    var user_priv_raw, aes_key, user_priv_wrap; //private variable inside capsule
     const raw_user = {
         get private() {
-            if (!raw_user_private)
+            if (!user_priv_raw)
                 throw "User not logged in";
-            return raw_user_private;
+            return Crypto.AES.decrypt(user_priv_raw, aes_key);
         }
     }
 
@@ -38,14 +38,21 @@
             else if (user_private instanceof Function)
                 return user_private();
             else
-                return user_private;
+                return Crypto.AES.decrypt(user_private, aes_key);
         },
         get db_name() {
             return "floDapps#" + user.id;
         },
+        lock() {
+            user_private = user_priv_wrap;
+        },
+        async unlock() {
+            if (await user.private === raw_user.private)
+                user_private = user_priv_raw;
+        },
         clear() {
             user_id = user_public = user_private = undefined;
-            raw_user_private = undefined;
+            user_priv_raw = aes_key = undefined;
             delete user.contacts;
             delete user.pubKeys;
             delete user.messages;
@@ -233,7 +240,7 @@
             resolve(inputVal)
     });
 
-    function getCredentials(invisible_key) {
+    function getCredentials(lock_key) {
 
         const readSharesFromIDB = indexArr => new Promise((resolve, reject) => {
             var promises = []
@@ -325,10 +332,14 @@
                         user_public = floCrypto.getPubKeyHex(privKey);
                         user_id = floCrypto.getFloID(privKey);
                         floCloudAPI.user = privKey; //Set user for floCloudAPI
-                        if (!invisible_key)
-                            user_private = privKey;
+                        user_priv_wrap = () => checkIfPinRequired(key);
+                        let n = floCrypto.randInt(12, 20);
+                        aes_key = floCrypto.randString(n);
+                        user_priv_raw = Crypto.AES.encrypt(privKey, aes_key);
+                        if (!lock_key)
+                            user_private = user_priv_raw;
                         else
-                            user_private = () => checkIfPinRequired(key);
+                            user_private = user_priv_wrap;
                         resolve('Login Credentials loaded successful')
                     } catch (error) {
                         console.log(error)
@@ -388,7 +399,7 @@
                     })
                 });
                 let p2 = new Promise((res, rej) => {
-                    callAndLog(getCredentials(options.invisible_key)).then(r => {
+                    callAndLog(getCredentials(options.lock_key)).then(r => {
                         callAndLog(initUserDB()).then(r => {
                             callAndLog(loadUserDB())
                                 .then(r => res(true))

@@ -24,7 +24,7 @@
             //floDapps.addStartUpFunction('Sample', Promised Function)
             //floDapps.setAppObjectStores({sampleObs1:{}, sampleObs2:{options{autoIncrement:true, keyPath:'SampleKey'}, Indexes:{sampleIndex:{}}}})
             //floDapps.setCustomPrivKeyInput( () => { FUNCTION BODY *must resolve private key* } )
-            floDapps.launchStartUp( /*{invisible_key: true}*/ ).then(result => {
+            floDapps.launchStartUp( /*{lock_key: true}*/ ).then(result => {
                 console.log(result)
                 alert(`Welcome FLO_ID: ${myFloID}`)
                 //App functions....
