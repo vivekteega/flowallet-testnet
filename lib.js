@@ -1,4 +1,4 @@
-(function(GLOBAL) { //lib v1.2.2a
+(function(GLOBAL) { //lib v1.2.3
     'use strict';
     /* Utility Libraries required for Standard operations
      * All credits for these codes belong to their respective creators, moderators and owners.
@@ -5016,12 +5016,12 @@
          *
          * Returns the address as a base58-encoded string in the standardized format.
          */
-        Bitcoin.Address.prototype.toString = function() {
+        Bitcoin.Address.prototype.toString = function(version = null) {
             // Get a copy of the hash
             var hash = this.hash.slice(0);
 
             // Version
-            hash.unshift(this.version);
+            hash.unshift(version !== null ? version : this.version);
             var checksum = Crypto.SHA256(Crypto.SHA256(hash, {
                 asBytes: true
             }), {
@@ -5130,7 +5130,7 @@
                     }
 
                     var Q;
-                    if (pubkey instanceof ec.PointFp) {
+                    if (pubkey instanceof EllipticCurve.PointFp) {
                         Q = pubkey;
                     } else if (Bitcoin.Util.isArray(pubkey)) {
                         Q = EllipticCurve.PointFp.decodeFrom(ecparams.getCurve(), pubkey);
@@ -5444,9 +5444,8 @@
                     var bytes = null;
                     try {
 
-                        // This part is edited for FLO. FLO WIF are always compressed WIF. FLO WIF (private key) starts with R for mainnet and c for testnet.
-                        if (((GLOBAL.cryptocoin == "FLO") && /^R[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{51}$/.test(input)) ||
-                            ((GLOBAL.cryptocoin == "FLO_TEST") && /^c[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{51}$/.test(input))) {
+                        // This part is edited for FLO. FLO WIF are always compressed WIF (length of 52). 
+                        if ((/^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{52}$/.test(input))) {
                             bytes = ECKey.decodeCompressedWalletImportFormat(input);
                             this.compressed = true;
                         } else if (ECKey.isHexFormat(input)) {
@@ -5673,9 +5672,11 @@
 
                 }
                 var version = hash.shift();
+                /*
                 if (version != ECKey.privateKeyPrefix) {
                     throw "Version " + version + " not supported!";
                 }
+                */
                 return hash;
             };
 
@@ -5697,9 +5698,11 @@
                     throw "Checksum validation failed!";
                 }
                 var version = hash.shift();
+                /*
                 if (version != ECKey.privateKeyPrefix) {
                     throw "Version " + version + " not supported!";
                 }
+                */
                 hash.pop();
                 return hash;
             };
