@@ -1,4 +1,4 @@
-(function(EXPORTS) { //floCrypto v2.3.1
+(function(EXPORTS) { //floCrypto v2.3.2
     /* FLO Crypto Operators */
     'use strict';
     const floCrypto = EXPORTS;
@@ -196,16 +196,52 @@
         }
     }
 
-    //Check if the given Address is valid or not
-    floCrypto.validateFloID = floCrypto.validateAddr = function(inpAddr) {
-        if (!inpAddr)
+    //Check if the given flo-id is valid or not
+    floCrypto.validateFloID = function(floID) {
+        if (!floID)
             return false;
         try {
-            let addr = new Bitcoin.Address(inpAddr);
+            let addr = new Bitcoin.Address(floID);
             return true;
         } catch {
             return false;
         }
+    }
+
+    //Check if the given address (any blockchain) is valid or not
+    floCrypto.validateAddr = function(address, std = true, bech = false) {
+        if (address.length == 34) { //legacy or segwit encoding
+            if (std === false)
+                return false;
+            let decode = bitjs.Base58.decode(address);
+            var raw = decode.slice(0, decode.length - 4),
+                checksum = decode.slice(decode.length - 4);
+            var hash = Crypto.SHA256(Crypto.SHA256(raw, {
+                asBytes: true
+            }), {
+                asBytes: true
+            });
+            if (hash[0] != checksum[0] || hash[1] != checksum[1] || hash[2] != checksum[2] || hash[3] != checksum[3])
+                return false;
+            else if (std === true || (!Array.isArray(std) && std === raw[0]) || (Array.isArray(std) && std.includes(raw[0])))
+                return true;
+            else
+                return false;
+        } else if (address.length == 42 || address.length == 62) { //bech encoding
+            if (bech === false)
+                return false;
+            else if (typeof btc_api !== "object")
+                throw "btc_api library missing (lib_btc.js)";
+            let decode = coinjs.bech32_decode(address);
+            if (!decode)
+                return false;
+            var raw = decode.data;
+            if (bech === true || (!Array.isArray(bech) && bech === raw[0]) || (Array.isArray(bech) && bech.includes(raw[0])))
+                return true;
+            else
+                return false;
+        } else //unknown length
+            return false;
     }
 
     //Split the str using shamir's Secret and Returns the shares 

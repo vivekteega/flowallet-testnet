@@ -216,9 +216,17 @@ In addition, we have these system variables outside FLO Globals but used globall
 3. isfloID - boolean value (true: compare as flo ID, false: compare as public key) (optional, default is true)
 * Returns : boolen (true or false)
 
+#### 	Validate Address
+	 floCrypto.validateAddr(address, *std, *bech)
+`validateAddr` check if the given Address (any blockchain) is valid or not
+1. address - address to validate 
+2. std - checks for legacy version (optional, default=true) (true: allow any, array: list of versions, value: one version only, false: allow none)
+3. bech - checks for bech version (optional, default=false) (true: allow any, array: list of versions, value: one version only, false: allow none) [requires additional library: [btc_api](https://ranchimall.github.io/btc-webwallet/lib_btc.js)]
+* Returns : boolen (true or false)
+
 #### 	Validate FLO ID
-	 floCrypto.validateAddr(floID)
-`validateAddr` check if the given Address is valid or not
+	 floCrypto.validateFloID(floID)
+`validateFloID` check if the given floID is valid or not
 1. floID - flo ID to validate 
 * Returns : boolen (true or false)
 

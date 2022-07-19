@@ -1,4 +1,4 @@
-(function(EXPORTS) { //floDapps v2.3.1
+(function(EXPORTS) { //floDapps v2.3.1a
     /* General functions for FLO Dapps*/
     'use strict';
     const floDapps = EXPORTS;
@@ -284,7 +284,7 @@
                     if (!result)
                         return reject("Empty Private Key")
                     var floID = floCrypto.getFloID(result)
-                    if (!floID || !floCrypto.validateAddr(floID))
+                    if (!floID || !floCrypto.validateFloID(floID))
                         return reject("Invalid Private Key")
                     privKey = result;
                 }).catch(error => {
@@ -426,7 +426,7 @@
 
     floDapps.storeContact = function(floID, name) {
         return new Promise((resolve, reject) => {
-            if (!floCrypto.validateAddr(floID))
+            if (!floCrypto.validateFloID(floID))
                 return reject("Invalid floID!")
             compactIDB.writeData("contacts", name, floID, user.db_name).then(result => {
                 user.contacts[floID] = name;
@@ -439,7 +439,7 @@
         return new Promise((resolve, reject) => {
             if (floID in user.pubKeys)
                 return resolve("pubKey already stored")
-            if (!floCrypto.validateAddr(floID))
+            if (!floCrypto.validateFloID(floID))
                 return reject("Invalid floID!")
             if (floCrypto.getFloID(pubKey) != floID)
                 return reject("Incorrect pubKey")

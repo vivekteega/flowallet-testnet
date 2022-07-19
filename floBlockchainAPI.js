@@ -1,4 +1,4 @@
-(function(EXPORTS) { //floBlockchainAPI v2.3.3
+(function(EXPORTS) { //floBlockchainAPI v2.3.3a
     /* FLO Blockchain Operator to send/receive data from blockchain using API calls*/
     'use strict';
     const floBlockchainAPI = EXPORTS;
@@ -125,9 +125,9 @@
         return new Promise((resolve, reject) => {
             if (!floCrypto.validateASCII(floData))
                 return reject("Invalid FLO_Data: only printable ASCII characters are allowed");
-            else if (!floCrypto.validateAddr(senderAddr))
+            else if (!floCrypto.validateFloID(senderAddr))
                 return reject(`Invalid address : ${senderAddr}`);
-            else if (!floCrypto.validateAddr(receiverAddr))
+            else if (!floCrypto.validateFloID(receiverAddr))
                 return reject(`Invalid address : ${receiverAddr}`);
             else if (privKey.length < 1 || !floCrypto.verifyPrivKey(privKey, senderAddr))
                 return reject("Invalid Private key!");
@@ -202,7 +202,7 @@
     //merge all UTXOs of a given floID into a single UTXO
     floBlockchainAPI.mergeUTXOs = function(floID, privKey, floData = '') {
         return new Promise((resolve, reject) => {
-            if (!floCrypto.validateAddr(floID))
+            if (!floCrypto.validateFloID(floID))
                 return reject(`Invalid floID`);
             if (!floCrypto.verifyPrivKey(privKey, floID))
                 return reject("Invalid Private Key");
@@ -326,7 +326,7 @@
                 }
                 //Validate the receiver IDs and receive amount
                 for (let floID in receivers) {
-                    if (!floCrypto.validateAddr(floID))
+                    if (!floCrypto.validateFloID(floID))
                         invalids.InvalidReceiverIDs.push(floID);
                     if (typeof receivers[floID] !== 'number' || receivers[floID] <= 0)
                         invalids.InvalidReceiveAmountFor.push(floID);
