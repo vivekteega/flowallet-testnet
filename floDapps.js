@@ -1,4 +1,4 @@
-(function(EXPORTS) { //floDapps v2.3.1a
+(function(EXPORTS) { //floDapps v2.3.2
     /* General functions for FLO Dapps*/
     'use strict';
     const floDapps = EXPORTS;
@@ -39,6 +39,18 @@
                 return user_private();
             else
                 return Crypto.AES.decrypt(user_private, aes_key);
+        },
+        sign(message) {
+            return floCrypto.signData(message, raw_user.private);
+        },
+        decrypt(data) {
+            return floCrypto.decryptData(data, raw_user.private);
+        },
+        encipher(message) {
+            return Crypto.AES.encrypt(message, raw_user.private);
+        },
+        decipher(data) {
+            return Crypto.AES.decrypt(data, raw_user.private);
         },
         get db_name() {
             return "floDapps#" + user.id;
@@ -240,7 +252,7 @@
             resolve(inputVal)
     });
 
-    function getCredentials(lock_key) {
+    function getCredentials() {
 
         const readSharesFromIDB = indexArr => new Promise((resolve, reject) => {
             var promises = []
@@ -336,10 +348,7 @@
                         let n = floCrypto.randInt(12, 20);
                         aes_key = floCrypto.randString(n);
                         user_priv_raw = Crypto.AES.encrypt(privKey, aes_key);
-                        if (!lock_key)
-                            user_private = user_priv_raw;
-                        else
-                            user_private = user_priv_wrap;
+                        user_private = user_priv_wrap;
                         resolve('Login Credentials loaded successful')
                     } catch (error) {
                         console.log(error)
@@ -384,7 +393,7 @@
         })
     });
 
-    floDapps.launchStartUp = function(options = {}) {
+    floDapps.launchStartUp = function() {
         return new Promise((resolve, reject) => {
             initIndexedDB().then(log => {
                 console.log(log)
@@ -399,7 +408,7 @@
                     })
                 });
                 let p2 = new Promise((res, rej) => {
-                    callAndLog(getCredentials(options.lock_key)).then(r => {
+                    callAndLog(getCredentials()).then(r => {
                         callAndLog(initUserDB()).then(r => {
                             callAndLog(loadUserDB())
                                 .then(r => res(true))
