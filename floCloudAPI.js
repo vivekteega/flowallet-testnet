@@ -1,9 +1,10 @@
-(function(EXPORTS) { //floCloudAPI v2.4.1
+(function(EXPORTS) { //floCloudAPI v2.4.2
     /* FLO Cloud operations to send/request application data*/
     'use strict';
     const floCloudAPI = EXPORTS;
 
     const DEFAULT = {
+        blockchainPrefix: 0x23, //Prefix version for FLO blockchain
         SNStorageID: floGlobals.SNStorageID || "FNaN9McoBAEFUjkRmNQRYLmBF8SpS7Tgfk",
         adminID: floGlobals.adminID,
         application: floGlobals.application,
@@ -369,8 +370,52 @@
 
     const filterKey = util.filterKey = function(type, options) {
         return type + (options.comment ? ':' + options.comment : '') +
-            '|' + (options.group || options.receiverID || DEFAULT.adminID) +
+            '|' + (options.group || toFloID(options.receiverID) || DEFAULT.adminID) +
             '|' + (options.application || DEFAULT.application);
+    }
+
+    const toFloID = util.toFloID = function(address) {
+        if (!address)
+            return;
+        var bytes;
+        if (address.length == 34) { //legacy encoding
+            let decode = bitjs.Base58.decode(address);
+            bytes = decode.slice(0, decode.length - 4);
+            let checksum = decode.slice(decode.length - 4),
+                hash = Crypto.SHA256(Crypto.SHA256(bytes, {
+                    asBytes: true
+                }), {
+                    asBytes: true
+                });
+            hash[0] != checksum[0] || hash[1] != checksum[1] || hash[2] != checksum[2] || hash[3] != checksum[3] ?
+                bytes = undefined : bytes.shift();
+        } else if (address.length == 42 || address.length == 62) { //bech encoding
+            if (!(coinjs instanceof Object))
+                throw "library missing (lib_btc.js)";
+            let decode = coinjs.bech32_decode(address);
+            if (decode) {
+                bytes = decode.data;
+                bytes.shift();
+                bytes = coinjs.bech32_convert(bytes, 5, 8, false);
+                if (address.length == 62) //for long bech, aggregate once more to get 160 bit 
+                    bytes = coinjs.bech32_convert(bytes, 5, 8, false);
+            }
+        } else if (address.length == 66) { //public key hex
+            bytes = ripemd160(Crypto.SHA256(Crypto.util.hexToBytes(address), {
+                asBytes: true
+            }));
+        }
+        if (!bytes)
+            throw "Invalid address: " + address;
+        else {
+            bytes.unshift(DEFAULT.blockchainPrefix);
+            let hash = Crypto.SHA256(Crypto.SHA256(bytes, {
+                asBytes: true
+            }), {
+                asBytes: true
+            });
+            return bitjs.Base58.encode(bytes.concat(hash.slice(0, 4)));
+        }
     }
 
     const lastCommit = {};
@@ -474,7 +519,7 @@
         return new Promise((resolve, reject) => {
             var data = {
                 senderID: user.id,
-                receiverID: options.receiverID || DEFAULT.adminID,
+                receiverID: toFloID(options.receiverID) || DEFAULT.adminID,
                 pubKey: user.public,
                 message: encodeMessage(message),
                 time: Date.now(),
@@ -495,7 +540,7 @@
     const requestApplicationData = floCloudAPI.requestApplicationData = function(type, options = {}) {
         return new Promise((resolve, reject) => {
             var request = {
-                receiverID: options.receiverID || DEFAULT.adminID,
+                receiverID: toFloID(options.receiverID) || DEFAULT.adminID,
                 senderID: options.senderID || undefined,
                 application: options.application || DEFAULT.application,
                 type: type,
@@ -600,7 +645,7 @@
             if (!floGlobals.subAdmins.includes(user.id))
                 return reject("Only subAdmins can tag data")
             var request = {
-                receiverID: options.receiverID || DEFAULT.adminID,
+                receiverID: toFloID(options.receiverID) || DEFAULT.adminID,
                 requestorID: user.id,
                 pubKey: user.public,
                 time: Date.now(),
@@ -619,7 +664,7 @@
     floCloudAPI.noteApplicationData = function(vectorClock, note, options = {}) {
         return new Promise((resolve, reject) => {
             var request = {
-                receiverID: options.receiverID || DEFAULT.adminID,
+                receiverID: toFloID(options.receiverID) || DEFAULT.adminID,
                 requestorID: user.id,
                 pubKey: user.public,
                 time: Date.now(),
