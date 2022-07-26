@@ -1,4 +1,4 @@
-(function(GLOBAL) { //lib v1.3.0
+(function(GLOBAL) { //lib v1.3.0a
     'use strict';
     /* Utility Libraries required for Standard operations
      * All credits for these codes belong to their respective creators, moderators and owners.
@@ -6312,11 +6312,12 @@
         /* other vars */
         coinjs.developer = '33tht1bKDgZVxb39MnZsWa8oxHXHvUYE4G'; //bitcoin
 
-        /* bit(coinb.in) api vars */
+        /* bit(coinb.in) api vars 
         coinjs.hostname = ((document.location.hostname.split(".")[(document.location.hostname.split(".")).length - 1]) == 'onion') ? 'coinbin3ravkwb24f7rmxx6w3snkjw45jhs5lxbh3yfeg3vpt6janwqd.onion' : 'coinb.in';
         coinjs.host = ('https:' == document.location.protocol ? 'https://' : 'http://') + coinjs.hostname + '/api/';
         coinjs.uid = '1';
         coinjs.key = '12345678901234567890123456789012';
+        */
 
         /* start of address functions */
 

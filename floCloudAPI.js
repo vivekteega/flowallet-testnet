@@ -1,4 +1,4 @@
-(function(EXPORTS) { //floCloudAPI v2.4.2
+(function(EXPORTS) { //floCloudAPI v2.4.2a
     /* FLO Cloud operations to send/request application data*/
     'use strict';
     const floCloudAPI = EXPORTS;
@@ -217,7 +217,7 @@
             if (_inactive.size === kBucket.list.length)
                 return reject('Cloud offline');
             if (!(snID in supernodes))
-                snID = kBucket.closestNode(snID);
+                snID = kBucket.closestNode(proxyID(snID));
             ws_connect(snID)
                 .then(node => resolve(node))
                 .catch(error => {
@@ -255,7 +255,7 @@
             if (_inactive.size === kBucket.list.length)
                 return reject('Cloud offline');
             if (!(snID in supernodes))
-                snID = kBucket.closestNode(snID);
+                snID = kBucket.closestNode(proxyID(snID));
             fetch_API(snID, data)
                 .then(result => resolve(result))
                 .catch(error => {
@@ -370,11 +370,11 @@
 
     const filterKey = util.filterKey = function(type, options) {
         return type + (options.comment ? ':' + options.comment : '') +
-            '|' + (options.group || toFloID(options.receiverID) || DEFAULT.adminID) +
+            '|' + (options.group || options.receiverID || DEFAULT.adminID) +
             '|' + (options.application || DEFAULT.application);
     }
 
-    const toFloID = util.toFloID = function(address) {
+    const proxyID = util.proxyID = function(address) {
         if (!address)
             return;
         var bytes;
@@ -390,7 +390,7 @@
             hash[0] != checksum[0] || hash[1] != checksum[1] || hash[2] != checksum[2] || hash[3] != checksum[3] ?
                 bytes = undefined : bytes.shift();
         } else if (address.length == 42 || address.length == 62) { //bech encoding
-            if (!(coinjs instanceof Object))
+            if (typeof coinjs !== 'function')
                 throw "library missing (lib_btc.js)";
             let decode = coinjs.bech32_decode(address);
             if (decode) {
@@ -519,7 +519,7 @@
         return new Promise((resolve, reject) => {
             var data = {
                 senderID: user.id,
-                receiverID: toFloID(options.receiverID) || DEFAULT.adminID,
+                receiverID: options.receiverID || DEFAULT.adminID,
                 pubKey: user.public,
                 message: encodeMessage(message),
                 time: Date.now(),
@@ -540,7 +540,7 @@
     const requestApplicationData = floCloudAPI.requestApplicationData = function(type, options = {}) {
         return new Promise((resolve, reject) => {
             var request = {
-                receiverID: toFloID(options.receiverID) || DEFAULT.adminID,
+                receiverID: options.receiverID || DEFAULT.adminID,
                 senderID: options.senderID || undefined,
                 application: options.application || DEFAULT.application,
                 type: type,
@@ -645,7 +645,7 @@
             if (!floGlobals.subAdmins.includes(user.id))
                 return reject("Only subAdmins can tag data")
             var request = {
-                receiverID: toFloID(options.receiverID) || DEFAULT.adminID,
+                receiverID: options.receiverID || DEFAULT.adminID,
                 requestorID: user.id,
                 pubKey: user.public,
                 time: Date.now(),
@@ -664,7 +664,7 @@
     floCloudAPI.noteApplicationData = function(vectorClock, note, options = {}) {
         return new Promise((resolve, reject) => {
             var request = {
-                receiverID: toFloID(options.receiverID) || DEFAULT.adminID,
+                receiverID: options.receiverID || DEFAULT.adminID,
                 requestorID: user.id,
                 pubKey: user.public,
                 time: Date.now(),

@@ -221,7 +221,7 @@ In addition, we have these system variables outside FLO Globals but used globall
 `validateAddr` check if the given Address (any blockchain) is valid or not
 1. address - address to validate 
 2. std - checks for legacy version (optional, default=true) (true: allow any, array: list of versions, value: one version only, false: allow none)
-3. bech - checks for bech version (optional, default=false) (true: allow any, array: list of versions, value: one version only, false: allow none) [requires additional library: [btc_api](https://ranchimall.github.io/btc-webwallet/lib_btc.js)]
+3. bech - checks for bech version (optional, default=true) (true: allow any, array: list of versions, value: one version only, false: allow none)
 * Returns : boolen (true or false)
 
 #### 	Validate FLO ID
