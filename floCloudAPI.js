@@ -1,4 +1,4 @@
-(function(EXPORTS) { //floCloudAPI v2.4.2a
+(function(EXPORTS) { //floCloudAPI v2.4.2b
     /* FLO Cloud operations to send/request application data*/
     'use strict';
     const floCloudAPI = EXPORTS;
@@ -12,26 +12,47 @@
     };
 
     var user_id, user_public, user_private, aes_key;
-    const user = {
-        get id() {
-            if (!user_id)
-                throw "User not set";
-            return user_id;
-        },
-        get public() {
-            if (!user_public)
-                throw "User not set";
-            return user_public;
-        },
-        sign(msg) {
-            if (!user_private)
-                throw "User not set";
-            return floCrypto.signData(msg, Crypto.AES.decrypt(user_private, aes_key));
-        },
-        clear() {
-            user_id = user_public = user_private = aes_key = undefined;
-        }
+
+    function user(id, priv) {
+        if (!priv || !id)
+            return user.clear();
+        let pub = floCrypto.getPubKeyHex(priv);
+        if (!pub || !floCrypto.verifyPubKey(pub, id))
+            return user.clear();
+        let n = floCrypto.randInt(12, 20);
+        aes_key = floCrypto.randString(n);
+        user_private = Crypto.AES.encrypt(priv, aes_key);
+        user_public = pub;
+        user_id = id;
+        return user_id;
     }
+
+    Object.defineProperties(user, {
+        id: {
+            get: () => {
+                if (!user_id)
+                    throw "User not set";
+                return user_id;
+            }
+        },
+        public: {
+            get: () => {
+                if (!user_public)
+                    throw "User not set";
+                return user_public;
+            }
+        },
+        sign: {
+            value: msg => {
+                if (!user_private)
+                    throw "User not set";
+                return floCrypto.signData(msg, Crypto.AES.decrypt(user_private, aes_key));
+            }
+        },
+        clear: {
+            value: () => user_id = user_public = user_private = aes_key = undefined
+        }
+    })
 
     Object.defineProperties(floCloudAPI, {
         SNStorageID: {
@@ -44,21 +65,6 @@
             get: () => DEFAULT.application
         },
         user: {
-            set: priv => {
-                if (!priv)
-                    user_id = user_public = user_private = aes_key = undefined;
-                else {
-                    user_public = floCrypto.getPubKeyHex(priv);
-                    user_id = floCrypto.getFloID(user_public);
-                    if (!user_public || !user_id || !floCrypto.verifyPrivKey(priv, user_id))
-                        user_id = user_public = user_private = aes_key = undefined;
-                    else {
-                        let n = floCrypto.randInt(12, 20);
-                        aes_key = floCrypto.randString(n);
-                        user_private = Crypto.AES.encrypt(priv, aes_key);
-                    }
-                }
-            },
             get: () => user
         }
     });

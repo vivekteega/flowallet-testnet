@@ -1,4 +1,4 @@
-(function(GLOBAL) { //lib v1.3.0a
+(function(GLOBAL) { //lib v1.3.0b
     'use strict';
     /* Utility Libraries required for Standard operations
      * All credits for these codes belong to their respective creators, moderators and owners.
@@ -6353,7 +6353,7 @@
             x += (document.getElementById("entropybucket")) ? document.getElementById("entropybucket").innerHTML : '';
             x += x + '' + x;
             var r = x;
-            for (i = 0; i < (x).length / 25; i++) {
+            for (let i = 0; i < (x).length / 25; i++) {
                 r = Crypto.SHA256(r.concat(x));
             }
             var checkrBigInt = new BigInteger(r);
@@ -8565,7 +8565,7 @@
             var r = "";
             var l = length || 25;
             var chars = "!$%^&*()_+{}:@~?><|\./;'#][=-abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
-            for (x = 0; x < l; x++) {
+            for (let x = 0; x < l; x++) {
                 r += chars.charAt(Math.floor(Math.random() * 62));
             }
             return r;

@@ -1,4 +1,4 @@
-(function(EXPORTS) { //floDapps v2.3.2
+(function(EXPORTS) { //floDapps v2.3.2a
     /* General functions for FLO Dapps*/
     'use strict';
     const floDapps = EXPORTS;
@@ -73,6 +73,9 @@
 
     Object.defineProperties(window, {
         myFloID: {
+            get: () => user.id
+        },
+        myUserID: {
             get: () => user.id
         },
         myPubKey: {
@@ -179,14 +182,14 @@
                 }).then(result => {
                     for (var i = result.data.length - 1; i >= 0; i--) {
                         var content = JSON.parse(result.data[i]).SuperNodeStorage;
-                        for (sn in content.removeNodes)
+                        for (let sn in content.removeNodes)
                             compactIDB.removeData("supernodes", sn, DEFAULT.root);
-                        for (sn in content.newNodes)
+                        for (let sn in content.newNodes)
                             compactIDB.writeData("supernodes", content.newNodes[sn], sn, DEFAULT.root);
                     }
                     compactIDB.writeData("lastTx", result.totalTxs, floCloudAPI.SNStorageID, DEFAULT.root);
-                    compactIDB.readAllData("supernodes", DEFAULT.root).then(result => {
-                        floCloudAPI.init(result)
+                    compactIDB.readAllData("supernodes", DEFAULT.root).then(nodes => {
+                        floCloudAPI.init(nodes)
                             .then(result => resolve("Loaded Supernode list\n" + result))
                             .catch(error => reject(error))
                     })
@@ -342,8 +345,8 @@
                 checkIfPinRequired(key).then(privKey => {
                     try {
                         user_public = floCrypto.getPubKeyHex(privKey);
-                        user_id = floCrypto.getFloID(privKey);
-                        floCloudAPI.user = privKey; //Set user for floCloudAPI
+                        user_id = floCrypto.getAddress(privKey);
+                        floCloudAPI.user(user_id, privKey); //Set user for floCloudAPI
                         user_priv_wrap = () => checkIfPinRequired(key);
                         let n = floCrypto.randInt(12, 20);
                         aes_key = floCrypto.randString(n);
