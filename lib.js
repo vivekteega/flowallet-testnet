@@ -6676,7 +6676,7 @@
                     throw "Invalid checksum";
                 }
             } catch (e) {
-                bech32rs = coinjs.bech32redeemscript(addr);
+                let bech32rs = coinjs.bech32redeemscript(addr);
                 if (bech32rs) {
                     return {
                         'type': 'bech32',
