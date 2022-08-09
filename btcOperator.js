@@ -1,4 +1,4 @@
-(function(EXPORTS) { //btcOperator v1.0.7a
+(function(EXPORTS) { //btcOperator v1.0.7b
     /* BTC Crypto and API Operator */
     const btcOperator = EXPORTS;
 
@@ -92,6 +92,14 @@
             return type;
         else
             return false;
+    }
+
+    btcOperator.multiSigAddress = function(pubKeys, minRequired) {
+        if (!Array.isArray(pubKeys))
+            throw "pubKeys must be an array of public keys";
+        else if (pubKeys.length < minRequired)
+            throw "minimum required should be less than the number of pubKeys";
+        return coinjs.pubkeys2MultisigAddress(pubKeys, minRequired);
     }
 
     //convert from one blockchain to another blockchain (target version)
@@ -323,7 +331,6 @@
             return true;
         } else
             return false;
-
     }
 
     function autoFeeCalc(tx) {
@@ -366,6 +373,7 @@
             try {
                 ({
                     senders,
+                    privkeys,
                     receivers,
                     amounts
                 } = validateTxParameters({
@@ -456,6 +464,25 @@
                 .then(tx => resolve(tx.serialize()))
                 .catch(error => reject(error))
         })
+    }
+
+    btcOperator.signTx = function(tx, privKeys) {
+        if (typeof tx === 'string' || Array.isArray(tx)) {
+            try {
+                tx = coinjs.transaction().deserialize(tx);
+            } catch {
+                throw "Invalid transaction hex";
+            }
+        } else if (typeof tx !== 'object' || typeof tx.sign !== 'function')
+            throw "Invalid transaction object";
+
+        if (!Array.isArray(privkeys))
+            privkeys = [privkeys];
+        for (let i in privKeys)
+            if (privKeys[i].length === 64)
+                privkeys[i] = coinjs.privkey2wif(privKeys[i]);
+        new Set(privKeys).forEach(key => console.debug("Signing key:", key, tx.sign(key, 1 /*sighashtype*/ ))); //Sign the tx using private key WIF
+        return tx.serialize();
     }
 
     btcOperator.getTx = txid => new Promise((resolve, reject) => {
