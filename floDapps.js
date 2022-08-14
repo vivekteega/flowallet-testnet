@@ -1,15 +1,25 @@
-(function(EXPORTS) { //floDapps v2.3.2a
+(function(EXPORTS) { //floDapps v2.3.2b
     /* General functions for FLO Dapps*/
     'use strict';
     const floDapps = EXPORTS;
 
     const DEFAULT = {
-        get root() {
-            return "floDapps"
-        },
+        root: "floDapps",
         application: floGlobals.application,
         adminID: floGlobals.adminID
     };
+
+    Object.defineProperties(floDapps, {
+        application: {
+            get: () => DEFAULT.application
+        },
+        adminID: {
+            get: () => DEFAULT.adminID
+        },
+        root: {
+            get: () => DEFAULT.root
+        }
+    });
 
     var user_priv_raw, aes_key, user_priv_wrap; //private variable inside capsule
     const raw_user = {
@@ -73,16 +83,40 @@
 
     Object.defineProperties(window, {
         myFloID: {
-            get: () => user.id
+            get: () => {
+                try {
+                    return user.id;
+                } catch {
+                    return;
+                }
+            }
         },
         myUserID: {
-            get: () => user.id
+            get: () => {
+                try {
+                    return user.id;
+                } catch {
+                    return;
+                }
+            }
         },
         myPubKey: {
-            get: () => user.public
+            get: () => {
+                try {
+                    return user.public;
+                } catch {
+                    return;
+                }
+            }
         },
         myPrivKey: {
-            get: () => user.private
+            get: () => {
+                try {
+                    return user.private;
+                } catch {
+                    return;
+                }
+            }
         }
     });
 
