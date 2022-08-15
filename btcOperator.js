@@ -1,4 +1,4 @@
-(function(EXPORTS) { //btcOperator v1.0.7b
+(function(EXPORTS) { //btcOperator v1.0.7c
     /* BTC Crypto and API Operator */
     const btcOperator = EXPORTS;
 
@@ -268,26 +268,28 @@
     const TMP_FEE = 0.00001;
 
     function createTransaction(senders, redeemScripts, receivers, amounts, fee, change_addr) {
-        let auto_fee = false,
-            total_amount = parseFloat(amounts.reduce((t, a) => t + a, 0).toFixed(8));
-        if (fee === null) {
-            auto_fee = true;
-            fee = TMP_FEE;
-        }
-        const tx = coinjs.transaction();
-        addUTXOs(tx, senders, redeemScripts, total_amount + fee).then(result => {
-            if (result > 0)
-                return reject("Insufficient Balance");
-            let change = addOutputs(tx, receivers, amounts, Math.abs(result), change_addr);
-            if (!auto_fee)
-                return resolve(tx);
-            autoFeeCalc(tx).then(fee_calc => {
-                fee = Math.round((fee * 1) * 1e8); //satoshi convertion
-                if (!change)
-                    tx.addoutput(change_addr, 0);
-                editFee(tx, fee, fee_calc);
-                resolve(tx);
-            }).catch(error => reject(error))
+        return new Promise((resolve, reject) => {
+            let auto_fee = false,
+                total_amount = parseFloat(amounts.reduce((t, a) => t + a, 0).toFixed(8));
+            if (fee === null) {
+                auto_fee = true;
+                fee = TMP_FEE;
+            }
+            const tx = coinjs.transaction();
+            addUTXOs(tx, senders, redeemScripts, total_amount + fee).then(result => {
+                if (result > 0)
+                    return reject("Insufficient Balance");
+                let change = addOutputs(tx, receivers, amounts, Math.abs(result), change_addr);
+                if (!auto_fee)
+                    return resolve(tx);
+                autoFeeCalc(tx).then(fee_calc => {
+                    fee = Math.round((fee * 1) * 1e8); //satoshi convertion
+                    if (!change)
+                        tx.addoutput(change_addr, 0);
+                    editFee(tx, fee, fee_calc);
+                    resolve(tx);
+                }).catch(error => reject(error))
+            })
         })
     }
 
@@ -306,14 +308,17 @@
                         continue;
                     required_amount -= parseFloat(utxos[i].value);
                     var script;
-                    if (rs) { //redeemScript for segwit/bech32
+                    if (!rs || !rs.length) //legacy script
+                        script = utxos[i].script_hex;
+                    else if (((rs.match(/^00/) && rs.length == 44)) || (rs.length == 40 && rs.match(/^[a-f0-9]+$/gi))) {
+                        //redeemScript for segwit/bech32
                         let s = coinjs.script();
                         s.writeBytes(Crypto.util.hexToBytes(rs));
                         s.writeOp(0);
                         s.writeBytes(coinjs.numToBytes((utxos[i].value * 100000000).toFixed(0), 8));
                         script = Crypto.util.bytesToHex(s.buffer);
-                    } else //legacy script
-                        script = utxos[i].script_hex;
+                    } else //redeemScript for multisig
+                        script = rs;
                     tx.addinput(utxos[i].txid, utxos[i].output_no, script, 0xfffffffd /*sequence*/ ); //0xfffffffd for Replace-by-fee
                 }
                 addUTXOs(tx, senders, redeemScripts, required_amount, n + 1)
@@ -466,7 +471,7 @@
         })
     }
 
-    btcOperator.signTx = function(tx, privKeys) {
+    function deserializeTx(tx) {
         if (typeof tx === 'string' || Array.isArray(tx)) {
             try {
                 tx = coinjs.transaction().deserialize(tx);
@@ -475,14 +480,43 @@
             }
         } else if (typeof tx !== 'object' || typeof tx.sign !== 'function')
             throw "Invalid transaction object";
+        return tx;
+    }
 
+    btcOperator.signTx = function(tx, privkeys, sighashtype = 1) {
+        tx = deserializeTx(tx);
         if (!Array.isArray(privkeys))
             privkeys = [privkeys];
-        for (let i in privKeys)
-            if (privKeys[i].length === 64)
-                privkeys[i] = coinjs.privkey2wif(privKeys[i]);
-        new Set(privKeys).forEach(key => console.debug("Signing key:", key, tx.sign(key, 1 /*sighashtype*/ ))); //Sign the tx using private key WIF
+        for (let i in privkeys)
+            if (privkeys[i].length === 64)
+                privkeys[i] = coinjs.privkey2wif(privkeys[i]);
+        new Set(privkeys).forEach(key => tx.sign(key, sighashtype)); //Sign the tx using private key WIF
         return tx.serialize();
+    }
+
+    btcOperator.checkSigned = function(tx, bool = true) {
+        tx = deserializeTx(tx);
+        let n = [];
+        for (let i in tx.ins) {
+            var s = tx.extractScriptKey(i);
+            if (s['type'] !== 'multisig')
+                n.push(s.signed == 'true' || (tx.witness[i] && tx.witness[i].length == 2))
+            else {
+                var rs = coinjs.script().decodeRedeemScript(s.script);
+                let x = {
+                    s: s['signatures'],
+                    r: rs['signaturesRequired'],
+                    t: rs['pubkeys'].length
+                };
+                if (x.r > x.t)
+                    throw "signaturesRequired is more than publicKeys";
+                else if (x.s < x.r)
+                    n.push(x);
+                else
+                    n.push(true);
+            }
+        }
+        return bool ? !(n.filter(x => x !== true).length) : n;
     }
 
     btcOperator.getTx = txid => new Promise((resolve, reject) => {
