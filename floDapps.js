@@ -1,4 +1,4 @@
-(function(EXPORTS) { //floDapps v2.3.2b
+(function(EXPORTS) { //floDapps v2.3.2c
     /* General functions for FLO Dapps*/
     'use strict';
     const floDapps = EXPORTS;
@@ -164,7 +164,7 @@
             }
             //add other given objectStores
             initIndexedDB.appObs = initIndexedDB.appObs || {}
-            for (o in initIndexedDB.appObs)
+            for (let o in initIndexedDB.appObs)
                 if (!(o in obs_a))
                     obs_a[o] = initIndexedDB.appObs[o]
             Promise.all([
@@ -456,7 +456,10 @@
                 Promise.all([p1, p2])
                     .then(r => resolve('App Startup finished successful'))
                     .catch(e => reject('App Startup failed'))
-            }).catch(error => reject("App database initiation failed"))
+            }).catch(error => {
+                startUpLog(false, error);
+                reject("App database initiation failed")
+            })
         })
     }
 
