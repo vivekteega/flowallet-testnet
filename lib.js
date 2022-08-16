@@ -1,4 +1,4 @@
-(function(GLOBAL) { //lib v1.3.0c
+(function(GLOBAL) { //lib v1.3.0d
     'use strict';
     /* Utility Libraries required for Standard operations
      * All credits for these codes belong to their respective creators, moderators and owners.
@@ -4782,8 +4782,8 @@
                 } else if (floDataCount < 253) {
                     floDataCountString = floDataCount.toString(16);
                 } else if (floDataCount <= 1040) {
-                    floDataCountAdjusted = (floDataCount - 253) + parseInt("0xfd00fd");
-                    floDataCountStringAdjusted = floDataCountAdjusted.toString(16);
+                    let floDataCountAdjusted = (floDataCount - 253) + parseInt("0xfd00fd");
+                    let floDataCountStringAdjusted = floDataCountAdjusted.toString(16);
                     floDataCountString = floDataCountStringAdjusted.substr(0, 2) + floDataCountStringAdjusted.substr(4, 2) + floDataCountStringAdjusted.substr(2, 2);
                 } else {
                     floDataCountString = "Character Limit Exceeded";
