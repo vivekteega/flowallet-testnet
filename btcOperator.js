@@ -1,4 +1,4 @@
-(function(EXPORTS) { //btcOperator v1.0.7c
+(function(EXPORTS) { //btcOperator v1.0.8
     /* BTC Crypto and API Operator */
     const btcOperator = EXPORTS;
 
@@ -517,6 +517,20 @@
             }
         }
         return bool ? !(n.filter(x => x !== true).length) : n;
+    }
+
+    btcOperator.checkIfSameTx = function(tx1, tx2) {
+        tx1 = deserializeTx(tx1);
+        tx2 = deserializeTx(tx2);
+        if (tx1.ins.length !== tx2.ins.length || tx1.outs.length !== tx2.outs.length)
+            return false;
+        for (let i = 0; i < tx1.ins.length; i++)
+            if (tx1.ins[i].outpoint.hash !== tx2.ins[i].outpoint.hash || tx1.ins[i].outpoint.index !== tx2.ins[i].outpoint.index)
+                return false;
+        for (let i = 0; i < tx2.ins.length; i++)
+            if (tx1.outs[i].value !== tx2.outs[i].value || Crypto.util.bytesToHex(tx1.outs[i].script.buffer) !== Crypto.util.bytesToHex(tx2.outs[i].script.buffer))
+                return false;
+        return true;
     }
 
     btcOperator.getTx = txid => new Promise((resolve, reject) => {
