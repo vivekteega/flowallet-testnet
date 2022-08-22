@@ -1,4 +1,4 @@
-(function(EXPORTS) { //floCrypto v2.3.3c
+(function(EXPORTS) { //floCrypto v2.3.3d
     /* FLO Crypto Operators */
     'use strict';
     const floCrypto = EXPORTS;
@@ -81,7 +81,7 @@
     floCrypto.randInt = function(min, max) {
         min = Math.ceil(min);
         max = Math.floor(max);
-        return Math.floor(Math.random() * (max - min + 1)) + min;
+        return Math.floor(securedMathRandom() * (max - min + 1)) + min;
     }
 
     //generate a random String within length (options : alphaNumeric chars only)
@@ -90,7 +90,7 @@
         var characters = alphaNumeric ? 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789' :
             'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_+-./*?@#&$<>=[]{}():';
         for (var i = 0; i < length; i++)
-            result += characters.charAt(Math.floor(Math.random() * characters.length));
+            result += characters.charAt(Math.floor(securedMathRandom() * characters.length));
         return result;
     }
 
