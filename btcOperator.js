@@ -1,4 +1,4 @@
-(function(EXPORTS) { //btcOperator v1.0.8
+(function(EXPORTS) { //btcOperator v1.0.9
     /* BTC Crypto and API Operator */
     const btcOperator = EXPORTS;
 
@@ -16,14 +16,14 @@
         })
     };
 
-    const SIGN_SIZE = 73;
+    const SATOSHI_IN_BTC = 1e8;
 
     function get_fee_rate() {
         return new Promise((resolve, reject) => {
             fetch('https://api.blockchain.info/mempool/fees').then(response => {
                 if (response.ok)
                     response.json()
-                    .then(result => resolve(result.regular))
+                    .then(result => resolve(parseFloat((result.regular / SATOSHI_IN_BTC).toFixed(8))))
                     .catch(error => reject(error));
                 else
                     reject(response);
@@ -204,6 +204,17 @@
             .catch(error => reject(error))
     });
 
+    const BASE_TX_SIZE = 12,
+        BASE_INPUT_SIZE = 41,
+        LEGACY_INPUT_SIZE = 107,
+        BECH32_INPUT_SIZE = 27,
+        SEGWIT_INPUT_SIZE = 59,
+        MULTISIG_INPUT_SIZE_ES = 351,
+        BASE_OUTPUT_SIZE = 9,
+        LEGACY_OUTPUT_SIZE = 25,
+        BECH32_OUTPUT_SIZE = 23,
+        SEGWIT_OUTPUT_SIZE = 23;
+
     function _redeemScript(addr, key) {
         let decode = coinjs.addressDecode(addr);
         switch (decode.type) {
@@ -213,6 +224,39 @@
                 return key ? coinjs.segwitAddress(btcOperator.pubkey(key)).redeemscript : null;
             case "bech32":
                 return decode.redeemscript;
+            default:
+                return null;
+        }
+    }
+
+    function _sizePerInput(addr, rs) {
+        switch (coinjs.addressDecode(addr).type) {
+            case "standard":
+                return BASE_INPUT_SIZE + LEGACY_INPUT_SIZE;
+            case "bech32":
+                return BASE_INPUT_SIZE + BECH32_INPUT_SIZE;
+            case "multisig":
+                switch (coinjs.script().decodeRedeemScript(rs).type) {
+                    case "segwit__":
+                        return BASE_INPUT_SIZE + SEGWIT_INPUT_SIZE;
+                    case "multisig__":
+                        return BASE_INPUT_SIZE + MULTISIG_INPUT_SIZE_ES;
+                    default:
+                        return null;
+                };
+            default:
+                return null;
+        }
+    }
+
+    function _sizePerOutput(addr) {
+        switch (coinjs.addressDecode(addr).type) {
+            case "standard":
+                return BASE_OUTPUT_SIZE + LEGACY_OUTPUT_SIZE;
+            case "bech32":
+                return BASE_OUTPUT_SIZE + BECH32_OUTPUT_SIZE;
+            case "multisig":
+                return BASE_OUTPUT_SIZE + SEGWIT_OUTPUT_SIZE;
             default:
                 return null;
         }
@@ -265,48 +309,71 @@
         return parameters;
     }
 
-    const TMP_FEE = 0.00001;
-
     function createTransaction(senders, redeemScripts, receivers, amounts, fee, change_addr) {
         return new Promise((resolve, reject) => {
-            let auto_fee = false,
-                total_amount = parseFloat(amounts.reduce((t, a) => t + a, 0).toFixed(8));
-            if (fee === null) {
-                auto_fee = true;
-                fee = TMP_FEE;
-            }
+            let total_amount = parseFloat(amounts.reduce((t, a) => t + a, 0).toFixed(8));
             const tx = coinjs.transaction();
-            addUTXOs(tx, senders, redeemScripts, total_amount + fee).then(result => {
-                if (result > 0)
-                    return reject("Insufficient Balance");
-                let change = addOutputs(tx, receivers, amounts, Math.abs(result), change_addr);
-                if (!auto_fee)
-                    return resolve(tx);
-                autoFeeCalc(tx).then(fee_calc => {
-                    fee = Math.round((fee * 1) * 1e8); //satoshi convertion
-                    if (!change)
-                        tx.addoutput(change_addr, 0);
-                    editFee(tx, fee, fee_calc);
-                    resolve(tx);
-                }).catch(error => reject(error))
-            })
+            let output_size = addOutputs(tx, receivers, amounts, change_addr);
+            addInputs(tx, senders, redeemScripts, total_amount, fee, output_size).then(result => {
+                if (result.change_amount > 0)
+                    tx.outs[tx.outs.length - 1].value = parseInt(result.change_amount * SATOSHI_IN_BTC); //values are in satoshi
+                else
+                    tx.outs.pop(); //remove the change output if no change_amount
+                result.output_size = output_size;
+                result.output_amount = total_amount;
+                result.total_size = BASE_TX_SIZE + output_size + result.input_size;
+                result.transaction = tx;
+                resolve(result);
+            }).catch(error => reject(error))
         })
     }
 
-    function addUTXOs(tx, senders, redeemScripts, required_amount, n = 0) {
+    function addInputs(tx, senders, redeemScripts, total_amount, fee, output_size) {
+        return new Promise((resolve, reject) => {
+            if (fee !== null) {
+                addUTXOs(tx, senders, redeemScripts, total_amount + fee, false).then(result => {
+                    result.fee = fee;
+                    resolve(result);
+                }).catch(error => reject(error))
+            } else {
+                get_fee_rate().then(fee_rate => {
+                    let net_fee = BASE_TX_SIZE * fee_rate;
+                    net_fee += (output_size * fee_rate);
+                    addUTXOs(tx, senders, redeemScripts, total_amount + net_fee, fee_rate).then(result => {
+                        result.fee_amount = parseFloat((net_fee + (result.input_size * fee_rate)).toFixed(8));
+                        result.fee_rate = fee_rate;
+                        resolve(result);
+                    }).catch(error => reject(error))
+                }).catch(error => reject(error))
+            }
+        })
+    }
+
+    function addUTXOs(tx, senders, redeemScripts, required_amount, fee_rate, rec_args = {}) {
         return new Promise((resolve, reject) => {
             required_amount = parseFloat(required_amount.toFixed(8));
-            if (required_amount <= 0 || n >= senders.length)
-                return resolve(required_amount);
-            let addr = senders[n],
-                rs = redeemScripts[n];
+            if (typeof rec_args.n === "undefined") {
+                rec_args.n = 0;
+                rec_args.input_size = 0;
+                rec_args.input_amount = 0;
+            }
+            if (required_amount <= 0)
+                return resolve({
+                    input_size: rec_args.input_size,
+                    input_amount: rec_args.input_amount,
+                    change_amount: required_amount * -1 //required_amount will be -ve of change_amount
+                });
+            else if (rec_args.n >= senders.length)
+                return reject("Insufficient Balance");
+            let addr = senders[rec_args.n],
+                rs = redeemScripts[rec_args.n];
+            let size_per_input = _sizePerInput(addr, rs);
             fetch_api(`get_tx_unspent/BTC/${addr}`).then(result => {
                 let utxos = result.data.txs;
                 console.debug("add-utxo", addr, rs, required_amount, utxos);
                 for (let i = 0; i < utxos.length && required_amount > 0; i++) {
                     if (!utxos[i].confirmations) //ignore unconfirmed utxo
                         continue;
-                    required_amount -= parseFloat(utxos[i].value);
                     var script;
                     if (!rs || !rs.length) //legacy script
                         script = utxos[i].script_hex;
@@ -315,29 +382,38 @@
                         let s = coinjs.script();
                         s.writeBytes(Crypto.util.hexToBytes(rs));
                         s.writeOp(0);
-                        s.writeBytes(coinjs.numToBytes((utxos[i].value * 100000000).toFixed(0), 8));
+                        s.writeBytes(coinjs.numToBytes((utxos[i].value * SATOSHI_IN_BTC).toFixed(0), 8));
                         script = Crypto.util.bytesToHex(s.buffer);
                     } else //redeemScript for multisig
                         script = rs;
                     tx.addinput(utxos[i].txid, utxos[i].output_no, script, 0xfffffffd /*sequence*/ ); //0xfffffffd for Replace-by-fee
+                    //update track values
+                    rec_args.input_size += size_per_input;
+                    rec_args.input_amount += parseFloat(utxos[i].value);
+                    required_amount -= parseFloat(utxos[i].value);
+                    if (fee_rate) //automatic fee calculation (dynamic)
+                        required_amount += size_per_input * fee_rate;
                 }
-                addUTXOs(tx, senders, redeemScripts, required_amount, n + 1)
+                rec_args.n += 1;
+                addUTXOs(tx, senders, redeemScripts, required_amount, fee_rate, rec_args)
                     .then(result => resolve(result))
                     .catch(error => reject(error))
             }).catch(error => reject(error))
         })
     }
 
-    function addOutputs(tx, receivers, amounts, change, change_addr) {
-        for (let i in receivers)
+    function addOutputs(tx, receivers, amounts, change_addr) {
+        let size = 0;
+        for (let i in receivers) {
             tx.addoutput(receivers[i], amounts[i]);
-        if (parseFloat(change.toFixed(8)) > 0) {
-            tx.addoutput(change_addr, change);
-            return true;
-        } else
-            return false;
+            size += _sizePerOutput(receivers[i]);
+        }
+        tx.addoutput(change_addr, 0);
+        size += _sizePerOutput(change_addr);
+        return size;
     }
 
+    /*
     function autoFeeCalc(tx) {
         return new Promise((resolve, reject) => {
             get_fee_rate().then(fee_rate => {
@@ -362,16 +438,17 @@
 
     function editFee(tx, current_fee, target_fee, index = -1) {
         //values are in satoshi
-        index = parseInt(index >= 0 ? index : tx.out.length - index);
-        if (index < 0 || index >= tx.out.length)
+        index = parseInt(index >= 0 ? index : tx.outs.length - index);
+        if (index < 0 || index >= tx.outs.length)
             throw "Invalid index";
         let edit_value = parseInt(current_fee - target_fee), //rip of any decimal places
-            current_value = tx.out[index].value; //could be BigInterger
+            current_value = tx.outs[index].value; //could be BigInterger
         if (edit_value < 0 && edit_value > current_value)
             throw "Insufficient value at vout";
-        tx.out[index].value = current_value instanceof BigInteger ?
+        tx.outs[index].value = current_value instanceof BigInteger ?
             current_value.add(new BigInteger('' + edit_value)) : parseInt(current_value + edit_value);
     }
+    */
 
     btcOperator.sendTx = function(senders, privkeys, receivers, amounts, fee, change_addr = null) {
         return new Promise((resolve, reject) => {
@@ -402,7 +479,8 @@
             if (redeemScripts.includes(null)) //TODO: segwit
                 return reject("Unable to get redeem-script");
             //create transaction
-            createTransaction(senders, redeemScripts, receivers, amounts, fee, change_addr || senders[0]).then(tx => {
+            createTransaction(senders, redeemScripts, receivers, amounts, fee, change_addr || senders[0]).then(result => {
+                let tx = result.transaction;
                 console.debug("Unsigned:", tx.serialize());
                 new Set(wif_keys).forEach(key => console.debug("Signing key:", key, tx.sign(key, 1 /*sighashtype*/ ))); //Sign the tx using private key WIF
                 console.debug("Signed:", tx.serialize());
@@ -435,9 +513,11 @@
             if (redeemScripts.includes(null)) //TODO: segwit
                 return reject("Unable to get redeem-script");
             //create transaction
-            createTransaction(senders, redeemScripts, receivers, amounts, fee, change_addr || senders[0])
-                .then(tx => resolve(tx.serialize()))
-                .catch(error => reject(error))
+            createTransaction(senders, redeemScripts, receivers, amounts, fee, change_addr || senders[0]).then(result => {
+                result.tx_hex = result.transaction.serialize();
+                delete result.transaction;
+                resolve(result);
+            }).catch(error => reject(error))
         })
     }
 
@@ -465,9 +545,12 @@
                 return reject(e)
             }
             //create transaction
-            createTransaction([sender], [redeemScript], receivers, amounts, fee, sender)
-                .then(tx => resolve(tx.serialize()))
-                .catch(error => reject(error))
+            createTransaction([sender], [redeemScript], receivers, amounts, fee, sender).then(result => {
+                result.tx_hex = result.transaction.serialize();
+                delete result.transaction;
+                resolve(result);
+            }).catch(error => reject(error))
+
         })
     }
 
