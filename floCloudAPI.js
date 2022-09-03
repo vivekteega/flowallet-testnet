@@ -1,4 +1,4 @@
-(function(EXPORTS) { //floCloudAPI v2.4.2d
+(function(EXPORTS) { //floCloudAPI v2.4.2e
     /* FLO Cloud operations to send/request application data*/
     'use strict';
     const floCloudAPI = EXPORTS;
@@ -78,6 +78,9 @@
         generalData: {
             get: () => generalData,
             set: data => generalData = data
+        },
+        generalDataset: {
+            value: (type, options = {}) => generalData[filterKey(type, options)]
         },
         lastVC: {
             get: () => lastVC,
@@ -375,7 +378,7 @@
         return JSON.parse(decodeURIComponent(escape(atob(message))))
     }
 
-    const filterKey = util.filterKey = function(type, options) {
+    const filterKey = util.filterKey = function(type, options = {}) {
         return type + (options.comment ? ':' + options.comment : '') +
             '|' + (options.group || options.receiverID || DEFAULT.adminID) +
             '|' + (options.application || DEFAULT.application);
@@ -1024,7 +1027,6 @@
             }
             return obj;
         }
-
 
         const findDiff = (lhs, rhs) => ({
             added: addedDiff(lhs, rhs),
