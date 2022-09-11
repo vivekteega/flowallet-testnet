@@ -1,4 +1,4 @@
-(function(EXPORTS) { //btcOperator v1.0.9
+(function(EXPORTS) { //btcOperator v1.0.10
     /* BTC Crypto and API Operator */
     const btcOperator = EXPORTS;
 
@@ -577,7 +577,7 @@
         return tx.serialize();
     }
 
-    btcOperator.checkSigned = function(tx, bool = true) {
+    const checkSigned = btcOperator.checkSigned = function(tx, bool = true) {
         tx = deserializeTx(tx);
         let n = [];
         for (let i in tx.ins) {
@@ -614,6 +614,54 @@
             if (tx1.outs[i].value !== tx2.outs[i].value || Crypto.util.bytesToHex(tx1.outs[i].script.buffer) !== Crypto.util.bytesToHex(tx2.outs[i].script.buffer))
                 return false;
         return true;
+    }
+
+    const getTxOutput = (txid, i) => new Promise((resolve, reject) => {
+        fetch_api(`get_tx_outputs/BTC/${txid}/${i}`)
+            .then(result => resolve(result.data.outputs))
+            .catch(error => reject(error))
+    });
+
+    btcOperator.parseTransaction = function(tx) {
+        return new Promise((resolve, reject) => {
+            tx = deserializeTx(tx);
+            let result = {};
+            let promises = [];
+            //Parse Inputs
+            for (let i = 0; i < tx.ins.length; i++)
+                promises.push(getTxOutput(tx.ins[i].outpoint.hash, tx.ins[i].outpoint.index));
+            Promise.all(promises).then(inputs => {
+                result.inputs = inputs.map(inp => Object({
+                    address: inp.address,
+                    value: parseFloat(inp.value)
+                }));
+                let signed = checkSigned(tx, false);
+                result.inputs.forEach((inp, i) => inp.signed = signed[i]);
+                //Parse Outputs
+                result.outputs = tx.outs.map(out => {
+                    var address;
+                    switch (out.script.chunks[0]) {
+                        case 0: //bech32
+                            address = encodeBech32(Crypto.util.bytesToHex(out.script.chunks[1]), coinjs.bech32.version, coinjs.bech32.hrp);
+                            break;
+                        case 169: //multisig, segwit
+                            address = encodeLegacy(Crypto.util.bytesToHex(out.script.chunks[1]), coinjs.multisig);
+                            break;
+                        case 118: //legacy
+                            address = encodeLegacy(Crypto.util.bytesToHex(out.script.chunks[2]), coinjs.pub);
+                    }
+                    return {
+                        address,
+                        value: parseFloat(out.value / SATOSHI_IN_BTC)
+                    }
+                });
+                //Parse Totals
+                result.total_input = parseFloat(result.inputs.reduce((a, inp) => a += inp.value, 0).toFixed(8));
+                result.total_output = parseFloat(result.outputs.reduce((a, out) => a += out.value, 0).toFixed(8));
+                result.fee = parseFloat((result.total_input - result.total_output).toFixed(8));
+                resolve(result);
+            }).catch(error => reject(error))
+        })
     }
 
     btcOperator.getTx = txid => new Promise((resolve, reject) => {
