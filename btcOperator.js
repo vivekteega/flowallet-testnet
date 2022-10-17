@@ -1,4 +1,4 @@
-(function (EXPORTS) { //btcOperator v1.0.10b
+(function (EXPORTS) { //btcOperator v1.0.11
     /* BTC Crypto and API Operator */
     const btcOperator = EXPORTS;
 
@@ -39,7 +39,7 @@
                 "tx_hex": rawTxHex
             },
             dataType: "json",
-            error: e => reject(e.responseJSON),
+            error: e => reject((e.responseJSON && e.responseJSON.status === "fail") ? null : e.responseJSON),
             success: r => r.status === "success" ? resolve(r.data.txid) : reject(r)
         })
     });
@@ -452,6 +452,17 @@
 
     btcOperator.sendTx = function (senders, privkeys, receivers, amounts, fee, change_addr = null) {
         return new Promise((resolve, reject) => {
+            createSignedTx(senders, privkeys, receivers, amounts, fee, change_addr).then(result => {
+                debugger;
+                broadcastTx(result.transaction.serialize())
+                    .then(txid => resolve(txid))
+                    .catch(error => reject(error));
+            }).catch(error => reject(error))
+        })
+    }
+
+    const createSignedTx = btcOperator.createSignedTx = function (senders, privkeys, receivers, amounts, fee, change_addr = null) {
+        return new Promise((resolve, reject) => {
             try {
                 ({
                     senders,
@@ -484,10 +495,7 @@
                 console.debug("Unsigned:", tx.serialize());
                 new Set(wif_keys).forEach(key => console.debug("Signing key:", key, tx.sign(key, 1 /*sighashtype*/))); //Sign the tx using private key WIF
                 console.debug("Signed:", tx.serialize());
-                debugger;
-                broadcastTx(tx.serialize())
-                    .then(txid => resolve(txid))
-                    .catch(error => reject(error));
+                resolve(result);
             }).catch(error => reject(error));
         })
     }
@@ -662,6 +670,15 @@
                 resolve(result);
             }).catch(error => reject(error))
         })
+    }
+
+    btcOperator.transactionID = function (tx) {
+        tx = deserializeTx(tx);
+        let clone = coinjs.clone(tx);
+        clone.witness = null;
+        let raw_bytes = Crypto.util.hexToBytes(clone.serialize());
+        let txid = Crypto.SHA256(Crypto.SHA256(raw_bytes, { asBytes: true }), { asBytes: true }).reverse();
+        return Crypto.util.bytesToHex(txid);
     }
 
     btcOperator.getTx = txid => new Promise((resolve, reject) => {
