@@ -551,8 +551,8 @@
             </button>
             <h3>Select an address</h3>
         </header>
-        <sm-input id="search_saved_ids_picker" placeholder="Search"></sm-input>
         <section class="grid gap-1">
+            <sm-input id="search_saved_ids_picker" placeholder="Search"></sm-input>
             <ul id="saved_ids_picker_list" class="observe-empty-state grid gap-0-5 h-100" style="overflow-y: auto;">
             </ul>
             <div class="empty-state">
@@ -1378,6 +1378,9 @@
             const target = e.target.closest('.saved-id');
             getRef(`${openSavedIdPopupFor === 'sender' ? 'getBal_addr' : 'receiver'}`).value = target.dataset.floId
             getRef(`${openSavedIdPopupFor === 'sender' ? 'getBal_addr' : 'receiver'}`).focusIn()
+            if (openSavedIdPopupFor === 'sender') {
+                checkSenderBalance()
+            }
             closePopup()
         })
 
