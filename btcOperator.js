@@ -1,4 +1,4 @@
-(function (EXPORTS) { //btcOperator v1.0.13b
+(function (EXPORTS) { //btcOperator v1.0.13c
     /* BTC Crypto and API Operator */
     const btcOperator = EXPORTS;
 
@@ -346,7 +346,7 @@
                         return reject("Send amount is less than fee");
 
                 }
-                tx.outs = tx.outs.filter(o => o.value !== 0); //remove all output with value 0
+                tx.outs = tx.outs.filter(o => o.value != 0); //remove all output with value 0
                 result.output_size = output_size;
                 result.output_amount = total_amount - (fee_from_receiver ? result.fee : 0);
                 result.total_size = BASE_TX_SIZE + output_size + result.input_size;
