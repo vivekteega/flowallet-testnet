@@ -1,4 +1,4 @@
-(function (EXPORTS) { //btcOperator v1.0.13c
+(function (EXPORTS) { //btcOperator v1.0.14
     /* BTC Crypto and API Operator */
     const btcOperator = EXPORTS;
 
@@ -102,7 +102,7 @@
         if (!addr)
             return undefined;
         let type = coinjs.addressDecode(addr).type;
-        if (["standard", "multisig", "bech32"].includes(type))
+        if (["standard", "multisig", "bech32", "multisigBech32"].includes(type))
             return type;
         else
             return false;
@@ -398,6 +398,7 @@
                 return reject("Insufficient Balance");
             let addr = senders[rec_args.n],
                 rs = redeemScripts[rec_args.n];
+            let addr_type = coinjs.addressDecode(addr).type;
             let size_per_input = _sizePerInput(addr, rs);
             fetch_api(`get_tx_unspent/BTC/${addr}`).then(result => {
                 let utxos = result.data.txs;
@@ -408,14 +409,14 @@
                     var script;
                     if (!rs || !rs.length) //legacy script
                         script = utxos[i].script_hex;
-                    else if (((rs.match(/^00/) && rs.length == 44)) || (rs.length == 40 && rs.match(/^[a-f0-9]+$/gi))) {
-                        //redeemScript for segwit/bech32
+                    else if (((rs.match(/^00/) && rs.length == 44)) || (rs.length == 40 && rs.match(/^[a-f0-9]+$/gi)) || addr_type === 'multisigBech32') {
+                        //redeemScript for segwit/bech32 and multisig (bech32)
                         let s = coinjs.script();
                         s.writeBytes(Crypto.util.hexToBytes(rs));
                         s.writeOp(0);
                         s.writeBytes(coinjs.numToBytes((utxos[i].value * SATOSHI_IN_BTC).toFixed(0), 8));
                         script = Crypto.util.bytesToHex(s.buffer);
-                    } else //redeemScript for multisig
+                    } else //redeemScript for multisig (segwit)
                         script = rs;
                     tx.addinput(utxos[i].txid, utxos[i].output_no, script, 0xfffffffd /*sequence*/); //0xfffffffd for Replace-by-fee
                     //update track values
