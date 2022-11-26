@@ -1,4 +1,4 @@
-(function (EXPORTS) { //btcOperator v1.0.14
+(function (EXPORTS) { //btcOperator v1.0.14a
     /* BTC Crypto and API Operator */
     const btcOperator = EXPORTS;
 
@@ -108,12 +108,15 @@
             return false;
     }
 
-    btcOperator.multiSigAddress = function (pubKeys, minRequired) {
+    btcOperator.multiSigAddress = function (pubKeys, minRequired, bech32 = true) {
         if (!Array.isArray(pubKeys))
             throw "pubKeys must be an array of public keys";
         else if (pubKeys.length < minRequired)
             throw "minimum required should be less than the number of pubKeys";
-        return coinjs.pubkeys2MultisigAddress(pubKeys, minRequired);
+        if (bech32)
+            return coinjs.pubkeys2MultisigAddressBech32(pubKeys, minRequired);
+        else
+            return coinjs.pubkeys2MultisigAddress(pubKeys, minRequired);
     }
 
     //convert from one blockchain to another blockchain (target version)
@@ -222,11 +225,13 @@
         BASE_INPUT_SIZE = 41,
         LEGACY_INPUT_SIZE = 107,
         BECH32_INPUT_SIZE = 27,
+        BECH32_MULTISIG_INPUT_SIZE = 35,
         SEGWIT_INPUT_SIZE = 59,
         MULTISIG_INPUT_SIZE_ES = 351,
         BASE_OUTPUT_SIZE = 9,
         LEGACY_OUTPUT_SIZE = 25,
         BECH32_OUTPUT_SIZE = 23,
+        BECH32_MULTISIG_OUTPUT_SIZE = 34,
         SEGWIT_OUTPUT_SIZE = 23;
 
     function _redeemScript(addr, key) {
@@ -249,6 +254,8 @@
                 return BASE_INPUT_SIZE + LEGACY_INPUT_SIZE;
             case "bech32":
                 return BASE_INPUT_SIZE + BECH32_INPUT_SIZE;
+            case "multisigBech32":
+                return BASE_INPUT_SIZE + BECH32_MULTISIG_INPUT_SIZE;
             case "multisig":
                 switch (coinjs.script().decodeRedeemScript(rs).type) {
                     case "segwit__":
@@ -269,6 +276,8 @@
                 return BASE_OUTPUT_SIZE + LEGACY_OUTPUT_SIZE;
             case "bech32":
                 return BASE_OUTPUT_SIZE + BECH32_OUTPUT_SIZE;
+            case "multisigBech32":
+                return BASE_OUTPUT_SIZE + BECH32_MULTISIG_OUTPUT_SIZE;
             case "multisig":
                 return BASE_OUTPUT_SIZE + SEGWIT_OUTPUT_SIZE;
             default:
@@ -564,11 +573,14 @@
     btcOperator.createMultiSigTx = function (sender, redeemScript, receivers, amounts, fee = null, options = {}) {
         return new Promise((resolve, reject) => {
             //validate tx parameters
-            if (validateAddress(sender) !== "multisig")
+            let addr_type = validateAddress(sender);
+            if (!(["multisig", "multisigBech32"].includes(addr_type)))
                 return reject("Invalid sender (multisig):" + sender);
             else {
                 let script = coinjs.script();
-                let decode = script.decodeRedeemScript(redeemScript);
+                let decode = (addr_type == "multisig") ?
+                    script.decodeRedeemScript(redeemScript) :
+                    script.decodeRedeemScriptBech32(redeemScript);
                 if (!decode || decode.address !== sender)
                     return reject("Invalid redeem-script");
             }
@@ -623,10 +635,10 @@
         let n = [];
         for (let i in tx.ins) {
             var s = tx.extractScriptKey(i);
-            if (s['type'] !== 'multisig')
+            if (s['type'] !== 'multisig' && s['type'] !== 'multisig_bech32')
                 n.push(s.signed == 'true' || (tx.witness[i] && tx.witness[i].length == 2))
             else {
-                var rs = coinjs.script().decodeRedeemScript(s.script);
+                var rs = coinjs.script().decodeRedeemScript(s.script);  //will work for bech32 too, as only address is diff
                 let x = {
                     s: s['signatures'],
                     r: rs['signaturesRequired'],
@@ -682,10 +694,10 @@
                 result.outputs = tx.outs.map(out => {
                     var address;
                     switch (out.script.chunks[0]) {
-                        case 0: //bech32
+                        case 0: //bech32, multisig-bech32
                             address = encodeBech32(Crypto.util.bytesToHex(out.script.chunks[1]), coinjs.bech32.version, coinjs.bech32.hrp);
                             break;
-                        case 169: //multisig, segwit
+                        case 169: //segwit, multisig-segwit
                             address = encodeLegacy(Crypto.util.bytesToHex(out.script.chunks[1]), coinjs.multisig);
                             break;
                         case 118: //legacy
