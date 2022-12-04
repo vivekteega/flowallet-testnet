@@ -287,7 +287,11 @@
                 <sm-form id="send_form">
                     <div class="grid gap-1">
                         <div id="balance_card">
-                            <h5>Available balance</h5>
+                            <div class="flex align-center space-between">
+                                <h5>Available balance</h5>
+                                <button id="refresh_balance_button" class="button button--small button--colored hide"
+                                    onclick="checkSenderBalance()">Refresh</button>
+                            </div>
                             <div class="flex align-end gap-0-3">
                                 <b id="sender_balance" style="font-size: 3rem;line-height: 1;">0</b>
                                 <span>FLO</span>
@@ -1380,6 +1384,7 @@
             getRef(`${openSavedIdPopupFor === 'sender' ? 'getBal_addr' : 'receiver'}`).focusIn()
             if (openSavedIdPopupFor === 'sender') {
                 checkSenderBalance()
+                getRef('refresh_balance_button').classList.remove('hide')
             }
             closePopup()
         })
@@ -1532,8 +1537,10 @@
         getRef('getBal_addr').addEventListener('input', debounce(e => {
             if (e.target.isValid) {
                 checkSenderBalance()
+                getRef('refresh_balance_button').classList.remove('hide')
             } else {
                 getRef('sender_balance').textContent = `0`;
+                getRef('refresh_balance_button').classList.add('hide')
             }
         }, 100))
 
