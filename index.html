@@ -288,7 +288,7 @@
                     <div class="grid gap-1">
                         <div id="balance_card">
                             <div class="flex align-center space-between">
-                                <h5>Available balance</h5>
+                                <h5>Balance</h5>
                                 <button id="refresh_balance_button" class="button button--small button--colored hide"
                                     onclick="checkSenderBalance()">Refresh</button>
                             </div>
@@ -1547,7 +1547,7 @@
         function checkSenderBalance() {
             getRef('sender_balance').innerHTML = `<sm-spinner></sm-spinner>`;
             floWebWallet.getBalance(getRef('getBal_addr').value.trim()).then((retrievedBal) => {
-                getRef('sender_balance').textContent = parseFloat(retrievedBal.toFixed(3));
+                getRef('sender_balance').textContent = parseFloat(retrievedBal);
             }).catch((error) => {
                 console.error(error);
             })
