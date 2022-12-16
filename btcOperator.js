@@ -1,4 +1,4 @@
-(function (EXPORTS) { //btcOperator v1.0.14a
+(function (EXPORTS) { //btcOperator v1.0.14b
     /* BTC Crypto and API Operator */
     const btcOperator = EXPORTS;
 
@@ -338,7 +338,7 @@
             const tx = coinjs.transaction();
             let output_size = addOutputs(tx, receivers, amounts, change_address);
             addInputs(tx, senders, redeemScripts, total_amount, fee, output_size, fee_from_receiver).then(result => {
-                if (result.change_amount > 0) //add change amount if any
+                if (result.change_amount > 0 && result.change_amount > result.fee) //add change amount if any (ignore dust change)
                     tx.outs[tx.outs.length - 1].value = parseInt(result.change_amount * SATOSHI_IN_BTC); //values are in satoshi
                 if (fee_from_receiver) { //deduce fee from receivers if fee_from_receiver
                     let fee_remaining = parseInt(result.fee * SATOSHI_IN_BTC);
