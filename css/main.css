@@ -242,6 +242,10 @@ sm-chip {
      -moz-user-select: none;
           user-select: none;
 }
+sm-chip[selected] {
+  --background: var(--accent-color);
+  color: rgba(var(--background-color), 1);
+}
 
 ul {
   list-style: none;

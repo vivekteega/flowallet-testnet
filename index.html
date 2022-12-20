@@ -267,7 +267,7 @@
                 </section>
                 <div class="empty-state justify-center align-center h-100">
                     <div class="grid justify-center text-center gap-1">
-                        <sm-spinner></sm-spinner>
+                        <sm-spinner class="justify-self-center"></sm-spinner>
                         <span>Loading transactions</span>
                     </div>
                 </div>
@@ -293,7 +293,7 @@
                                     onclick="checkSenderBalance()">Refresh</button>
                             </div>
                             <div class="flex align-end gap-0-3">
-                                <b id="sender_balance" style="font-size: 3rem;line-height: 1;">0</b>
+                                <b id="sender_balance" style="font-size: 2.5rem;line-height: 1;">0</b>
                                 <span>FLO</span>
                             </div>
                             <p style="line-height: 1.2; opacity: 0.7;">
@@ -354,25 +354,6 @@
                     <button class="button button--danger cta justify-self-start" onclick="deleteDB()">Clear
                         data</button>
                 </section>
-                <!-- <details>
-                    <summary>
-                        <h4>Developer options</h4>
-                        <svg class="icon down-arrow" xmlns="http://www.w3.org/2000/svg" height="24px"
-                            viewBox="0 0 24 24" width="24px" fill="#000000">
-                            <path d="M24 24H0V0h24v24z" fill="none" opacity=".87" />
-                            <path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6-1.41-1.41z" />
-                        </svg>
-                    </summary>
-                    <sm-switch id="allow_utxo_switch" class="w-100" aria-label="Allow unconfirmed UTXOs">
-                        <div slot="left" class="grid gap-0-5 margin-right-0-5">
-                            <h4>Allow unconfirmed UTXOs</h4>
-                            <strong id="unconfirmed_UTXO_warning"
-                                style="background-color: khaki; padding: 0.5rem; border-radius: 0.3rem; color: #000000a8; justify-self: flex-start;">
-                                This is a developer option only and not recommended for normal use.
-                            </strong>
-                        </div>
-                    </sm-switch>
-                </details> -->
                 <div class="flex">
                     <b>
                         Powered by
