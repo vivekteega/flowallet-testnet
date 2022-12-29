@@ -24,6 +24,21 @@
     <script src="scripts/floBlockchainAPI.js"></script>
     <script src="scripts/compactIDB.js"></script>
     <script src="scripts/flo-webwallet.js"></script>
+    <script>
+        function onLoadStartUp() {
+            var IDBObjects = {
+                lastSync: {},
+                labels: {},
+                pinnedIds: {},
+                transactions: {}
+            }
+            compactIDB.initDB("FLOwebWallet", IDBObjects).then(result => {
+                showPage(window.location.hash)
+                render.savedIds();
+                console.log(result)
+            }).catch(error => console.error(error))
+        }
+    </script>
 </head>
 
 <body onload="onLoadStartUp()" class="hide">
@@ -1706,4 +1721,5 @@
         ]
     </script>
 </body>
+
 </html>
