@@ -1,17 +1,23 @@
-(function (EXPORTS) { //btcOperator v1.1.0
+(function (EXPORTS) { //btcOperator v1.1.1
     /* BTC Crypto and API Operator */
     const btcOperator = EXPORTS;
 
     //This library uses API provided by chain.so (https://chain.so/)
     const URL = "https://blockchain.info/";
 
-    const fetch_api = btcOperator.fetch = function (api) {
+    const fetch_api = btcOperator.fetch = function (api, json_res = true) {
         return new Promise((resolve, reject) => {
             console.debug(URL + api);
             fetch(URL + api).then(response => {
-                response.json()
-                    .then(result => result.error ? reject(result) : resolve(result))
-                    .catch(error => reject(error))
+                if (response.ok) {
+                    (json_res ? response.json() : response.text())
+                        .then(result => resolve(result))
+                        .catch(error => reject(error))
+                } else {
+                    response.json()
+                        .then(result => reject(result))
+                        .catch(error => reject(error))
+                }
             }).catch(error => reject(error))
         })
     };
@@ -739,22 +745,26 @@
 
     btcOperator.getTx = txid => new Promise((resolve, reject) => {
         fetch_api(`rawtx/${txid}`).then(result => {
-            getLatestBlock().then(latest_block => {
-                resolve({
-                    block: result.block_height,
-                    txid: result.hash,
-                    time: result.time * 1000,
-                    confirmations: latest_block - result.block_height, //calculate confirmations using latest block number as api doesnt relay it
-                    size: result.size,
-                    fee: util.Sat_to_BTC(result.fee),
-                    inputs: result.inputs.map(i => Object({ address: i.prev_out.addr, value: util.Sat_to_BTC(i.prev_out.value) })),
-                    total_input_value: util.Sat_to_BTC(result.inputs.reduce((a, i) => a + i.prev_out.value, 0)),
-                    outputs: result.out.map(o => Object({ address: o.addr, value: util.Sat_to_BTC(o.value) })),
-                    total_output_value: util.Sat_to_BTC(result.out.reduce((a, o) => a += o.value, 0)),
-                })
-            })
+            getLatestBlock().then(latest_block => resolve({
+                block: result.block_height,
+                txid: result.hash,
+                time: result.time * 1000,
+                confirmations: result.block_height === null ? 0 : latest_block - result.block_height, //calculate confirmations using latest block number as api doesnt relay it
+                size: result.size,
+                fee: util.Sat_to_BTC(result.fee),
+                inputs: result.inputs.map(i => Object({ address: i.prev_out.addr, value: util.Sat_to_BTC(i.prev_out.value) })),
+                total_input_value: util.Sat_to_BTC(result.inputs.reduce((a, i) => a + i.prev_out.value, 0)),
+                outputs: result.out.map(o => Object({ address: o.addr, value: util.Sat_to_BTC(o.value) })),
+                total_output_value: util.Sat_to_BTC(result.out.reduce((a, o) => a += o.value, 0)),
+            }))
         }).catch(error => reject(error))
     });
+
+    btcOperator.getTx.hex = txid => new Promise((resolve, reject) => {
+        fetch_api(`rawtx/${txid}?format=hex`, false)
+            .then(result => resolve(result))
+            .catch(error => reject(error))
+    })
 
     btcOperator.getAddressData = address => new Promise((resolve, reject) => {
         fetch_api(`rawaddr/${address}`).then(data => {
