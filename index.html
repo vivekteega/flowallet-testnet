@@ -1,0 +1,1725 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>FLO Web Wallet</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta charset="UTF-8">
+    <meta name="description"
+        content="This webapp allows monitoring FLO addresses and performing transactions based on FLO blockchain.">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,500;0,700;1,400;1,500;1,700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/main.min.css">
+    <script>
+        /* Constants for FLO blockchain operations !!Make sure to add this at begining!! */
+        const floGlobals = {
+            blockchain: "FLO"
+        }
+    </script>
+    <script src="scripts/components.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6" defer></script>
+    <script src="scripts/lib.js"></script>
+    <script src="scripts/floCrypto.js"></script>
+    <script src="scripts/floBlockchainAPI.js"></script>
+    <script src="scripts/compactIDB.js"></script>
+    <script src="scripts/flo-webwallet.js"></script>
+    <script>
+        function onLoadStartUp() {
+            var IDBObjects = {
+                lastSync: {},
+                labels: {},
+                pinnedIds: {},
+                transactions: {}
+            }
+            compactIDB.initDB("FLOwebWallet", IDBObjects).then(result => {
+                showPage(window.location.hash)
+                render.savedIds();
+                console.log(result)
+            }).catch(error => console.error(error))
+        }
+    </script>
+</head>
+
+<body onload="onLoadStartUp()" class="hide">
+    <sm-notifications id="notification_drawer"></sm-notifications>
+    <sm-popup id="confirmation_popup">
+        <h4 id="confirm_title"></h4>
+        <p id="confirm_message"></p>
+        <div class="flex align-center gap-0-5 margin-left-auto">
+            <button class="button cancel-button">Cancel</button>
+            <button class="button button--primary confirm-button">OK</button>
+        </div>
+    </sm-popup>
+    <div id="main_card">
+        <header id="main_header" class="flex align-center space-between">
+            <div class="flex align-center">
+                <svg class="icon" style="margin-right:0.3rem" viewBox="0 0 96 108"
+                    style="enable-background:new 0 0 90.5 106.3;" xml:space="preserve">
+                    <path d="M90.2,102.5c-2.4-8.2-9.9-14.5-27.4-23.1c-7.1-3.5-11.8-6.2-14-8.3c-1.7-1.6-3.5-4-4.2-5.5c-0.7-1.7-0.7-5.5,0-7.5
+                            c1.3-3.6,2.6-5.2,12.9-15.1c6.2-5.9,9.3-10.3,11.1-15.5c0.7-2.1,0.8-7.6,0.2-9.4C66.5,12,61.7,6.7,53.7,1.6c-3-1.9-4.3-2.1-4.3-0.8
+                            c0,0.3-0.5,1.4-1,2.4l-1,1.8l-2.8-1.9c-1.5-1.1-3.4-2.2-4.1-2.6c-1.3-0.7-2.4-0.6-2.4,0.2c0,0.3-1.4,3.4-2,4.4
+                            c0,0.1-0.4-0.1-0.9-0.4c-6.1-4.4-8.7-5.5-8.7-3.9c0,0.7-1.8,4.2-4,7.9C16,19.5,9.4,24.9,2.6,24.9c-3,0-2.9-0.1-2,3.4
+                            c0.7,2.8,1.1,3.1,3.6,2.3c2.3-0.7,3.9-1.5,5.8-2.9c0.8-0.6,1.5-0.9,1.6-0.9c0.1,0.1,0.5,1,0.7,2.1s0.7,2,0.9,2.1
+                            c0.8,0.3,5.1-1.3,7.5-2.9l2.3-1.5l0.5,1.8c0.6,2.4,1,2.7,3.3,2.1c3.9-1,7.7-3.7,11.5-8.2l2-2.4l-0.2,2.1c-0.6,5.4-4.3,11.4-11.3,18
+                            c-1.8,1.7-4.7,4.5-6.5,6.2c-10.7,10.2-10,18.6,2,26.5c2.7,1.8,10.3,5.8,15.3,8c0.9,0.4,3.3,1.7,5.3,2.9c11,6.5,16.4,13.1,16.4,19.7
+                            c0,1.3,0.1,2.4,0.2,2.6l0,0c0.3,0.3,0.1,0.3,3-0.5c1.4-0.4,2.6-0.9,2.8-1.1c0.4-0.6-0.6-3.7-1.8-6.1c-1.3-2.5-5.6-7-8.9-9.4
+                            c-3.8-2.8-9.3-5.9-17-9.7c-8.5-4.2-11.8-6.2-14.7-9.1c-2.6-2.6-3.9-5.3-3.9-8.2c0-4.6,2.3-8.6,8.3-14.1c9.4-8.7,13-13,15.5-18.8
+                            c1.3-3,1.4-3.4,1.4-6.7c0-3.1-0.1-3.8-1.1-6l-1.1-2.4l1-1.6c0.5-0.9,1.2-2.1,1.5-2.6l0.5-1l1.5,2.1c1.8,2.6,3.2,6.8,3.2,9.3
+                            c0,1.7-0.6,4.7-1.4,6.4c-0.2,0.4-0.4,1-0.5,1.3c-0.1,0.3-1.1,2-2.2,3.7c-2,3-5.2,6.4-13.4,14.2c-5.7,5.4-7.6,8.6-7.8,13.1
+                            c-0.2,3.7,0.7,5.9,3.7,9.2c3.2,3.4,6.9,5.8,17.4,11c12.1,6,17.3,9.6,21.3,14.5c2.5,3.2,3.7,5.8,3.9,9.3c0.1,1.6,0.3,3,0.5,3
+                            c0.1,0.1,0.8,0,1.4-0.2s1.9-0.5,2.7-0.7l1.5-0.4l-0.2-1.5c-0.7-5.1-5.4-10.8-13.1-16c-4.4-2.9-5.8-3.7-17.3-9.4
+                            c-5.7-2.8-9.2-5.1-11.8-7.6c-4.3-4.2-5.1-8.8-2.7-13.9c1.4-2.8,2.7-4.4,12.5-13.8c8-7.7,11.4-13.7,11.4-20.1c0-5.1-2.3-9.9-6.9-14.3
+                            c-1.1-1-2-2-2.1-2.2c-0.2-0.4,1.5-3.9,1.9-3.9c1.2,0,7.8,6.3,9.7,9.2c2,3.3,2.5,5,2.5,8.9c0,3.9-0.6,5.9-2.9,9.8
+                            c-2.4,4.1-4.2,6-14.2,15.5c-3.4,3.2-5.7,6.1-6.9,8.7c-0.9,2-1.1,2.7-1.1,5.1c0,2.3,0.2,3.2,1,4.9c1.9,4,7.4,8.5,15.4,12.4
+                            c12.5,6.1,15.1,7.6,19.4,10.7c7.2,5.3,10.6,10.5,10.6,16c0,1.3,0.1,2.4,0.3,2.5c0.4,0.3,4.8-0.8,5.5-1.3
+                            C90.7,104.4,90.7,104.3,90.2,102.5z M20.3,23.3L20.3,23.3c-2,1-3.3,1.4-4.8,1.5L13.3,25l2.3-2.8c3.7-4.5,6.4-8.9,10-16
+                            c0.9-1.8,1.8-3.5,2-3.6c0.4-0.4,2.6,1.1,5.1,3.4l2.1,1.9l-1.9,2.8C28.2,17.5,24.5,21.2,20.3,23.3z M39.3,17.4
+                            c-1.2,1.7-6.5,5.7-8.6,6.5v0c-1.1,0.4-2.8,0.8-3.9,0.9L24.9,25l2.1-2.6c2.5-3.1,5.1-7,7-10.4c0.7-1.4,1.4-2.5,1.5-2.6
+                            c0.3-0.4,1.7,1.4,3,4.1l1.5,3L39.3,17.4z M44.6,10c-0.7,1.2-1.4,2.1-1.5,2.1c-0.1,0-1.5-1.4-3-3l-2.8-3l0.6-1.5
+                            c1.1-2.6,1.3-2.7,3.4-1c1.9,1.5,4.5,3.8,4.5,4.1C45.8,7.8,45.3,8.9,44.6,10z" />
+                </svg>
+                <div>
+                    <span style="font-size: 0.8rem;">
+                        RanchiMall
+                    </span>
+                    <h4>FLO Web Wallet</h4>
+                </div>
+            </div>
+            <theme-toggle></theme-toggle>
+        </header>
+        <div id="pages_container">
+            <div id="home" class="page flex h-100">
+                <div class="flex direction-column gap-2 h-100">
+                    <section class="flex">
+                        <button id="gen_new_addr_btn" class="button primary-action interact">
+                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24"
+                                height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
+                                <g>
+                                    <rect fill="none" height="24" width="24" />
+                                </g>
+                                <g>
+                                    <g>
+                                        <path
+                                            d="M18.32,4.26C16.84,3.05,15.01,2.25,13,2.05v2.02c1.46,0.18,2.79,0.76,3.9,1.62L18.32,4.26z M19.93,11h2.02 c-0.2-2.01-1-3.84-2.21-5.32L18.31,7.1C19.17,8.21,19.75,9.54,19.93,11z M18.31,16.9l1.43,1.43c1.21-1.48,2.01-3.32,2.21-5.32 h-2.02C19.75,14.46,19.17,15.79,18.31,16.9z M13,19.93v2.02c2.01-0.2,3.84-1,5.32-2.21l-1.43-1.43 C15.79,19.17,14.46,19.75,13,19.93z M13,12V7h-2v5H7l5,5l5-5H13z M11,19.93v2.02c-5.05-0.5-9-4.76-9-9.95s3.95-9.45,9-9.95v2.02 C7.05,4.56,4,7.92,4,12S7.05,19.44,11,19.93z" />
+                                    </g>
+                                </g>
+                            </svg>
+                            Generate FLO ID
+                        </button>
+                        <button id="retrieve_addr_btn" class="button primary-action interact"
+                            onclick="openPopup('retrieve_flo_id_popup')">
+                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+                                width="24px" fill="#000000">
+                                <path d="M0 0h24v24H0V0z" fill="none" />
+                                <path
+                                    d="M14 12c0-1.1-.9-2-2-2s-2 .9-2 2 .9 2 2 2 2-.9 2-2zm-2-9c-4.97 0-9 4.03-9 9H0l4 4 4-4H5c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.51 0-2.91-.49-4.06-1.3l-1.42 1.44C8.04 20.3 9.94 21 12 21c4.97 0 9-4.03 9-9s-4.03-9-9-9z" />
+                            </svg>
+                            Retrieve FLO ID
+                        </button>
+                    </section>
+                    <section class="flex direction-column h-100">
+                        <div class="grid align-center gap-0-5">
+                            <div class="flex align-center">
+                                <svg class="icon margin-right-0-5" xmlns="http://www.w3.org/2000/svg" height="24px"
+                                    viewBox="0 0 24 24" width="24px" fill="#000000">
+                                    <path d="M0 0h24v24H0z" fill="none" />
+                                    <path
+                                        d="M21 5v14h2V5h-2zm-4 14h2V5h-2v14zM14 5H2c-.55 0-1 .45-1 1v12c0 .55.45 1 1 1h12c.55 0 1-.45 1-1V6c0-.55-.45-1-1-1zM8 7.75c1.24 0 2.25 1.01 2.25 2.25S9.24 12.25 8 12.25 5.75 11.24 5.75 10 6.76 7.75 8 7.75zM12.5 17h-9v-.75c0-1.5 3-2.25 4.5-2.25s4.5.75 4.5 2.25V17z" />
+                                </svg>
+                                <h4>Saved FLO IDs</h4>
+                            </div>
+                            <p class="flex align-center">
+                                <svg class="icon margin-right-0-5" style="fill: #ffc107;"
+                                    xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
+                                    fill="#000000">
+                                    <path d="M0 0h24v24H0z" fill="none" />
+                                    <path
+                                        d="M9 21c0 .5.4 1 1 1h4c.6 0 1-.5 1-1v-1H9v1zm3-19C8.1 2 5 5.1 5 9c0 2.4 1.2 4.5 3 5.7V17c0 .5.4 1 1 1h6c.6 0 1-.5 1-1v-2.3c1.8-1.3 3-3.4 3-5.7 0-3.9-3.1-7-7-7z" />
+                                </svg>
+                                <span id="saved_ids_tip">Click 'Add FLO ID' to add a new FLO ID.</span>
+                            </p>
+                        </div>
+                        <ul id="saved_ids_list" class="observe-empty-state grid"></ul>
+                        <div class="empty-state justify-center text-center align-center h-100"
+                            style="align-content: center;">
+                            <svg class="justify-self-center" style="height: 12rem;"
+                                id="bb7dac0d-c86d-4eae-9345-05ead570be6d" data-name="Layer 1"
+                                xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240">
+                                <defs>
+                                    <style>
+                                        .e4b4c873-5e79-4c66-a530-269f7775150b {
+                                            fill: rgba(var(--text-color), 0.03);
+                                        }
+
+                                        .f8c35eef-c260-42fc-be6f-7c8afb0beeeb {
+                                            fill: rgba(var(--text-color), 0.2);
+                                        }
+
+                                        .ee8c2e6d-b8f3-4b81-80ab-31d470d121b9 {
+                                            fill: rgba(var(--text-color), 0.1);
+                                        }
+                                    </style>
+                                </defs>
+                                <rect class="e4b4c873-5e79-4c66-a530-269f7775150b" x="34.76" y="40.75" width="177.53"
+                                    height="41.42" rx="4" />
+                                <circle class="f8c35eef-c260-42fc-be6f-7c8afb0beeeb" cx="57.21" cy="61.46" r="9.29" />
+                                <rect class="ee8c2e6d-b8f3-4b81-80ab-31d470d121b9" x="75.4" y="51.37" width="40.44"
+                                    height="9.03" rx="1.92" />
+                                <rect class="ee8c2e6d-b8f3-4b81-80ab-31d470d121b9" x="75.4" y="62.79" width="80.09"
+                                    height="9.03" rx="1.92" />
+                                <rect class="e4b4c873-5e79-4c66-a530-269f7775150b" x="10" y="99.29" width="177.53"
+                                    height="41.42" rx="4" />
+                                <circle class="f8c35eef-c260-42fc-be6f-7c8afb0beeeb" cx="32.45" cy="120" r="9.29" />
+                                <rect class="ee8c2e6d-b8f3-4b81-80ab-31d470d121b9" x="50.64" y="109.91" width="40.44"
+                                    height="9.03" rx="1.92" />
+                                <rect class="ee8c2e6d-b8f3-4b81-80ab-31d470d121b9" x="50.64" y="121.33" width="80.09"
+                                    height="9.03" rx="1.92" />
+                                <rect class="e4b4c873-5e79-4c66-a530-269f7775150b" x="52.47" y="157.83" width="177.53"
+                                    height="41.42" rx="4" />
+                                <circle class="f8c35eef-c260-42fc-be6f-7c8afb0beeeb" cx="74.93" cy="178.54" r="9.29" />
+                                <rect class="ee8c2e6d-b8f3-4b81-80ab-31d470d121b9" x="93.12" y="168.46" width="40.44"
+                                    height="9.03" rx="1.92" />
+                                <rect class="ee8c2e6d-b8f3-4b81-80ab-31d470d121b9" x="93.12" y="179.87" width="80.09"
+                                    height="9.03" rx="1.92" />
+                            </svg>
+                            <h4>No Saved FLO ID</h4>
+                        </div>
+                    </section>
+                </div>
+                <button id="add_address_button" class="button interact fab" onclick="openPopup('add_address_popup')">
+                    <svg class="icon margin-right-0-5" xmlns="http://www.w3.org/2000/svg" height="24px"
+                        viewBox="0 0 24 24" width="24px" fill="#000000">
+                        <path d="M0 0h24v24H0V0z" fill="none" />
+                        <path
+                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z" />
+                    </svg>
+                    Add FLO ID
+                </button>
+            </div>
+            <div id="transactions" class="hide page">
+                <header class="grid">
+                    <div class="grid align-center w-100">
+                        <a href="#/home" class="flex interact icon-only">
+                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+                                width="24px" fill="#000000">
+                                <path d="M0 0h24v24H0z" fill="none" />
+                                <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+                            </svg>
+                        </a>
+                        <h4 id="flo_id_name"></h4>
+                        <button class="icon-only" style="margin-left:auto"
+                            onclick="render.transactions(pagesData.params.id)">
+                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+                                width="24px" fill="#000000">
+                                <path d="M0 0h24v24H0z" fill="none" />
+                                <path
+                                    d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" />
+                            </svg>
+                        </button>
+                    </div>
+                </header>
+                <section id="transactions_scroller" class="grid gap-2" style="overflow-y: auto;padding: 0 1.5rem;">
+                    <div id="transactions_hero_section" class="grid gap-2"
+                        style="background-color: rgba(var(--text-color), 0.03); padding: 1.5rem 1rem; border-radius: 0.5rem;">
+                        <div class="flex align-center">
+                            <svg class="icon margin-right-0-5" viewBox="0 0 48 48"
+                                style="enable-background:new 0 0 107.65 47.07;" xml:space="preserve">
+                                <path class="flo-logo"
+                                    d="M34.2,32.4c0,0,3.75-0.18,7.41-3.86c2.96-2.98,3.65-6.66,3.99-8.52c-11.04-0.63-12.36,0.99-13.71,1.68
+                                                    c-1.19,0.61-5.33,4.55-5.33,4.55s3.06-3.13,3.2-9.94c0.09-4.54-1.02-7.39-2.72-10.64C25.29,2.33,22.79,0,22.79,0l0.01,4.97
+                                                    c0,0,4.35,2.84,4.35,11.84c0,6.52-4.35,11.02-4.35,11.02s-4.35-4.5-4.35-11.02c0-9.01,4.35-11.84,4.35-11.84L22.79,0
+                                                    c0,0-2.48,2.33-4.23,5.67c-1.7,3.25-2.81,6.1-2.72,10.64c0.13,6.81,3.2,9.94,3.2,9.94s-4.14-3.95-5.33-4.55
+                                                    c-1.35-0.69-2.67-2.31-13.71-1.68c0.34,1.86,1.03,5.54,3.99,8.52c3.66,3.68,7.41,3.86,7.41,3.86s-5.05-2.03-7.15-9.45
+                                                    c0,0,5.76-0.7,9.63,1.87c2.52,1.67,4.86,4.26,6.79,6.01c0,0-2.58-0.04-6.81,1.88c-2.54,1.15-3.92,2.84-4.44,4.38
+                                                    c-0.36,1.06-0.2,2.27-0.2,2.27s3.31,0.31,5.94,0c1.99-0.23,3.42-2.16,3.42-2.16s-2,0.78-3.95,0.78c-2.06,0-2.67-0.66-2.67-0.66
+                                                    c0.98-3.64,8.68-5.19,8.68-5.19s-1.34,2.6-1.42,6.5c-0.1,4.79,3.57,8.52,3.57,8.45c0,0.07,3.67-3.66,3.57-8.45
+                                                    c-0.08-3.9-1.42-6.5-1.42-6.5s7.71,1.55,8.68,5.19c0,0-0.61,0.66-2.67,0.66c-1.95,0-3.95-0.78-3.95-0.78s1.43,1.93,3.42,2.16
+                                                    c2.63,0.31,5.94,0,5.94,0s0.16-1.21-0.2-2.27c-0.52-1.54-1.9-3.23-4.44-4.38c-4.23-1.92-6.81-1.88-6.81-1.88
+                                                    c1.93-1.76,4.27-4.34,6.79-6.01c3.87-2.57,9.63-1.87,9.63-1.87C39.26,30.38,34.2,32.4,34.2,32.4z M22.8,43.06
+                                                    c-0.95-1.37-1.47-2.13-1.47-4.26c0-2.4,1.12-4.61,1.47-5.14c0.35,0.52,1.47,2.74,1.47,5.14C24.27,40.92,23.75,41.69,22.8,43.06z">
+                                </path>
+                            </svg>
+                            <div class="grid gap-0-5">
+                                <h5>FLO balance</h5>
+                                <span id="flo_balance"></span>
+                            </div>
+                        </div>
+                        <div id="tokens" class="grid gap-0-5 hide">
+                            <div class="flex align-center">
+                                <svg class="icon margin-right-0-5" xmlns="http://www.w3.org/2000/svg" height="24px"
+                                    viewBox="0 0 24 24" width="24px" fill="#000000">
+                                    <path d="M0 0h24v24H0V0z" fill="none" />
+                                    <path
+                                        d="M15 4c-4.42 0-8 3.58-8 8s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z" />
+                                    <path
+                                        d="M3 12c0-2.61 1.67-4.83 4-5.65V4.26C3.55 5.15 1 8.27 1 12s2.55 6.85 6 7.74v-2.09c-2.33-.82-4-3.04-4-5.65z" />
+                                </svg>
+                                <h5>Tokens owned</h5>
+                            </div>
+                            <ul id="token_list"></ul>
+                        </div>
+                    </div>
+                    <div class="grid gap-0-5">
+                        <div id="transactions_header" class="flex align-center space-between sticky top-0"
+                            style="background-color: rgba(var(--foreground-color),1); padding-bottom: 0.5rem;">
+                            <div class="flex">
+                                <svg class="icon margin-right-0-5" xmlns="http://www.w3.org/2000/svg" height="24px"
+                                    viewBox="0 0 24 24" width="24px" fill="#000000">
+                                    <path d="M0 0h24v24H0z" fill="none" />
+                                    <path d="M16 17.01V10h-2v7.01h-3L15 21l4-3.99h-3zM9 3L5 6.99h3V14h2V6.99h3L9 3z" />
+                                </svg>
+                                <h5>Transactions</h5>
+                            </div>
+                            <sm-chips id="filter_selector">
+                                <sm-chip value="sent" selected>Sent</sm-chip>
+                                <sm-chip value="received">Received</sm-chip>
+                                <sm-chip value="all">All</sm-chip>
+                            </sm-chips>
+                        </div>
+                        <ul id="transactions_list" class="flex"></ul>
+                    </div>
+                </section>
+                <div class="empty-state justify-center align-center h-100">
+                    <div class="grid justify-center text-center gap-1">
+                        <sm-spinner class="justify-self-center"></sm-spinner>
+                        <span>Loading transactions</span>
+                    </div>
+                </div>
+                <button id="scroll_to_top" class="fab hide" onclick="backToTop()">
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
+                        fill="#000000">
+                        <path d="M0 0h24v24H0z" fill="none" />
+                        <path d="M12 8l-6 6 1.41 1.41L12 10.83l4.59 4.58L18 14z" />
+                    </svg>
+                </button>
+            </div>
+            <div id="send" class="page hide gap-1">
+                <div class="grid full-bleed">
+                    <h3>Send</h3>
+                    <p>Perform FLO blockchain transactions</p>
+                </div>
+                <sm-form id="send_form">
+                    <div class="grid gap-1">
+                        <div id="balance_card">
+                            <div class="flex align-center space-between">
+                                <h5>Balance</h5>
+                                <button id="refresh_balance_button" class="button button--small button--colored hide"
+                                    onclick="checkSenderBalance()">Refresh</button>
+                            </div>
+                            <div class="flex align-end gap-0-3">
+                                <b id="sender_balance" style="font-size: 2.5rem;line-height: 1;">0</b>
+                                <span>FLO</span>
+                            </div>
+                            <p style="line-height: 1.2; opacity: 0.7;">
+                                Sender balance will be shown once you enter a valid address
+                            </p>
+                        </div>
+                        <sm-input id="getBal_addr" class="w-100" placeholder="Sender FLO ID" error-text="Invalid FLO ID"
+                            data-flo-id="" animate required>
+                            <button slot="right" class="icon-only" onclick="showFloIdPicker('sender')"
+                                title="Select from saved IDs">
+                                <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+                                    width="24px" fill="#000000">
+                                    <path d="M0 0h24v24H0z" fill="none" />
+                                    <path
+                                        d="M21 5v14h2V5h-2zm-4 14h2V5h-2v14zM14 5H2c-.55 0-1 .45-1 1v12c0 .55.45 1 1 1h12c.55 0 1-.45 1-1V6c0-.55-.45-1-1-1zM8 7.75c1.24 0 2.25 1.01 2.25 2.25S9.24 12.25 8 12.25 5.75 11.24 5.75 10 6.76 7.75 8 7.75zM12.5 17h-9v-.75c0-1.5 3-2.25 4.5-2.25s4.5.75 4.5 2.25V17z" />
+                                </svg>
+                            </button>
+                        </sm-input>
+                        <sm-input id="receiver" class="w-100" placeholder="Receiver's FLO ID"
+                            error-text="Invalid FLO ID" data-flo-id="" animate required>
+                            <button slot="right" class="icon-only" onclick="showFloIdPicker('receiver')"
+                                title="Select from saved IDs">
+                                <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+                                    width="24px" fill="#000000">
+                                    <path d="M0 0h24v24H0z" fill="none" />
+                                    <path
+                                        d="M21 5v14h2V5h-2zm-4 14h2V5h-2v14zM14 5H2c-.55 0-1 .45-1 1v12c0 .55.45 1 1 1h12c.55 0 1-.45 1-1V6c0-.55-.45-1-1-1zM8 7.75c1.24 0 2.25 1.01 2.25 2.25S9.24 12.25 8 12.25 5.75 11.24 5.75 10 6.76 7.75 8 7.75zM12.5 17h-9v-.75c0-1.5 3-2.25 4.5-2.25s4.5.75 4.5 2.25V17z" />
+                                </svg>
+                            </button>
+                        </sm-input>
+                    </div>
+                    <div class="grid gap-1">
+                        <sm-input id="amount" type="number" placeholder="Amount" step="0.00001" min="0.00001"
+                            error-text="Invalid amount" animate required>
+                        </sm-input>
+                        <sm-textarea id="flo_data_textarea" placeholder="FLO data" rows="4" maxlength="1040" animate>
+                        </sm-textarea>
+                        <div id="show_character_count">1040/1040</div>
+                        <p id="flo_data_status"></p>
+                        <button class="button button--primary hide" id="fix_invalid_button"
+                            onclick="removeInvalid()">Fix</button>
+                        <button class="button button--primary cta" id="sendBtn" type="submit"
+                            onclick="openPopup('get_private_key_popup')" disabled>Send</button>
+                    </div>
+                </sm-form>
+            </div>
+            <div id="settings" class="page hide gap-2">
+                <h3>Settings</h3>
+                <section class="grid gap-1">
+                    <h4>Accent color</h4>
+                    <color-grid id="accent_color_selector"></color-grid>
+                </section>
+                <section id="deleteDB" class="grid gap-0-5">
+                    <h4>Clear all local data</h4>
+                    <p>This will delete all local Web Wallet data like added addresses and locally stored
+                        transactions.After clearing local data you may experience slow loading of newly added address,
+                        please proceed cautiously! </p>
+                    <button class="button button--danger cta justify-self-start" onclick="deleteDB()">Clear
+                        data</button>
+                </section>
+                <div class="flex">
+                    <b>
+                        Powered by
+                        <a class="border-card" href="https://flo.cash/" target="_blank" rel="noopener noreferrer">FLO
+                            blockchain</a>
+                    </b>
+                </div>
+            </div>
+        </div>
+        <nav id="main_navbar">
+            <ul>
+                <li>
+                    <a href="#/home" class="nav-item interact">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+                            width="24px" fill="#000000">
+                            <path d="M0 0h24v24H0z" fill="none" />
+                            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+                        </svg>
+                        <span class="nav-item__title">Home</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#/send" class="nav-item interact" title='Send FLO data'>
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+                            width="24px" fill="#000000">
+                            <path d="M0 0h24v24H0z" fill="none" />
+                            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+                        </svg>
+                        <span class="nav-item__title">Send</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#/settings" class="nav-item interact">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24"
+                            height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
+                            <g>
+                                <path d="M0,0h24v24H0V0z" fill="none" />
+                                <path
+                                    d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z" />
+                            </g>
+                        </svg>
+                        <span class="nav-item__title">Settings</span>
+                        </button>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+    <sm-popup id="add_address_popup">
+        <header slot="header" class="popup__header">
+            <button class="popup__header__close" onclick="closePopup()">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
+                    fill="#000000">
+                    <path d="M0 0h24v24H0V0z" fill="none" />
+                    <path
+                        d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
+                </svg>
+            </button>
+            <h3>Add address</h3>
+        </header>
+        <sm-form>
+            <sm-input id="floAddr" placeholder="FLO ID" error-text="Invalid FLO ID" autofocus data-flo-id animate
+                required>
+            </sm-input>
+            <sm-input id="addrLabel" placeholder="Name" animate></sm-input>
+            <button class="button button--primary cta" type="submit" onclick="saveFloId()" disabled>Add</button>
+        </sm-form>
+    </sm-popup>
+    <sm-popup id="edit_saved_popup">
+        <header slot="header" class="popup__header">
+            <button class="popup__header__close" onclick="closePopup()">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
+                    fill="#000000">
+                    <path d="M0 0h24v24H0V0z" fill="none" />
+                    <path
+                        d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
+                </svg>
+            </button>
+            <h3>Edit</h3>
+        </header>
+        <section class="grid gap-1-5">
+            <div class="grid gap-0-5">
+                <h5>FLO ID</h5>
+                <sm-copy id="edit_saved_id"></sm-copy>
+            </div>
+            <sm-form>
+                <sm-input id="newAddrLabel" placeholder="Name" autofocus animate required></sm-input>
+                <div class="flex align-center space-between">
+                    <button class="button icon-only" title="Delete this FLO ID?" onclick="deleteSaved()">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+                            width="24px" fill="#000000">
+                            <path d="M0 0h24v24H0z" fill="none" />
+                            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
+                        </svg>
+                    </button>
+                    <button class="button button--primary cta" type="submit" onclick="saveChanges()">Save</button>
+                </div>
+            </sm-form>
+        </section>
+    </sm-popup>
+    <sm-popup id="create_flo_id_popup">
+        <header slot="header" class="popup__header">
+            <button class="popup__header__close" onclick="closePopup()">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
+                    fill="#000000">
+                    <path d="M0 0h24v24H0V0z" fill="none" />
+                    <path
+                        d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
+                </svg>
+            </button>
+        </header>
+        <div class="grid gap-2">
+            <div id="flo_id_warning" class="grid justify-center gap-0-5">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
+                    fill="#000000">
+                    <path d="M0 0h24v24H0z" fill="none" />
+                    <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" />
+                </svg>
+                <h3>Keep your keys safe!</h3>
+                <strong>Don't share with anyone. Once lost private key can't be
+                    recovered.</strong>
+            </div>
+            <div id="created_flo_id"></div>
+        </div>
+    </sm-popup>
+    <sm-popup id="retrieve_flo_id_popup">
+        <header slot="header" class="popup__header">
+            <button class="popup__header__close" onclick="closePopup()">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
+                    fill="#000000">
+                    <path d="M0 0h24v24H0V0z" fill="none" />
+                    <path
+                        d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
+                </svg>
+            </button>
+        </header>
+        <section class="grid gap-1-5">
+            <div class="grid gap-0-5">
+                <h4>Forgot FLO ID?</h4>
+                <p>In case of FLO ID being lost and you have the private key associated with it. You can recover it.</p>
+            </div>
+            <sm-form>
+                <div id="recovered_flo_id_wrapper" class="hide">
+                    <h5>Recovered FLO ID</h5>
+                    <sm-copy id="recovered_flo_id"></sm-copy>
+                </div>
+                <sm-input id="retrieve_flo_id_field" type="password" error-text="Invalid private key"
+                    placeholder="Private key" class="password-field" required autofocus>
+                    <label slot="right" class="interact">
+                        <input type="checkbox" class="hide" readonly onchange="togglePrivateKeyVisibility(this)">
+                        <svg class="icon invisible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+                            width="24px" fill="#000000">
+                            <title>Hide password</title>
+                            <path d="M0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0z" fill="none" />
+                            <path
+                                d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z" />
+                        </svg>
+                        <svg class="icon visible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+                            width="24px" fill="#000000">
+                            <title>Show password</title>
+                            <path d="M0 0h24v24H0z" fill="none" />
+                            <path
+                                d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" />
+                        </svg>
+                    </label>
+                </sm-input>
+                <button class="button button--primary cta" type="submit" onclick="retrieveFloId()">Recover</button>
+            </sm-form>
+        </section>
+    </sm-popup>
+    <sm-popup id="saved_ids_popup">
+        <header slot="header" class="popup__header">
+            <button class="popup__header__close justify-self-start" onclick="closePopup()">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
+                    fill="#000000">
+                    <path d="M0 0h24v24H0V0z" fill="none" />
+                    <path
+                        d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
+                </svg>
+            </button>
+            <h3>Select an address</h3>
+        </header>
+        <section class="grid gap-1">
+            <sm-input id="search_saved_ids_picker" placeholder="Search"></sm-input>
+            <ul id="saved_ids_picker_list" class="observe-empty-state grid gap-0-5 h-100" style="overflow-y: auto;">
+            </ul>
+            <div class="empty-state">
+                <h4>No saved FLO IDs</h4>
+            </div>
+        </section>
+    </sm-popup>
+    <sm-popup id="get_private_key_popup">
+        <header slot="header" class="popup__header">
+            <button class="popup__header__close justify-self-start" onclick="closePopup()">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
+                    fill="#000000">
+                    <path d="M0 0h24v24H0V0z" fill="none" />
+                    <path
+                        d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
+                </svg>
+            </button>
+        </header>
+        <div class="grid gap-1-5 h-100" id="get_private_key">
+            <svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px"
+                viewBox="0 0 24 24" width="24px" fill="#000000">
+                <g>
+                    <rect fill="none" height="24" width="24" />
+                </g>
+                <g>
+                    <path
+                        d="M21,10h-8.35C11.83,7.67,9.61,6,7,6c-3.31,0-6,2.69-6,6s2.69,6,6,6c2.61,0,4.83-1.67,5.65-4H13l2,2l2-2l2,2l4-4.04L21,10z M7,15c-1.65,0-3-1.35-3-3c0-1.65,1.35-3,3-3s3,1.35,3,3C10,13.65,8.65,15,7,15z" />
+                </g>
+            </svg>
+            <h4>Enter sender's private key</h4>
+            <sm-form>
+                <sm-input id="get_private_key_field" class="password-field " type="password" required autofocus>
+                    <label slot="right" class="interact">
+                        <input type="checkbox" class="hide" readonly onchange="togglePrivateKeyVisibility(this)">
+                        <svg class="icon invisible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+                            width="24px" fill="#000000">
+                            <title>Hide password</title>
+                            <path d="M0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0z" fill="none" />
+                            <path
+                                d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z" />
+                        </svg>
+                        <svg class="icon visible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+                            width="24px" fill="#000000">
+                            <title>Show password</title>
+                            <path d="M0 0h24v24H0z" fill="none" />
+                            <path
+                                d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" />
+                        </svg>
+                    </label>
+                </sm-input>
+                <div class="multi-state-button">
+                    <button id="confirm_transaction_button" class="button button--primary cta" type="submit"
+                        onclick="sendMessage()">Confirm</button>
+                    <sm-spinner class="hide"></sm-spinner>
+                </div>
+            </sm-form>
+        </div>
+        <div id="transaction_result" class="hide">
+            <svg class="icon icon--success" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+                width="24px" fill="#000000">
+                <path d="M0 0h24v24H0z" fill="none" />
+                <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" />
+            </svg>
+            <svg class="icon icon--failed" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+                width="24px" fill="#000000">
+                <path d="M0 0h24v24H0z" fill="none" />
+                <path
+                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
+            </svg>
+            <h3 id="transaction_result__title"></h3>
+            <p id="transaction_result__description"></p>
+            <a id="transaction_link" style="margin-top: 1.5rem;" target="_blank">See transaction on blockchain</a>
+        </div>
+    </sm-popup>
+    <template id="saved_id_template">
+        <li class="saved-id grid interact" tabindex="0">
+            <button class="interact edit-saved icon-only" title="Edit name">
+                <div class="saved-id__initial"></div>
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
+                    fill="#000000">
+                    <path d="M0 0h24v24H0z" fill="none" />
+                    <path
+                        d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
+                </svg>
+            </button>
+            <h4 class="saved-id__label"></h4>
+            <div class="grid align-center" style="grid-template-columns: 1fr auto;">
+                <div class="saved-id__flo-id overflow-ellipsis"></div>
+                <button class="copy-saved-id icon-only margin-left-0-5" title="Copy FLO ID">
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
+                        fill="#000000">
+                        <path d="M0 0h24v24H0z" fill="none" />
+                        <path
+                            d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z" />
+                    </svg>
+                </button>
+            </div>
+        </li>
+    </template>
+    <template id="transaction_template">
+        <li class="transaction grid">
+            <div class="flex align-center">
+                <div class="transaction__icon"></div>
+                <div class="transaction__receiver"></div>
+            </div>
+            <p class="transaction__flo-data breakable"></p>
+            <div class="flex align-center space-between">
+                <a href="" class="transaction__link flex align-center" target="_blank" rel="noopener noreferrer">
+                    <svg class="icon margin-right-0-5" xmlns="http://www.w3.org/2000/svg" height="24px"
+                        viewBox="0 0 24 24" width="24px" fill="#000000">
+                        <path d="M0 0h24v24H0z" fill="none" />
+                        <path
+                            d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z" />
+                    </svg>
+                    See transaction
+                </a>
+                <time class="transaction__time"></time>
+            </div>
+        </li>
+    </template>
+    <script>
+        // Global variables
+        const domRefs = {};
+        const currentYear = new Date().getFullYear();
+
+        //Checks for internet connection status
+        if (!navigator.onLine)
+            notify(
+                "There seems to be a problem connecting to the internet, Please check you internet connection.",
+                "error"
+            );
+        window.addEventListener("offline", () => {
+            notify(
+                "There seems to be a problem connecting to the internet, Please check you internet connection.",
+                "error",
+                { pinned: true }
+            );
+        });
+        window.addEventListener("online", () => {
+            getRef("notification_drawer").clearAll();
+            notify("We are back online.", "success");
+        });
+
+        // Use instead of document.getElementById
+        function getRef(elementId) {
+            if (!domRefs.hasOwnProperty(elementId)) {
+                domRefs[elementId] = {
+                    count: 1,
+                    ref: null,
+                };
+                return document.getElementById(elementId);
+            } else {
+                if (domRefs[elementId].count < 3) {
+                    domRefs[elementId].count = domRefs[elementId].count + 1;
+                    return document.getElementById(elementId);
+                } else {
+                    if (!domRefs[elementId].ref)
+                        domRefs[elementId].ref = document.getElementById(elementId);
+                    return domRefs[elementId].ref;
+                }
+            }
+        }
+
+        // returns dom with specified element
+        function createElement(tagName, options = {}) {
+            const { className, textContent, innerHTML, attributes = {} } = options
+            const elem = document.createElement(tagName)
+            for (let attribute in attributes) {
+                elem.setAttribute(attribute, attributes[attribute])
+            }
+            if (className)
+                elem.className = className
+            if (textContent)
+                elem.textContent = textContent
+            if (innerHTML)
+                elem.innerHTML = innerHTML
+            return elem
+        }
+
+        // Use when a function needs to be executed after user finishes changes
+        const debounce = (callback, wait) => {
+            let timeoutId = null;
+            return (...args) => {
+                window.clearTimeout(timeoutId);
+                timeoutId = window.setTimeout(() => {
+                    callback.apply(null, args);
+                }, wait);
+            };
+        }
+
+        let zIndex = 10
+        // function required for popups or modals to appear
+        function openPopup(popupId, pinned) {
+            zIndex++
+            getRef(popupId).setAttribute('style', `z-index: ${zIndex}`)
+            getRef(popupId).show({ pinned })
+            return getRef(popupId);
+        }
+
+        // hides the popup or modal
+        function closePopup() {
+            if (popupStack.peek() === undefined)
+                return;
+            popupStack.peek().popup.hide()
+        }
+
+        document.addEventListener('popupopened', async e => {
+            switch (e.target.id) {
+                case 'saved_ids_popup':
+                    const frag = document.createDocumentFragment()
+                    const allSavedIds = await getArrayOfSavedIds()
+                    allSavedIds.forEach(({ floID, name }) => {
+                        frag.append(render.savedIdPickerCard(floID, name))
+                    })
+                    getRef('saved_ids_picker_list').innerHTML = ''
+                    getRef('saved_ids_picker_list').append(frag)
+                    getRef('search_saved_ids_picker').focusIn()
+                    break;
+                case 'get_private_key_popup':
+                    break;
+            }
+        })
+        document.addEventListener('popupclosed', e => {
+            zIndex--
+            switch (e.target.id) {
+                case 'saved_ids_popup':
+                    getRef('saved_ids_picker_list').innerHTML = ''
+                    getRef('search_saved_ids_picker').value = ''
+                    break;
+                case 'get_private_key_popup':
+                    getRef('get_private_key').classList.remove('hide')
+                    getRef('transaction_result').classList.add('hide')
+                    getRef('confirm_transaction_button').classList.remove('hide')
+                    getRef('confirm_transaction_button').nextElementSibling.classList.add('hide')
+                    break;
+                case 'retrieve_flo_id_popup':
+                    getRef('recovered_flo_id_wrapper').classList.add('hide')
+                    break;
+            }
+        })
+
+        // displays a popup for asking permission. Use this instead of JS confirm
+        const getConfirmation = (title, options = {}) => {
+            return new Promise(resolve => {
+                const { message = '', cancelText = 'Cancel', confirmText = 'OK', danger = false } = options
+                openPopup('confirmation_popup', true)
+                getRef('confirm_title').innerText = title;
+                getRef('confirm_message').innerText = message;
+                const cancelButton = getRef('confirmation_popup').querySelector('.cancel-button');
+                const confirmButton = getRef('confirmation_popup').querySelector('.confirm-button')
+                confirmButton.textContent = confirmText
+                cancelButton.textContent = cancelText
+                if (danger)
+                    confirmButton.classList.add('button--danger')
+                else
+                    confirmButton.classList.remove('button--danger')
+                confirmButton.onclick = () => {
+                    closePopup()
+                    resolve(true);
+                }
+                cancelButton.onclick = () => {
+                    closePopup()
+                    resolve(false);
+                }
+            })
+        }
+
+        //Function for displaying toast notifications. pass in error for mode param if you want to show an error.
+        function notify(message, mode, options = {}) {
+            let icon
+            switch (mode) {
+                case 'success':
+                    icon = `<svg class="icon icon--success" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M10 15.172l9.192-9.193 1.415 1.414L10 18l-6.364-6.364 1.414-1.414z"/></svg>`
+                    break;
+                case 'error':
+                    icon = `<svg class="icon icon--error" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm-1-7v2h2v-2h-2zm0-8v6h2V7h-2z"/></svg>`
+                    options.pinned = true
+                    break;
+            }
+            if (mode === 'error') {
+                console.error(message)
+            }
+            return getRef("notification_drawer").push(message, { icon, ...options });
+        }
+
+        function getFormattedTime(time, format) {
+            try {
+                if (String(time).indexOf('_'))
+                    time = String(time).split('_')[0]
+                const intTime = parseInt(time)
+                if (String(intTime).length < 13)
+                    time *= 1000
+                let [day, month, date, year] = new Date(intTime).toString().split(' '),
+                    minutes = new Date(intTime).getMinutes(),
+                    hours = new Date(intTime).getHours(),
+                    currentTime = new Date().toString().split(' ')
+
+                minutes = minutes < 10 ? `0${minutes}` : minutes
+                let finalHours = ``;
+                if (hours > 12)
+                    finalHours = `${hours - 12}:${minutes}`
+                else if (hours === 0)
+                    finalHours = `12:${minutes}`
+                else
+                    finalHours = `${hours}:${minutes}`
+
+                finalHours = hours >= 12 ? `${finalHours} PM` : `${finalHours} AM`
+                switch (format) {
+                    case 'date-only':
+                        return `${month} ${date}, ${year}`;
+                        break;
+                    default:
+                        return `${month} ${date} ${year}, ${finalHours}`;
+                }
+            } catch (e) {
+                console.error(e);
+                return time;
+            }
+        }
+        // implement event delegation
+        function delegate(el, event, selector, fn) {
+            el.addEventListener(event, function (e) {
+                const potentialTarget = e.target.closest(selector)
+                if (potentialTarget) {
+                    e.delegateTarget = potentialTarget
+                    fn.call(this, e)
+                }
+            })
+        }
+        // detect browser version
+        function detectBrowser() {
+            let ua = navigator.userAgent,
+                tem,
+                M = ua.match(/(opera|chrome|safari|firefox|msie|trident(?=\/))\/?\s*(\d+)/i) || [];
+            if (/trident/i.test(M[1])) {
+                tem = /\brv[ :]+(\d+)/g.exec(ua) || [];
+                return 'IE ' + (tem[1] || '');
+            }
+            if (M[1] === 'Chrome') {
+                tem = ua.match(/\b(OPR|Edge)\/(\d+)/);
+                if (tem != null) return tem.slice(1).join(' ').replace('OPR', 'Opera');
+            }
+            M = M[2] ? [M[1], M[2]] : [navigator.appName, navigator.appVersion, '-?'];
+            if ((tem = ua.match(/version\/(\d+)/i)) != null) M.splice(1, 1, tem[1]);
+            return M.join(' ');
+        }
+        window.addEventListener('hashchange', e => showPage(window.location.hash))
+        window.addEventListener("load", () => {
+            const [browserName, browserVersion] = detectBrowser().split(' ');
+            const supportedVersions = {
+                Chrome: 85,
+                Firefox: 75,
+                Safari: 13,
+            }
+            if (browserName in supportedVersions) {
+                if (parseInt(browserVersion) < supportedVersions[browserName]) {
+                    notify(`${browserName} ${browserVersion} is not fully supported, some features may not work properly. Please update to ${supportedVersions[browserName]} or higher.`, 'error')
+                }
+            } else {
+                notify('Browser is not fully compatible, some features may not work. for best experience please use Chrome, Edge, Firefox or Safari', 'error')
+            }
+            document.body.classList.remove('hide')
+            document.querySelectorAll('sm-input[data-flo-id]').forEach(input => input.customValidation = floCrypto.validateAddr)
+            document.querySelectorAll('sm-input[data-private-key]').forEach(input => input.customValidation = floCrypto.getPubKeyHex)
+            document.addEventListener('keyup', (e) => {
+                if (e.key === 'Escape') {
+                    closePopup()
+                }
+            })
+            document.addEventListener('copy', () => {
+                notify('copied', 'success')
+            })
+            document.addEventListener("pointerdown", (e) => {
+                if (e.target.closest("button:not([disabled]), .interact")) {
+                    createRipple(e, e.target.closest("button, .interact"));
+                }
+            });
+            getRef('accent_color_selector').colors = selectedColors
+            if (localStorage.getItem(`accent-color`)) {
+                const color = localStorage.getItem(`accent-color`)
+                getRef('accent_color_selector').selectedColor = color
+                document.body.style.setProperty('--accent-color', `var(${color})`);
+            }
+            else {
+                getRef('accent_color_selector').selectedColor = '--nice-blue'
+            }
+            document.addEventListener('colorselected', e => {
+                const color = e.detail.value
+                localStorage.setItem(`accent-color`, color);
+                document.body.style.setProperty('--accent-color', `var(${color})`);
+            })
+
+        });
+        function createRipple(event, target) {
+            const circle = document.createElement("span");
+            const diameter = Math.max(target.clientWidth, target.clientHeight);
+            const radius = diameter / 2;
+            const targetDimensions = target.getBoundingClientRect();
+            circle.style.width = circle.style.height = `${diameter}px`;
+            circle.style.left = `${event.clientX - (targetDimensions.left + radius)}px`;
+            circle.style.top = `${event.clientY - (targetDimensions.top + radius)}px`;
+            circle.classList.add("ripple");
+            const rippleAnimation = circle.animate(
+                [
+                    {
+                        transform: "scale(4)",
+                        opacity: 0,
+                    },
+                ],
+                {
+                    duration: 600,
+                    fill: "forwards",
+                    easing: "ease-out",
+                }
+            );
+            target.append(circle);
+            rippleAnimation.onfinish = () => {
+                circle.remove();
+            };
+        }
+
+        const pagesData = {
+            params: {}
+        }
+
+        let tempData
+        async function showPage(targetPage, options = {}) {
+            const { firstLoad, hashChange, isPreview } = options
+            let pageId
+            let params = {}
+            let searchParams
+            if (targetPage === '') {
+                pageId = 'home'
+            } else {
+                if (targetPage.includes('/')) {
+                    if (targetPage.includes('?')) {
+                        const splitAddress = targetPage.split('?')
+                        searchParams = splitAddress.pop()
+                        const pages = splitAddress.pop().split('/')
+                        pageId = pages[1]
+                        subPageId = pages[2]
+                    } else {
+                        const pages = targetPage.split('/')
+                        pageId = pages[1]
+                        subPageId = pages[2]
+                    }
+                } else {
+                    pageId = targetPage
+                }
+            }
+            if (searchParams) {
+                const urlSearchParams = new URLSearchParams('?' + searchParams);
+                params = Object.fromEntries(urlSearchParams.entries());
+            }
+            if (pagesData.lastPage !== pageId) {
+                pagesData.lastPage = pageId
+            }
+            if (params)
+                pagesData.params = params
+            switch (pageId) {
+                case 'transactions':
+                    render.transactions(params.id).then(() => {
+                        scrollToTopObserver.observe(getRef('transactions_hero_section'))
+                    })
+                    break;
+                default:
+                    getRef('transactions_list').innerHTML = ''
+                    scrollToTopObserver.disconnect()
+            }
+            const animOptions = {
+                duration: 100,
+                fill: 'forwards',
+            }
+            let previousActiveElement = getRef('main_navbar').querySelector('.nav-item--active')
+            const currentActiveElement = document.querySelector(`.nav-item[href="#/${pageId}"]`)
+            if (currentActiveElement) {
+                if (getRef('main_navbar').classList.contains('hide')) {
+                    getRef('main_navbar').classList.remove('hide-away')
+                    getRef('main_navbar').classList.remove('hide')
+                    getRef('main_navbar').animate([
+                        {
+                            transform: isMobileView ? `translateY(100%)` : `translateX(-100%)`,
+                            opacity: 0,
+                        },
+                        {
+                            transform: `none`,
+                            opacity: 1,
+                        },
+                    ], {
+                        duration: 100,
+                        fill: 'forwards',
+                        easing: 'ease'
+                    })
+                }
+                getRef('main_header').classList.remove('hide')
+                const previousActiveElementIndex = [...getRef('main_navbar').querySelectorAll('.nav-item')].indexOf(previousActiveElement)
+                const currentActiveElementIndex = [...getRef('main_navbar').querySelectorAll('.nav-item')].indexOf(currentActiveElement)
+                const isOnTop = previousActiveElementIndex < currentActiveElementIndex
+                const currentIndicator = createElement('div', { className: 'nav-item__indicator' });
+                let previousIndicator = getRef('main_navbar').querySelector('.nav-item__indicator')
+                if (!previousIndicator) {
+                    previousIndicator = currentIndicator.cloneNode(true)
+                    previousActiveElement = currentActiveElement
+                    previousActiveElement.append(previousIndicator)
+                } else if (currentActiveElementIndex !== previousActiveElementIndex) {
+                    const indicatorDimensions = previousIndicator.getBoundingClientRect()
+                    const currentActiveElementDimensions = currentActiveElement.getBoundingClientRect()
+                    let moveBy
+                    if (isMobileView) {
+                        moveBy = ((currentActiveElementDimensions.width - indicatorDimensions.width) / 2) + indicatorDimensions.width
+                    } else {
+                        moveBy = ((currentActiveElementDimensions.height - indicatorDimensions.height) / 2) + indicatorDimensions.height
+                    }
+                    indicatorObserver.observe(previousIndicator)
+                    previousIndicator.animate([
+                        {
+                            transform: 'none',
+                            opacity: 1,
+                        },
+                        {
+                            transform: `translate${isMobileView ? 'X' : 'Y'}(${isOnTop ? `${moveBy}px` : `-${moveBy}px`})`,
+                            opacity: 0,
+                        },
+                    ], { ...animOptions, easing: 'ease-in' }).onfinish = () => {
+                        previousIndicator.remove()
+                    }
+                    tempData = {
+                        currentActiveElement,
+                        currentIndicator,
+                        isOnTop,
+                        animOptions,
+                        moveBy
+                    }
+                }
+                previousActiveElement.classList.remove('nav-item--active');
+                currentActiveElement.classList.add('nav-item--active')
+            } else {
+                if (!getRef('main_navbar').classList.contains('hide')) {
+                    getRef('main_navbar').classList.add('hide-away')
+                    getRef('main_navbar').animate([
+                        {
+                            transform: `none`,
+                            opacity: 1,
+                        },
+                        {
+                            transform: isMobileView ? `translateY(100%)` : `translateX(-100%)`,
+                            opacity: 0,
+                        },
+                    ], {
+                        duration: 200,
+                        fill: 'forwards',
+                        easing: 'ease'
+                    }).onfinish = () => {
+                        getRef('main_navbar').classList.add('hide')
+                    }
+                    getRef('main_header').classList.add('hide')
+                }
+            }
+            document.querySelectorAll('.page').forEach(page => page.classList.add('hide'))
+            getRef(pageId).classList.remove('hide')
+            getRef(pageId).animate([{ opacity: 0 }, { opacity: 1 }], { duration: 300, fill: 'forwards', easing: 'ease' })
+        }
+
+        const indicatorObserver = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (!entry.isIntersecting) {
+                    const { currentActiveElement, currentIndicator, isOnTop, animOptions, moveBy } = tempData
+                    currentActiveElement.append(currentIndicator)
+                    currentIndicator.animate([
+                        {
+                            transform: `translate${isMobileView ? 'X' : 'Y'}(${isOnTop ? `-${moveBy}px` : `${moveBy}px`})`,
+                            opacity: 0,
+                        },
+                        {
+                            transform: 'none',
+                            opacity: 1
+                        },
+                    ], { ...animOptions, easing: 'ease-out' })
+                }
+            })
+        }, {
+            threshold: 1
+        })
+
+        // class based lazy loading
+        class LazyLoader {
+            constructor(container, elementsToRender, renderFn, options = {}) {
+                const { batchSize = 10, freshRender } = options
+
+                this.elementsToRender = elementsToRender
+                this.arrayOfElements = (typeof elementsToRender === 'function') ? this.elementsToRender() : elementsToRender || []
+                this.renderFn = renderFn
+                this.intersectionObserver
+
+                this.batchSize = batchSize
+                this.freshRender = freshRender
+
+                this.lazyContainer = document.querySelector(container)
+
+                this.update = this.update.bind(this)
+                this.render = this.render.bind(this)
+                this.init = this.init.bind(this)
+                this.clear = this.clear.bind(this)
+            }
+            init() {
+                this.intersectionObserver = new IntersectionObserver((entries, observer) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            observer.disconnect()
+                            this.render({ lazyLoad: true })
+                        }
+                    })
+                }, {
+                    threshold: 0.3
+                })
+                this.mutationObserver = new MutationObserver(mutationList => {
+                    mutationList.forEach(mutation => {
+                        if (mutation.type === 'childList') {
+                            if (mutation.addedNodes.length) {
+                                this.intersectionObserver.observe(this.lazyContainer.lastElementChild)
+                            }
+                        }
+                    })
+                })
+                this.mutationObserver.observe(this.lazyContainer, {
+                    childList: true,
+                })
+                this.render()
+            }
+            update(elementsToRender) {
+                this.arrayOfElements = (typeof elementsToRender === 'function') ? this.elementsToRender() : elementsToRender || []
+                this.render()
+            }
+            render(options = {}) {
+                let { lazyLoad = false } = options
+                const frag = document.createDocumentFragment();
+                if (lazyLoad) {
+                    this.updateStartIndex = this.updateEndIndex
+                    this.updateEndIndex = this.arrayOfElements.length > this.updateEndIndex + this.batchSize ? this.updateEndIndex + this.batchSize : this.arrayOfElements.length
+                } else {
+                    this.intersectionObserver.disconnect()
+                    this.lazyContainer.innerHTML = ``;
+                    this.updateStartIndex = 0
+                    this.updateEndIndex = this.arrayOfElements.length > this.batchSize ? this.batchSize : this.arrayOfElements.length
+                }
+                for (let index = this.updateStartIndex; index < this.updateEndIndex; index++) {
+                    frag.append(this.renderFn(this.arrayOfElements[index]))
+                }
+                this.lazyContainer.append(frag)
+                // Callback to be called if elements are updated or rendered for first time
+                if (!lazyLoad && this.freshRender)
+                    this.freshRender()
+            }
+            clear() {
+                this.intersectionObserver.disconnect()
+                this.mutationObserver.disconnect()
+                this.lazyContainer.innerHTML = ``;
+            }
+            reset() {
+                this.arrayOfElements = (typeof this.elementsToRender === 'function') ? this.elementsToRender() : this.elementsToRender || []
+                this.render()
+            }
+        }
+        function animateTo(element, keyframes, options) {
+            const anime = element.animate(keyframes, { ...options, fill: 'both' })
+            anime.finished.then(() => {
+                anime.commitStyles()
+                anime.cancel()
+            })
+            return anime
+        }
+        let isMobileView = false
+        const mobileQuery = window.matchMedia('(max-width: 40rem)')
+        function handleMobileChange(e) {
+            isMobileView = e.matches
+        }
+        mobileQuery.addEventListener('change', handleMobileChange)
+
+        handleMobileChange(mobileQuery)
+    </script>
+    <script>
+        //UI for webWallet
+        const render = {
+            savedIdCard(floID, name) {
+                const clone = getRef('saved_id_template').content.cloneNode(true).firstElementChild;
+                clone.dataset.floId = floID;
+                clone.dataset.name = name;
+                clone.querySelector('.saved-id__initial').textContent = name[0];
+                clone.querySelector('.saved-id__label').textContent = name;
+                clone.querySelector('.saved-id__flo-id').textContent = floID;
+                return clone
+            },
+            async savedIds() {
+                const frag = document.createDocumentFragment()
+                try {
+                    const allSavedIds = await getArrayOfSavedIds();
+                    allSavedIds.forEach(({ floID, name }) => {
+                        frag.append(render.savedIdCard(floID, name))
+                    })
+                    getRef('saved_ids_list').innerHTML = '';
+                    getRef('saved_ids_list').append(frag)
+                } catch (err) {
+                    notify(err, 'error')
+                }
+            },
+            savedIdPickerCard(floID, name) {
+                return createElement('li', {
+                    className: 'saved-id grid interact',
+                    attributes: { 'tabindex': '0', 'data-flo-id': floID },
+                    innerHTML: `
+                                    <div class="saved-id__initial">${name[0]}</div>
+                                    <div class="grid gap-0-5">
+                                        <h4 class="saved-id__label">${name}</h4>
+                                        <div class="saved-id__flo-id overflow-ellipsis">${floID}</div>
+                                    </div>
+                                    `
+                })
+            },
+            transactionCard(details) {
+                const { sender, receiver, floData, time, txid } = details
+                const clone = getRef('transaction_template').content.cloneNode(true).firstElementChild;
+                if (sender === receiver) {
+                    clone.querySelector('.transaction__icon').innerHTML = `<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><title>sender and receiver is same</title><path d="M.01 0h24v24h-24V0z" fill="none"/><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>`;
+                } else if (pagesData.params.id === sender) {
+                    clone.querySelector('.transaction__icon').innerHTML = `<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"/><path d="M9 5v2h6.59L4 18.59 5.41 20 17 8.41V15h2V5z"/></svg>`;
+                } else {
+                    clone.querySelector('.transaction__icon').innerHTML = `<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"/><path d="M20 5.41L18.59 4 7 15.59V9H5v10h10v-2H8.41z"/></svg>`;
+                }
+                clone.querySelector('.transaction__receiver').textContent = pagesData.params.id === sender ? receiver : sender
+                clone.querySelector('.transaction__flo-data').textContent = floData
+                clone.querySelector('.transaction__link').href = `https://flosight.duckdns.org/tx/${txid}`
+                clone.querySelector('.transaction__time').textContent = getFormattedTime(time * 1000)
+                return clone
+            },
+            async transactions(floID) {
+                try {
+                    scrollToTopObserver.disconnect()
+                    // retrieve tokens and render them
+                    getRef('tokens').classList.add('hide')
+                    fetch(`https://ranchimallflo.duckdns.org/api/v1.0/getFloAddressBalance?floAddress=${floID}`).then(res => res.json()).then(({ floAddressBalances }) => {
+                        const frag = document.createDocumentFragment()
+                        getRef('token_list').innerHTML = ''
+                        let hasTokens = false
+                        for (const token in floAddressBalances) {
+                            hasTokens = true
+                            frag.append(createElement('li', {
+                                className: 'token-item',
+                                innerHTML: `<span>${token}: </span><span>${floAddressBalances[token].balance}</span>`
+                            }))
+                        }
+                        if (hasTokens) {
+                            getRef('token_list').append(frag)
+                            getRef('tokens').classList.remove('hide')
+                        }
+                    }).catch(e => {
+                        console.error(e)
+                    })
+                    // retrieve FLO balance
+                    getRef('flo_balance').innerHTML = `<sm-spinner></sm-spinner>`;
+                    floWebWallet.getBalance(floID).then((retrievedBal) => {
+                        getRef('flo_balance').textContent = `${parseFloat(retrievedBal.toFixed(3))} FLO`;
+                    }).catch((error) => {
+                        notify(error, 'error');
+                    })
+                    floWebWallet.getLabels().then(allLabels => {
+                        getRef('flo_id_name').textContent = allLabels.hasOwnProperty(floID) ? allLabels[floID] === 'Unknown' ? floID : allLabels[floID] : floID
+                    })
+                    // render transactions
+                    getRef('transactions_scroller').nextElementSibling.classList.remove('hide')
+                    getRef('transactions_scroller').classList.add('hide')
+                    getRef('transactions_list').innerHTML = '';
+                    await floWebWallet.syncTransactions(floID);
+                    let allTransactions = (await floWebWallet.readTransactions(floID)).reverse();
+                    const filter = getRef('filter_selector').value;
+                    if (filter !== 'all') {
+                        allTransactions = allTransactions.filter(t => filter === 'sent' ? t.sender === floID : t.receiver === floID)
+                    }
+                    if (transactionsLazyLoader) {
+                        transactionsLazyLoader.update(allTransactions)
+                    } else {
+                        transactionsLazyLoader = new LazyLoader('#transactions_list', allTransactions, render.transactionCard)
+                        transactionsLazyLoader.init()
+                    }
+                    getRef('transactions_scroller').classList.remove('hide')
+                    getRef('transactions_scroller').nextElementSibling.classList.add('hide')
+                    getRef('transactions_scroller').scroll({
+                        top: 0
+                    })
+                } catch (err) {
+                    notify(err, 'error');
+                }
+            }
+        }
+        let transactionsLazyLoader
+        delegate(document, 'focusin', '.textarea', e => {
+            e.target.parentNode.classList.add('label-active');
+        });
+        delegate(document, 'focusout', '.textarea', e => {
+            if (e.target.value == '')
+                e.target.parentNode.classList.remove('label-active');
+        });
+        delegate(getRef('saved_ids_list'), 'click', '.saved-id', e => {
+            if (e.target.closest('.edit-saved')) {
+                const target = e.target.closest('.saved-id');
+                getRef('edit_saved_id').setAttribute('value', target.dataset.floId)
+                getRef('newAddrLabel').value = target.dataset.name
+                openPopup('edit_saved_popup')
+            } else if (e.target.closest('.copy-saved-id')) {
+                const target = e.target.closest('.saved-id');
+                navigator.clipboard.writeText(target.dataset.floId)
+                target.dispatchEvent(
+                    new CustomEvent('copy', {
+                        bubbles: true,
+                        cancelable: true,
+                    })
+                );
+            } else {
+                const target = e.target.closest('.saved-id');
+                window.location.hash = `#/transactions?id=${target.dataset.floId}`
+            }
+        })
+        delegate(getRef('saved_ids_picker_list'), 'click', '.saved-id', e => {
+            const target = e.target.closest('.saved-id');
+            getRef(`${openSavedIdPopupFor === 'sender' ? 'getBal_addr' : 'receiver'}`).value = target.dataset.floId
+            getRef(`${openSavedIdPopupFor === 'sender' ? 'getBal_addr' : 'receiver'}`).focusIn()
+            if (openSavedIdPopupFor === 'sender') {
+                checkSenderBalance()
+                getRef('refresh_balance_button').classList.remove('hide')
+            }
+            closePopup()
+        })
+
+        getRef('filter_selector').addEventListener('change', async e => {
+            const filter = e.target.value
+            let allTransactions = (await floWebWallet.readTransactions(pagesData.params.id)).reverse()
+            if (filter !== 'all') {
+                allTransactions = allTransactions.filter(t => filter === 'sent' ? t.sender === pagesData.params.id : t.receiver === pagesData.params.id)
+            }
+            transactionsLazyLoader.update(allTransactions)
+        })
+        const scrollToTopObserver = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    getRef('scroll_to_top').animate([
+                        {
+                            transform: 'scale(1)',
+                        },
+                        {
+                            transform: 'scale(0)',
+                        },
+                    ], {
+                        duration: 150,
+                        easing: 'ease',
+                    }).onfinish = () => {
+                        getRef('scroll_to_top').classList.add('hide')
+                    }
+                } else {
+                    getRef('scroll_to_top').classList.remove('hide')
+                    getRef('scroll_to_top').animate([
+                        {
+                            transform: 'scale(0)',
+                        },
+                        {
+                            transform: 'scale(1)',
+                        },
+                    ], {
+                        duration: 150,
+                        easing: 'ease'
+                    })
+                }
+            })
+        })
+
+        getRef('gen_new_addr_btn').addEventListener('click', () => {
+            const { floID, privKey } = floCrypto.generateNewID(),
+                card = createElement('div', {
+                    className: 'generated-id-card',
+                    innerHTML: `
+                <div>
+                    <h5>FLO Address</h5>
+                    <sm-copy value="${floID}"></sm-copy>
+                </div>
+                <div>
+                    <h5>Private Key</h5>
+                    <sm-copy value="${privKey}"></sm-copy>
+                </div>
+                `
+                });
+            getRef('created_flo_id').innerHTML = '';
+            getRef('created_flo_id').append(card);
+            openPopup('create_flo_id_popup');
+        });
+
+        let openSavedIdPopupFor = null;
+        function showFloIdPicker(type) {
+            openSavedIdPopupFor = type;
+            openPopup('saved_ids_popup');
+        }
+
+        // Create array of objects from object of objects
+        async function getArrayOfSavedIds() {
+            const savedIds = await floWebWallet.getLabels()
+            const arr = []
+            for (const key in savedIds) {
+                arr.push({
+                    floID: key,
+                    name: savedIds[key]
+                })
+            }
+            return arr.sort((a, b) => a.name.localeCompare(b.name))
+        }
+
+        getRef('search_saved_ids_picker').addEventListener('input', debounce(async e => {
+            const frag = document.createDocumentFragment()
+            const searchKey = e.target.value.trim();
+            let allSavedIds = await getArrayOfSavedIds();
+            if (searchKey !== '') {
+                const fuse = new Fuse(allSavedIds, { keys: ['floID', 'name'] })
+                allSavedIds = fuse.search(searchKey).map(v => v.item)
+            }
+            allSavedIds.forEach(({ floID, name }) => {
+                frag.append(render.savedIdPickerCard(floID, name))
+            })
+            getRef('saved_ids_picker_list').innerHTML = '';
+            getRef('saved_ids_picker_list').append(frag);
+            if (searchKey !== '') {
+                const potentialTarget = getRef('saved_ids_picker_list').firstElementChild
+                if (potentialTarget) {
+                    potentialTarget.classList.add('highlight')
+                }
+            }
+        }, 100))
+        getRef('search_saved_ids_picker').addEventListener('keydown', e => {
+            if (e.key === 'Enter') {
+                const potentialTarget = getRef('saved_ids_picker_list').firstElementChild
+                if (potentialTarget) {
+                    potentialTarget.click()
+                }
+            }
+        })
+
+        const savedIdsObserver = new MutationObserver((mutationList) => {
+            mutationList.forEach(mutation => {
+                getRef('saved_ids_tip').textContent = mutation.target.children.length === 0 ? `Click 'Add FLO ID' to add a new FLO ID.` : `Tap on saved IDs to see transactions and balance.`
+            })
+        })
+
+        savedIdsObserver.observe(getRef('saved_ids_list'), {
+            childList: true,
+        })
+
+
+        function saveFloId() {
+            const floID = getRef('floAddr').value.trim()
+            let name = getRef('addrLabel').value.trim();
+            if (name == '')
+                name = 'Unknown'
+            compactIDB.addData('labels', name, floID).then((resolve) => {
+                insertElementAlphabetically(name, render.savedIdCard(floID, name))
+                closePopup()
+            }).catch((error) => {
+                notify('FLO ID already saved', 'error');
+            })
+        }
+
+        function insertElementAlphabetically(name, elementToInsert) {
+            const elementInserted = [...getRef('saved_ids_list').children].some(child => {
+                if (child.dataset.name.localeCompare(name) > 0) {
+                    child.before(elementToInsert)
+                    return true
+                }
+            })
+            if (!elementInserted) {
+                getRef('saved_ids_list').append(elementToInsert)
+            }
+        }
+
+        getRef('getBal_addr').addEventListener('input', debounce(e => {
+            if (e.target.isValid) {
+                checkSenderBalance()
+                getRef('refresh_balance_button').classList.remove('hide')
+            } else {
+                getRef('sender_balance').textContent = `0`;
+                getRef('refresh_balance_button').classList.add('hide')
+            }
+        }, 100))
+
+        function checkSenderBalance() {
+            getRef('sender_balance').innerHTML = `<sm-spinner></sm-spinner>`;
+            floWebWallet.getBalance(getRef('getBal_addr').value.trim()).then((retrievedBal) => {
+                getRef('sender_balance').textContent = parseFloat(retrievedBal);
+            }).catch((error) => {
+                console.error(error);
+            })
+        }
+
+
+        function saveChanges() {
+            let name = getRef('newAddrLabel').value.trim();
+            if (name == '')
+                name = 'Unknown';
+            compactIDB.writeData('labels', name, getRef('edit_saved_id').value).then((resolve) => {
+                const potentialTarget = getRef('saved_ids_list').querySelector(`.saved-id[data-flo-id="${getRef('edit_saved_id').value}"]`)
+                if (potentialTarget) {
+                    potentialTarget.dataset.name = name;
+                    potentialTarget.querySelector('.saved-id__label').textContent = name;
+                    potentialTarget.querySelector('.saved-id__initial').textContent = name.charAt(0).toUpperCase();
+                    // place the renamed card in alphabetically correct position
+                    const clone = potentialTarget.cloneNode(true);
+                    potentialTarget.remove();
+                    insertElementAlphabetically(name, clone)
+                }
+                closePopup()
+            }).catch((error) => {
+                console.error(error);
+            })
+        }
+
+        function deleteSaved() {
+            getConfirmation('Do you want delete this FLO ID?', {
+                confirmText: 'Delete',
+            }).then(res => {
+                if (res) {
+                    const toDelete = getRef('saved_ids_list').querySelector(`.saved-id[data-flo-id="${getRef('edit_saved_id').value}"]`)
+                    if (toDelete)
+                        toDelete.remove();
+                    compactIDB.removeData('labels', getRef('edit_saved_id').value);
+                    closePopup()
+                }
+            })
+        }
+
+        function togglePrivateKeyVisibility(input) {
+            const target = input.closest('sm-input')
+            target.type = target.type === 'password' ? 'text' : 'password';
+            target.focusIn()
+        }
+
+        function retrieveFloId() {
+            const privKey = getRef('retrieve_flo_id_field').value.trim()
+            floWebWallet.recoverAddr(privKey).then(({ floID }) => {
+                getRef('recovered_flo_id_wrapper').classList.remove('hide')
+                getRef('recovered_flo_id').value = floID
+            })
+        }
+
+        function sendMessage() {
+            const sender = getRef('getBal_addr').value.trim();
+            const amount = parseFloat(getRef('amount').value.trim());
+            const receiver = getRef('receiver').value.trim();
+            const floData = getRef('flo_data_textarea').value.trim();
+            const privKey = getRef('get_private_key_field').value.trim();
+            getRef('confirm_transaction_button').disabled = true;
+            getRef('confirm_transaction_button').classList.add('hide')
+            getRef('confirm_transaction_button').nextElementSibling.classList.remove('hide')
+            floWebWallet.sendTransaction(sender, receiver, amount, floData, privKey).then((transactionId) => {
+                showTransactionResult('success', transactionId);
+                getRef('send_form').reset();
+            }).catch((error) => {
+                showTransactionResult('failed', error);
+            })
+        }
+
+        function showTransactionResult(status, result) {
+            getRef('transaction_result').className = status;
+            if (status === 'success') {
+                getRef('transaction_link').href = `https://flosight.duckdns.org/tx/${result}`
+                getRef('transaction_link').parentNode.classList.remove('hide')
+                getRef('transaction_result__title').textContent = 'Transaction request sent'
+                getRef('transaction_result__description').textContent = 'This might take upto 30 mins to complete and reflect on blockchain.'
+            } else {
+                getRef('transaction_result__title').textContent = 'Transaction failed'
+                getRef('transaction_result__description').textContent = result
+                getRef('transaction_link').parentNode.classList.add('hide')
+            }
+            getRef('get_private_key').classList.add('hide')
+            getRef('transaction_result').classList.remove('hide')
+        }
+
+
+        function deleteDB() {
+            getConfirmation('Clear all local data?', {
+                confirmText: 'Clear',
+            }, () => {
+                compactIDB.deleteDB().then((message) => {
+                    notify(message, 'success');
+                    onLoadStartUp()
+                }).catch((error) => {
+                    notify(error, 'error');
+                })
+            })
+        }
+
+        function backToTop() {
+            getRef('transactions_scroller').scroll({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        getRef('flo_data_textarea').addEventListener('keydown', e => {
+            if (e.target.value.length > 1040)
+                e.preventDefault()
+        })
+
+        getRef('flo_data_textarea').addEventListener('input', function (e) {
+            if (this.value.trim() !== '') {
+                getRef('sendBtn').classList.add('hide')
+                getRef('fix_invalid_button').classList.remove('hide')
+            }
+            else {
+                getRef('sendBtn').classList.remove('hide')
+                getRef('fix_invalid_button').classList.add('hide')
+            }
+            if (1040 - this.value.length) {
+                getRef('show_character_count').textContent = `${1040 - this.value.length} /1040`
+            }
+            else
+                getRef('show_character_count').textContent = `You can only add FLO data upto 1040 characters.`
+            checkFloData()
+        })
+        function checkFloData() {
+            const floDataText = getRef('flo_data_textarea').value;
+            if (/^[\x20-\x7E]*$/.test(floDataText)) {
+                getRef('sendBtn').classList.remove('hide')
+                getRef('fix_invalid_button').classList.add('hide')
+                getRef('flo_data_status').textContent = ''
+            }
+            else {
+                getRef('flo_data_status').textContent = 'FLO data contains invalid characters. Use "Fix" to remove invalid characters.'
+            }
+        }
+        function removeInvalid() {
+            const floDataText = getRef('flo_data_textarea').value;
+            getRef('flo_data_textarea').value = floDataText.replace(/\s/g, " ").replace(/[^\x20-\x7E]/g, '');
+            checkFloData()
+        }
+
+        // let preventUnconfirmedUTXO = true
+        // getRef('allow_utxo_switch').addEventListener('change', e => {
+        //     preventUnconfirmedUTXO = !e.target.checked
+        //     localStorage.preventUnconfirmedUTXO = preventUnconfirmedUTXO
+        // })
+        // if (localStorage.getItem('preventUnconfirmedUTXO') !== 'null') {
+        //     const getBoolean = (localStorage.preventUnconfirmedUTXO === 'false')
+        //     preventUnconfirmedUTXO = getBoolean
+        //     getRef('allow_utxo_switch').checked = getBoolean
+        // }
+
+        const selectedColors = [
+            '--dark-red',
+            '--red',
+            '--kinda-pink',
+            '--purple',
+            '--shady-blue',
+            '--nice-blue',
+            '--maybe-cyan',
+            '--teal',
+            '--mint-green',
+            '--greenish-yellow',
+            '--yellowish-green',
+            '--dark-teal',
+            '--orange',
+            '--tangerine',
+            '--redish-orange',
+        ]
+    </script>
+</body>
+
+</html>
