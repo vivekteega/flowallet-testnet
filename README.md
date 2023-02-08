@@ -10,7 +10,7 @@ We are offering methods simplifying access to inbuilt browser database IndexedDB
 Last but not the least, we are also providing methods for simplying common operations for FLO based Distributed Application Development. 
 
 # IMPORTANT
-We have two versions of cloud: old cloud version is 2.0.x in floCloudAPI, and new cloud version is 2.1.x in floCloudAPI. Please check that the version in floCloudAPI is 2.1.x whenever you use floCloudAPI as we are deprecating version 2.0.x
+We have two versions of cloud: old cloud version is 2.0.x in floCloudAPI, and new cloud version is >2.1.0 in floCloudAPI. Please check that the version in floCloudAPI is >2.1.0 whenever you use floCloudAPI as we are deprecating version 2.0.x
 
 # Background on FLO Distributed Applications
 
@@ -208,6 +208,13 @@ In addition, we have these system variables outside FLO Globals but used globall
 1. publickey_or_privateKey - public key or private key hex value 
 * Returns : floID (string)
 
+#### 	Calculate Address
+	 floCrypto.getAddress(privateKey, *strict)
+`getAddress` returns respective address from given private-key
+1. privateKey - private key in WIF format
+2. strict - boolean value (optional, default=false) (false: return flo-id if no prefix match is found)
+* Returns : address (string)
+
 #### 	Verify Private Key
 	 floCrypto.verifyPrivKey(privateKey, pubKey_floID, *isfloID)
 `verifyPrivKey` verify the private-key for the given public-key or flo-ID
@@ -216,10 +223,25 @@ In addition, we have these system variables outside FLO Globals but used globall
 3. isfloID - boolean value (true: compare as flo ID, false: compare as public key) (optional, default is true)
 * Returns : boolen (true or false)
 
+#### 	Validate Address
+	 floCrypto.validateAddr(address, *std, *bech)
+`validateAddr` check if the given Address (any blockchain) is valid or not
+1. address - address to validate 
+2. std - checks for legacy version (optional, default=true) (true: allow any, array: list of versions, value: one version only, false: allow none)
+3. bech - checks for bech version (optional, default=true) (true: allow any, array: list of versions, value: one version only, false: allow none)
+* Returns : boolen (true or false)
+
 #### 	Validate FLO ID
-	 floCrypto.validateAddr(floID)
-`validateAddr` check if the given Address is valid or not
+	 floCrypto.validateFloID(floID)
+`validateFloID` check if the given floID is valid or not
 1. floID - flo ID to validate 
+* Returns : boolen (true or false)
+
+#### 	Verify Public Key
+	 floCrypto.verifyPubKey(publicKey, address)
+`verifyPubKey` verify the public key for the given address (any blockchain)
+1. publicKey - public key
+2. address - address to verify 
 * Returns : boolen (true or false)
 
 #### 	Data Encryption
