@@ -915,7 +915,7 @@
                 notify('Browser is not fully compatible, some features may not work. for best experience please use Chrome, Edge, Firefox or Safari', 'error')
             }
             document.body.classList.remove('hide')
-            document.querySelectorAll('sm-input[data-flo-id]').forEach(input => input.customValidation = floCrypto.validateAddr)
+            document.querySelectorAll('sm-input[data-flo-id]').forEach(input => input.customValidation = floCrypto.validateFloID)
             document.querySelectorAll('sm-input[data-private-key]').forEach(input => input.customValidation = floCrypto.getPubKeyHex)
             document.addEventListener('keyup', (e) => {
                 if (e.key === 'Escape') {
