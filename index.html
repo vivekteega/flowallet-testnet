@@ -105,7 +105,7 @@
                                     </g>
                                 </g>
                             </svg>
-                            Generate FLO ID
+                            Generate FLO address
                         </button>
                         <button id="retrieve_addr_btn" class="button primary-action interact"
                             onclick="openPopup('retrieve_flo_id_popup')">
@@ -115,7 +115,7 @@
                                 <path
                                     d="M14 12c0-1.1-.9-2-2-2s-2 .9-2 2 .9 2 2 2 2-.9 2-2zm-2-9c-4.97 0-9 4.03-9 9H0l4 4 4-4H5c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.51 0-2.91-.49-4.06-1.3l-1.42 1.44C8.04 20.3 9.94 21 12 21c4.97 0 9-4.03 9-9s-4.03-9-9-9z" />
                             </svg>
-                            Retrieve FLO ID
+                            Retrieve FLO address
                         </button>
                     </section>
                     <section class="flex direction-column h-100">
@@ -127,7 +127,7 @@
                                     <path
                                         d="M21 5v14h2V5h-2zm-4 14h2V5h-2v14zM14 5H2c-.55 0-1 .45-1 1v12c0 .55.45 1 1 1h12c.55 0 1-.45 1-1V6c0-.55-.45-1-1-1zM8 7.75c1.24 0 2.25 1.01 2.25 2.25S9.24 12.25 8 12.25 5.75 11.24 5.75 10 6.76 7.75 8 7.75zM12.5 17h-9v-.75c0-1.5 3-2.25 4.5-2.25s4.5.75 4.5 2.25V17z" />
                                 </svg>
-                                <h4>Saved FLO IDs</h4>
+                                <h4>Saved FLO addresses</h4>
                             </div>
                             <p class="flex align-center">
                                 <svg class="icon margin-right-0-5" style="fill: #ffc107;"
@@ -137,7 +137,7 @@
                                     <path
                                         d="M9 21c0 .5.4 1 1 1h4c.6 0 1-.5 1-1v-1H9v1zm3-19C8.1 2 5 5.1 5 9c0 2.4 1.2 4.5 3 5.7V17c0 .5.4 1 1 1h6c.6 0 1-.5 1-1v-2.3c1.8-1.3 3-3.4 3-5.7 0-3.9-3.1-7-7-7z" />
                                 </svg>
-                                <span id="saved_ids_tip">Click 'Add FLO ID' to add a new FLO ID.</span>
+                                <span id="saved_ids_tip">Click 'Add FLO address' to add a new FLO address.</span>
                             </p>
                         </div>
                         <ul id="saved_ids_list" class="observe-empty-state grid"></ul>
@@ -183,7 +183,7 @@
                                 <rect class="ee8c2e6d-b8f3-4b81-80ab-31d470d121b9" x="93.12" y="179.87" width="80.09"
                                     height="9.03" rx="1.92" />
                             </svg>
-                            <h4>No Saved FLO ID</h4>
+                            <h4>No Saved FLO address</h4>
                         </div>
                     </section>
                 </div>
@@ -194,7 +194,7 @@
                         <path
                             d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z" />
                     </svg>
-                    Add FLO ID
+                    Add FLO address
                 </button>
             </div>
             <div id="transactions" class="hide page">
@@ -315,8 +315,8 @@
                                 Sender balance will be shown once you enter a valid address
                             </p>
                         </div>
-                        <sm-input id="getBal_addr" class="w-100" placeholder="Sender FLO ID" error-text="Invalid FLO ID"
-                            data-flo-id="" animate required>
+                        <sm-input id="getBal_addr" class="w-100" placeholder="Sender FLO address"
+                            error-text="Invalid FLO address" data-flo-id="" animate required>
                             <button slot="right" class="icon-only" onclick="showFloIdPicker('sender')"
                                 title="Select from saved IDs">
                                 <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
@@ -327,8 +327,8 @@
                                 </svg>
                             </button>
                         </sm-input>
-                        <sm-input id="receiver" class="w-100" placeholder="Receiver's FLO ID"
-                            error-text="Invalid FLO ID" data-flo-id="" animate required>
+                        <sm-input id="receiver" class="w-100" placeholder="Receiver's FLO address"
+                            error-text="Invalid FLO address" data-flo-id="" animate required>
                             <button slot="right" class="icon-only" onclick="showFloIdPicker('receiver')"
                                 title="Select from saved IDs">
                                 <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
@@ -430,8 +430,8 @@
             <h3>Add address</h3>
         </header>
         <sm-form>
-            <sm-input id="floAddr" placeholder="FLO ID" error-text="Invalid FLO ID" autofocus data-flo-id animate
-                required>
+            <sm-input id="floAddr" placeholder="FLO address" error-text="Invalid FLO address" autofocus data-flo-id
+                animate required>
             </sm-input>
             <sm-input id="addrLabel" placeholder="Name" animate></sm-input>
             <button class="button button--primary cta" type="submit" onclick="saveFloId()" disabled>Add</button>
@@ -451,13 +451,13 @@
         </header>
         <section class="grid gap-1-5">
             <div class="grid gap-0-5">
-                <h5>FLO ID</h5>
+                <h5>FLO address</h5>
                 <sm-copy id="edit_saved_id"></sm-copy>
             </div>
             <sm-form>
                 <sm-input id="newAddrLabel" placeholder="Name" autofocus animate required></sm-input>
                 <div class="flex align-center space-between">
-                    <button class="button icon-only" title="Delete this FLO ID?" onclick="deleteSaved()">
+                    <button class="button icon-only" title="Delete this FLO address?" onclick="deleteSaved()">
                         <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
                             width="24px" fill="#000000">
                             <path d="M0 0h24v24H0z" fill="none" />
@@ -507,12 +507,13 @@
         </header>
         <section class="grid gap-1-5">
             <div class="grid gap-0-5">
-                <h4>Forgot FLO ID?</h4>
-                <p>In case of FLO ID being lost and you have the private key associated with it. You can recover it.</p>
+                <h4>Forgot FLO address?</h4>
+                <p>In case of FLO address being lost and you have the private key associated with it. You can recover
+                    it.</p>
             </div>
             <sm-form>
                 <div id="recovered_flo_id_wrapper" class="hide">
-                    <h5>Recovered FLO ID</h5>
+                    <h5>Recovered FLO address</h5>
                     <sm-copy id="recovered_flo_id"></sm-copy>
                 </div>
                 <sm-input id="retrieve_flo_id_field" type="password" error-text="Invalid private key"
@@ -556,7 +557,7 @@
             <ul id="saved_ids_picker_list" class="observe-empty-state grid gap-0-5 h-100" style="overflow-y: auto;">
             </ul>
             <div class="empty-state">
-                <h4>No saved FLO IDs</h4>
+                <h4>No saved FLO addresses</h4>
             </div>
         </section>
     </sm-popup>
@@ -641,7 +642,7 @@
             <h4 class="saved-id__label"></h4>
             <div class="grid align-center" style="grid-template-columns: 1fr auto;">
                 <div class="saved-id__flo-id overflow-ellipsis"></div>
-                <button class="copy-saved-id icon-only margin-left-0-5" title="Copy FLO ID">
+                <button class="copy-saved-id icon-only margin-left-0-5" title="Copy FLO address">
                     <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
                         fill="#000000">
                         <path d="M0 0h24v24H0z" fill="none" />
@@ -1497,7 +1498,7 @@
 
         const savedIdsObserver = new MutationObserver((mutationList) => {
             mutationList.forEach(mutation => {
-                getRef('saved_ids_tip').textContent = mutation.target.children.length === 0 ? `Click 'Add FLO ID' to add a new FLO ID.` : `Tap on saved IDs to see transactions and balance.`
+                getRef('saved_ids_tip').textContent = mutation.target.children.length === 0 ? `Click 'Add FLO address' to add a new FLO address.` : `Tap on saved IDs to see transactions and balance.`
             })
         })
 
@@ -1515,7 +1516,7 @@
                 insertElementAlphabetically(name, render.savedIdCard(floID, name))
                 closePopup()
             }).catch((error) => {
-                notify('FLO ID already saved', 'error');
+                notify('FLO address already saved', 'error');
             })
         }
 
@@ -1573,7 +1574,7 @@
         }
 
         function deleteSaved() {
-            getConfirmation('Do you want delete this FLO ID?', {
+            getConfirmation('Do you want delete this FLO address?', {
                 confirmText: 'Delete',
             }).then(res => {
                 if (res) {
