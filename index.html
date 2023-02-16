@@ -208,8 +208,8 @@
                             </svg>
                         </a>
                         <h4 id="flo_id_name"></h4>
-                        <button class="icon-only" style="margin-left:auto"
-                            onclick="render.transactions(pagesData.params.id)">
+                        <button class="icon-only" style="margin-left:auto" onclick="render.transactions()"
+                            title="Refresh">
                             <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
                                 width="24px" fill="#000000">
                                 <path d="M0 0h24v24H0z" fill="none" />
@@ -984,21 +984,14 @@
             let pageId
             let params = {}
             let searchParams
+            let wildcards
             if (targetPage === '') {
                 pageId = 'home'
             } else {
                 if (targetPage.includes('/')) {
-                    if (targetPage.includes('?')) {
-                        const splitAddress = targetPage.split('?')
-                        searchParams = splitAddress.pop()
-                        const pages = splitAddress.pop().split('/')
-                        pageId = pages[1]
-                        subPageId = pages[2]
-                    } else {
-                        const pages = targetPage.split('/')
-                        pageId = pages[1]
-                        subPageId = pages[2]
-                    }
+                    let path;
+                    [path, searchParams] = targetPage.split('?');
+                    [, pageId, ...wildcards] = path.split('/')
                 } else {
                     pageId = targetPage
                 }
@@ -1009,14 +1002,20 @@
             }
             if (pagesData.lastPage !== pageId) {
                 pagesData.lastPage = pageId
+                pagesData.wildcards = wildcards
             }
             if (params)
                 pagesData.params = params
             switch (pageId) {
                 case 'transactions':
-                    render.transactions(params.id).then(() => {
-                        scrollToTopObserver.observe(getRef('transactions_hero_section'))
-                    })
+                    const floId = wildcards[0]
+                    if (floId && floCrypto.validateFloID(floId)) {
+                        render.transactions(floId).then(() => {
+                            scrollToTopObserver.observe(getRef('transactions_hero_section'))
+                        })
+                    } else {
+
+                    }
                     break;
                 default:
                     getRef('transactions_list').innerHTML = ''
@@ -1287,12 +1286,12 @@
                 clone.querySelector('.transaction__time').textContent = getFormattedTime(time * 1000)
                 return clone
             },
-            async transactions(floID) {
+            async transactions(queriedFloId = pagesData.wildcards[0]) {
                 try {
                     scrollToTopObserver.disconnect()
                     // retrieve tokens and render them
                     getRef('tokens').classList.add('hide')
-                    fetch(`https://ranchimallflo.duckdns.org/api/v1.0/getFloAddressBalance?floAddress=${floID}`).then(res => res.json()).then(({ floAddressBalances }) => {
+                    fetch(`https://ranchimallflo.duckdns.org/api/v1.0/getFloAddressBalance?floAddress=${queriedFloId}`).then(res => res.json()).then(({ floAddressBalances }) => {
                         const frag = document.createDocumentFragment()
                         getRef('token_list').innerHTML = ''
                         let hasTokens = false
@@ -1312,23 +1311,23 @@
                     })
                     // retrieve FLO balance
                     getRef('flo_balance').innerHTML = `<sm-spinner></sm-spinner>`;
-                    floWebWallet.getBalance(floID).then((retrievedBal) => {
+                    floWebWallet.getBalance(queriedFloId).then((retrievedBal) => {
                         getRef('flo_balance').textContent = `${parseFloat(retrievedBal.toFixed(3))} FLO`;
                     }).catch((error) => {
                         notify(error, 'error');
                     })
                     floWebWallet.getLabels().then(allLabels => {
-                        getRef('flo_id_name').textContent = allLabels.hasOwnProperty(floID) ? allLabels[floID] === 'Unknown' ? floID : allLabels[floID] : floID
+                        getRef('flo_id_name').textContent = allLabels.hasOwnProperty(queriedFloId) ? allLabels[queriedFloId] === 'Unknown' ? queriedFloId : allLabels[queriedFloId] : queriedFloId
                     })
                     // render transactions
                     getRef('transactions_scroller').nextElementSibling.classList.remove('hide')
                     getRef('transactions_scroller').classList.add('hide')
                     getRef('transactions_list').innerHTML = '';
-                    await floWebWallet.syncTransactions(floID);
-                    let allTransactions = (await floWebWallet.readTransactions(floID)).reverse();
+                    await floWebWallet.syncTransactions(queriedFloId);
+                    let allTransactions = (await floWebWallet.readTransactions(queriedFloId)).reverse();
                     const filter = getRef('filter_selector').value;
                     if (filter !== 'all') {
-                        allTransactions = allTransactions.filter(t => filter === 'sent' ? t.sender === floID : t.receiver === floID)
+                        allTransactions = allTransactions.filter(t => filter === 'sent' ? t.sender === queriedFloId : t.receiver === queriedFloId)
                     }
                     if (transactionsLazyLoader) {
                         transactionsLazyLoader.update(allTransactions)
@@ -1371,7 +1370,7 @@
                 );
             } else {
                 const target = e.target.closest('.saved-id');
-                window.location.hash = `#/transactions?id=${target.dataset.floId}`
+                window.location.hash = `#/transactions/${target.dataset.floId}`
             }
         })
         delegate(getRef('saved_ids_picker_list'), 'click', '.saved-id', e => {
@@ -1386,10 +1385,11 @@
         })
 
         getRef('filter_selector').addEventListener('change', async e => {
+            const queriedFloId = pagesData.wildcards[0]
             const filter = e.target.value
-            let allTransactions = (await floWebWallet.readTransactions(pagesData.params.id)).reverse()
+            let allTransactions = (await floWebWallet.readTransactions(queriedFloId)).reverse()
             if (filter !== 'all') {
-                allTransactions = allTransactions.filter(t => filter === 'sent' ? t.sender === pagesData.params.id : t.receiver === pagesData.params.id)
+                allTransactions = allTransactions.filter(t => filter === 'sent' ? t.sender === queriedFloId : t.receiver === queriedFloId)
             }
             transactionsLazyLoader.update(allTransactions)
         })
