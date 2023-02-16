@@ -1014,7 +1014,7 @@
                     const floId = wildcards[0]
                     if (floId && floCrypto.validateFloID(floId)) {
                         render.transactions(floId).then(() => {
-                            scrollToTopObserver.observe(getRef('transactions_hero_section'))
+                            scrollToTopObserver.observe(getRef('transactions_list').firstElementChild)
                         })
                     } else {
                         notify('Invalid Flo ID', 'error')
@@ -1327,7 +1327,7 @@
                             renderElem(getRef('queried_flo_address'), html`<h4><sm-copy clip-text value=${queriedFloId}></sm-copy></h4>`)
                         }
                     })
-                    // render transactions
+                    // show spinner
                     getRef('transactions_scroller').nextElementSibling.classList.remove('hide')
                     getRef('transactions_scroller').classList.add('hide')
                     getRef('transactions_list').innerHTML = '';
@@ -1337,6 +1337,7 @@
                     if (filter !== 'all') {
                         allTransactions = allTransactions.filter(t => filter === 'sent' ? t.sender === queriedFloId : t.receiver === queriedFloId)
                     }
+                    // render transactions
                     if (transactionsLazyLoader) {
                         transactionsLazyLoader.update(allTransactions)
                     } else {
