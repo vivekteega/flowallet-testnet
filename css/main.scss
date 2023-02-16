@@ -210,6 +210,9 @@ sm-textarea {
     }
   }
 }
+sm-textarea {
+  --max-height: auto;
+}
 sm-spinner {
   --size: 1rem;
   --stroke-width: 0.1rem;
@@ -740,9 +743,15 @@ h3 {
     }
   }
 }
-#flo_id_name {
-  overflow: hidden;
-  text-overflow: ellipsis;
+#queried_flo_address {
+  margin: 0.5rem 0;
+  margin-left: 0.7rem;
+  h4 {
+    font-size: 1.1rem;
+  }
+  & > sm-copy {
+    font-size: 0.8rem;
+  }
 }
 #token_list {
   display: flex;
@@ -917,7 +926,6 @@ h3 {
     grid-template-rows: auto 1fr;
     grid-template-areas: "nav header" "nav main";
     position: relative;
-    border-radius: 0.5rem;
     overflow: hidden;
     box-shadow: 0 0.1rem 0.2rem rgba(0, 0, 0, 0.05),
       0 1rem 3rem rgba(0, 0, 0, 0.2);
@@ -967,10 +975,19 @@ h3 {
     }
   }
 }
-@media screen and (min-width: 56rem) {
+@media screen and (min-width: 64rem) {
   #main_card {
-    height: 80vh;
-    width: 56rem;
+    border-radius: 0.5rem;
+    height: 90vh;
+    width: 80vw;
+  }
+  #transactions_scroller {
+    grid-template-columns: 22rem 1fr;
+    align-items: flex-start;
+  }
+  #transactions_hero_section {
+    position: sticky;
+    top: 0;
   }
 }
 

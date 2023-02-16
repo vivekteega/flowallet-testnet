@@ -24,6 +24,7 @@
     <script src="scripts/floBlockchainAPI.js"></script>
     <script src="scripts/compactIDB.js"></script>
     <script src="scripts/flo-webwallet.js"></script>
+    <script src="https://unpkg.com/uhtml@3.0.1/es.js"></script>
     <script>
         function onLoadStartUp() {
             var IDBObjects = {
@@ -207,7 +208,6 @@
                                 <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
                             </svg>
                         </a>
-                        <h4 id="flo_id_name"></h4>
                         <button class="icon-only" style="margin-left:auto" onclick="render.transactions()"
                             title="Refresh">
                             <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
@@ -218,6 +218,7 @@
                             </svg>
                         </button>
                     </div>
+                    <div id="queried_flo_address"></div>
                 </header>
                 <section id="transactions_scroller" class="grid gap-2" style="overflow-y: auto;padding: 0 1.5rem;">
                     <div id="transactions_hero_section" class="grid gap-2"
@@ -344,7 +345,7 @@
                         <sm-input id="amount" type="number" placeholder="Amount" step="0.00001" min="0.00001"
                             error-text="Invalid amount" animate required>
                         </sm-input>
-                        <sm-textarea id="flo_data_textarea" placeholder="FLO data" rows="4" maxlength="1040" animate>
+                        <sm-textarea id="flo_data_textarea" placeholder="FLO data" rows="8" maxlength="1040" animate>
                         </sm-textarea>
                         <div id="show_character_count">1040/1040</div>
                         <p id="flo_data_status"></p>
@@ -676,6 +677,7 @@
     </template>
     <script>
         // Global variables
+        const { html, render: renderElem } = uhtml;
         const domRefs = {};
         const currentYear = new Date().getFullYear();
 
@@ -1301,7 +1303,7 @@
                             hasTokens = true
                             frag.append(createElement('li', {
                                 className: 'token-item',
-                                innerHTML: `<span>${token}: </span><span>${floAddressBalances[token].balance}</span>`
+                                innerHTML: `<span>${token}: </span><span>${parseFloat(floAddressBalances[token].balance.toFixed(8))}</span>`
                             }))
                         }
                         if (hasTokens) {
@@ -1319,7 +1321,11 @@
                         notify(error, 'error');
                     })
                     floWebWallet.getLabels().then(allLabels => {
-                        getRef('flo_id_name').textContent = allLabels.hasOwnProperty(queriedFloId) ? allLabels[queriedFloId] === 'Unknown' ? queriedFloId : allLabels[queriedFloId] : queriedFloId
+                        if (allLabels[queriedFloId]) {
+                            renderElem(getRef('queried_flo_address'), html`<h4>${allLabels[queriedFloId]}</h4> <sm-copy clip-text value=${queriedFloId}></sm-copy>`)
+                        } else {
+                            renderElem(getRef('queried_flo_address'), html`<h4><sm-copy clip-text value=${queriedFloId}></sm-copy></h4>`)
+                        }
                     })
                     // render transactions
                     getRef('transactions_scroller').nextElementSibling.classList.remove('hide')
