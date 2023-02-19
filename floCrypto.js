@@ -1,4 +1,4 @@
-(function (EXPORTS) { //floCrypto v2.3.3e
+(function (EXPORTS) { //floCrypto v2.3.4
     /* FLO Crypto Operators */
     'use strict';
     const floCrypto = EXPORTS;
@@ -231,12 +231,36 @@
         }
     }
 
+    floCrypto.getMultisigAddress = function (publicKeyList, requiredSignatures) {
+        if (!Array.isArray(publicKeyList) || !publicKeyList.length)
+            return null;
+        if (!Number.isInteger(requiredSignatures) || requiredSignatures < 1)
+            return null;
+        try {
+            var multisig = bitjs.pubkeys2multisig(publicKeyList, requiredSignatures);
+            return multisig;
+        } catch {
+            return null;
+        }
+    }
+
+    floCrypto.decodeRedeemScript = function (redeemScript) {
+        try {
+            var decoded = bitjs.transaction().decodeRedeemScript(redeemScript);
+            return decoded;
+        } catch {
+            return null;
+        }
+    }
+
     //Check if the given flo-id is valid or not
-    floCrypto.validateFloID = function (floID) {
+    floCrypto.validateFloID = function (floID, regularOnly = false) {
         if (!floID)
             return false;
         try {
             let addr = new Bitcoin.Address(floID);
+            if (regularOnly && addr.version != Bitcoin.Address.standardVersion)
+                return false;
             return true;
         } catch {
             return false;
