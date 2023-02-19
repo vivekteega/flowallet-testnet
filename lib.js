@@ -1,4 +1,4 @@
-(function (GLOBAL) { //lib v1.3.3
+(function (GLOBAL) { //lib v1.4.0
     'use strict';
     /* Utility Libraries required for Standard operations
      * All credits for these codes belong to their respective creators, moderators and owners.
@@ -4352,6 +4352,7 @@
         /* public vars */
         bitjs.pub = 0x23; // flochange - changed the prefix to FLO Mainnet PublicKey Prefix 0x23
         bitjs.priv = 0xa3; //flochange - changed the prefix to FLO Mainnet Private key prefix 0xa3
+        bitjs.multisig = 0x5e; //flochange - prefix for FLO Mainnet Multisig 0x5e
         bitjs.compressed = false;
 
         /* provide a privkey and return an WIF  */
@@ -4452,6 +4453,45 @@
             return B58.encode(r.concat(checksum));
         }
 
+        /* generate a multisig address from pubkeys and required signatures */
+        bitjs.pubkeys2multisig = function (pubkeys, required) {
+            var s = [];
+            s.push(80 + required); //OP_1
+            for (var i = 0; i < pubkeys.length; ++i) {
+                let bytes = Crypto.util.hexToBytes(pubkeys[i]);
+                s.push(bytes.length);
+                s = s.concat(bytes);
+            }
+            s.push(80 + pubkeys.length); //OP_1 
+            s.push(174); //OP_CHECKMULTISIG
+
+            if (s.length > 520) { // too large
+                throw Error(`redeemScript size(=${s.length}) too large`)
+            }
+
+            var x = ripemd160(Crypto.SHA256(s, {
+                asBytes: true
+            }), {
+                asBytes: true
+            });
+            x.unshift(bitjs.multisig);
+            var r = x;
+            r = Crypto.SHA256(Crypto.SHA256(r, {
+                asBytes: true
+            }), {
+                asBytes: true
+            });
+            var checksum = r.slice(0, 4);
+            var redeemScript = Crypto.util.bytesToHex(s);
+            var address = B58.encode(x.concat(checksum));
+
+            return {
+                'address': address,
+                'redeemScript': redeemScript,
+                'size': s.length
+            };
+        }
+
         bitjs.transaction = function () {
             var btrx = {};
             btrx.version = 2; //flochange look at this version
@@ -4467,7 +4507,6 @@
                     'hash': txid,
                     'index': index
                 };
-                //o.script = []; Signature and Public Key should be added after singning
                 o.script = Crypto.util.hexToBytes(scriptPubKey); //push previous output pubkey script
                 o.sequence = sequence || ((btrx.locktime == 0) ? 4294967295 : 0);
                 return this.inputs.push(o);
@@ -4476,14 +4515,23 @@
             btrx.addoutput = function (address, value) {
                 var o = {};
                 var buf = [];
-                var addrDecoded = btrx.addressDecode(address);
+                var addr = this.addressDecode(address);
                 o.value = new BigInteger('' + Math.round((value * 1) * 1e8), 10);
-                buf.push(118); //OP_DUP
-                buf.push(169); //OP_HASH160
-                buf.push(addrDecoded.length);
-                buf = buf.concat(addrDecoded); // address in bytes
-                buf.push(136); //OP_EQUALVERIFY
-                buf.push(172); //  OP_CHECKSIG
+
+                if (addr.version === bitjs.pub) { // regular address
+                    buf.push(118); //OP_DUP
+                    buf.push(169); //OP_HASH160
+                    buf.push(addr.bytes.length);
+                    buf = buf.concat(addr.bytes); // address in bytes
+                    buf.push(136); //OP_EQUALVERIFY
+                    buf.push(172); //OP_CHECKSIG
+                } else if (addr.version === bitjs.multisig) { // multisig address
+                    buf.push(169); //OP_HASH160
+                    buf.push(addr.bytes.length);
+                    buf = buf.concat(addr.bytes); // address in bytes
+                    buf.push(135); //OP_EQUAL
+                }
+
                 o.script = buf;
                 return this.outputs.push(o);
             }
@@ -4503,7 +4551,7 @@
             }
 
 
-            // Only standard addresses
+            // Only standard addresses (standard multisig supported)
             btrx.addressDecode = function (address) {
                 var bytes = B58.decode(address);
                 var front = bytes.slice(0, bytes.length - 4);
@@ -4514,7 +4562,10 @@
                     asBytes: true
                 }).slice(0, 4);
                 if (checksum + "" == back + "") {
-                    return front.slice(1);
+                    return {
+                        version: front[0],
+                        bytes: front.slice(1)
+                    };
                 }
             }
 
@@ -4739,6 +4790,60 @@
                 return KBigInt;
             };
 
+            btrx.parseScript = function (script) {
+
+                var chunks = [];
+                var i = 0;
+
+                function readChunk(n) {
+                    chunks.push(script.slice(i, i + n));
+                    i += n;
+                };
+
+                while (i < script.length) {
+                    var opcode = script[i++];
+                    if (opcode >= 0xF0) {
+                        opcode = (opcode << 8) | script[i++];
+                    }
+
+                    var len;
+                    if (opcode > 0 && opcode < 76) { //OP_PUSHDATA1
+                        readChunk(opcode);
+                    } else if (opcode == 76) { //OP_PUSHDATA1
+                        len = script[i++];
+                        readChunk(len);
+                    } else if (opcode == 77) { //OP_PUSHDATA2
+                        len = (script[i++] << 8) | script[i++];
+                        readChunk(len);
+                    } else if (opcode == 78) { //OP_PUSHDATA4
+                        len = (script[i++] << 24) | (script[i++] << 16) | (script[i++] << 8) | script[i++];
+                        readChunk(len);
+                    } else {
+                        chunks.push(opcode);
+                    }
+
+                    if (i < 0x00) {
+                        break;
+                    }
+                }
+
+                return chunks;
+            }
+
+            btrx.decodeRedeemScript = function (rs) {
+                if (typeof rs == "string")
+                    rs = Crypto.util.hexToBytes(rs);
+                var script = this.parseScript(rs);
+                var r = {};
+                r.required = script[0] - 80;
+                r.pubkeys = [];
+                for (var i = 1; i < script.length - 2; i++)
+                    r.pubkeys.push(Crypto.util.bytesToHex(script[i]));
+                r.address = bitjs.pubkeys2multisig(r.pubkeys, r.required).address;
+                r.redeemscript = Crypto.util.bytesToHex(rs);
+                return r;
+            }
+
             /* sign a "standard" input */
             btrx.signinput = function (index, wif, sigHashType) {
                 var key = bitjs.wif2pubkey(wif);
@@ -4755,15 +4860,100 @@
                 return true;
             }
 
+            /* sign a multisig input */
+            btrx.signmultisig = function (index, wif, sigHashType) {
+
+                var script = Array.from(this.inputs[index].script);
+                var redeemScript, sigsList = [];
+
+                if (script[0] == 0) { //script with signatures
+                    script = this.parseScript(script);
+                    for (var i = 0; i < script.length; i++) {
+                        if (Array.isArray(script[i])) {
+                            if (script[i][0] == 48) //0x30 DERSequence
+                                sigsList.push(script[i]);
+                            else if (script[i][0] >= 80 && script[i][script[i].length - 1] == 174) //OP_CHECKMULTISIG
+                                redeemScript = script[i];
+                        }
+                    }
+                } else { //script = redeemscript
+                    redeemScript = script;
+                }
+
+                var pubkeyList = this.decodeRedeemScript(redeemScript).pubkeys;
+                var pubkey = bitjs.wif2pubkey(wif)['pubkey'];
+                if (!pubkeyList.includes(pubkey)) //wif not a part of this multisig
+                    return false;
+
+                pubkeyList = pubkeyList.map(pub => Crypto.util.hexToBytes(bitjs.pubkeydecompress(pub))); //decompress pubkeys
+
+                var shType = sigHashType || 1;
+                this.inputs[index].script = redeemScript; //script to be signed is redeemscript
+                var signature = Crypto.util.hexToBytes(this.transactionSig(index, wif, shType));
+                sigsList.push(signature);
+
+                var buf = [];
+                buf.push(0);
+
+                //verify signatures and order them (also remove duplicate sigs)
+                for (let x in pubkeyList) {
+                    for (let y in sigsList) {
+                        var sighash = Crypto.util.hexToBytes(this.transactionHash(index, sigsList[y].slice(-1)[0] * 1));
+                        if (bitjs.verifySignature(sighash, sigsList[y], pubkeyList[x])) {
+                            buf.push(sigsList[y].length);
+                            buf = buf.concat(sigsList[y]);
+                            break; //ensures duplicate sigs from same pubkey are not added
+                        }
+                    }
+                }
+
+                //append redeemscript
+                buf.push(redeemScript.length);
+                buf = buf.concat(redeemScript);
+
+                this.inputs[index].script = buf;
+                return true;
+            }
+
             /* sign inputs */
             btrx.sign = function (wif, sigHashType) {
                 var shType = sigHashType || 1;
                 for (var i = 0; i < this.inputs.length; i++) {
-                    this.signinput(i, wif, shType);
+
+                    var decodedScript = this.scriptDecode(i);
+
+                    if (decodedScript.type == "scriptpubkey" && decodedScript.signed == false) { //regular 
+                        var addr = bitjs.wif2address(wif)["address"];;
+                        if (decodedScript.pubhash == Crypto.util.bytesToHex(this.addressDecode(addr).bytes)) //input belongs to wif
+                            this.signinput(i, wif, shType);
+                    } else if (decodedScript.type == "multisig") { //multisig
+                        this.signmultisig(i, wif, shType);
+                    }
                 }
                 return this.serialize();
             }
 
+            // function to find type of the script in input
+            btrx.scriptDecode = function (index) {
+                var script = this.parseScript(this.inputs[index].script);
+                if (script.length == 5 && script[script.length - 1] == 172) {
+                    //OP_DUP OP_HASH160 [address bytes] OP_EQUALVERIFY OP_CHECKSIG
+                    // regular scriptPubkey (not signed)
+                    return { type: 'scriptpubkey', signed: false, pubhash: Crypto.util.bytesToHex(script[2]) };
+                } else if (script.length == 2 && script[0][0] == 48) {
+                    //[signature] [pubkey]
+                    //(probably) regular signed
+                    return { type: 'scriptpubkey', signed: true };
+                } else if (script[0] == 0 && script[script.length - 1][script[script.length - 1].length - 1] == 174) {
+                    //0 [signatues] [redeemscript OP_CHECKMULTISIG]
+                    // multisig with signature
+                    return { type: 'multisig', rs: script[script.length - 1] };
+                } else if (script[0] >= 80 && script[script.length - 1] == 174) {
+                    //redeemscript: 80+ [pubkeys] OP_CHECKMULTISIG
+                    // multisig without signature
+                    return { type: 'multisig', rs: Array.from(this.inputs[index].script) };
+                }
+            }
 
             /* serialize a transaction */
             btrx.serialize = function () {
