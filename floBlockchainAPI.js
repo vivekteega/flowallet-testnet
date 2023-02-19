@@ -1,4 +1,4 @@
-(function (EXPORTS) { //floBlockchainAPI v2.3.3e
+(function (EXPORTS) { //floBlockchainAPI v2.4.0
     /* FLO Blockchain Operator to send/receive data from blockchain using API calls*/
     'use strict';
     const floBlockchainAPI = EXPORTS;
@@ -126,7 +126,7 @@
         return new Promise((resolve, reject) => {
             if (!floCrypto.validateASCII(floData))
                 return reject("Invalid FLO_Data: only printable ASCII characters are allowed");
-            else if (!floCrypto.validateFloID(senderAddr))
+            else if (!floCrypto.validateFloID(senderAddr, true))
                 return reject(`Invalid address : ${senderAddr}`);
             else if (!floCrypto.validateFloID(receiverAddr))
                 return reject(`Invalid address : ${receiverAddr}`);
@@ -203,7 +203,7 @@
     //merge all UTXOs of a given floID into a single UTXO
     floBlockchainAPI.mergeUTXOs = function (floID, privKey, floData = '') {
         return new Promise((resolve, reject) => {
-            if (!floCrypto.validateFloID(floID))
+            if (!floCrypto.validateFloID(floID, true))
                 return reject(`Invalid floID`);
             if (!floCrypto.verifyPrivKey(privKey, floID))
                 return reject("Invalid Private Key");
@@ -381,7 +381,6 @@
                 for (let floID in senders)
                     promises.push(promisedAPI(`api/addr/${floID}/utxo`));
                 Promise.all(promises).then(results => {
-                    let wifSeq = [];
                     var trx = bitjs.transaction();
                     for (let floID in senders) {
                         let utxos = results.shift();
@@ -391,13 +390,11 @@
                             sendAmt = totalSendAmt * ratio;
                         } else
                             sendAmt = senders[floID].coins + dividedFee;
-                        let wif = senders[floID].wif;
                         let utxoAmt = 0.0;
                         for (let i = utxos.length - 1;
                             (i >= 0) && (utxoAmt < sendAmt); i--) {
                             if (utxos[i].confirmations) {
                                 trx.addinput(utxos[i].txid, utxos[i].vout, utxos[i].scriptPubKey);
-                                wifSeq.push(wif);
                                 utxoAmt += utxos[i].amount;
                             }
                         }
@@ -410,14 +407,134 @@
                     for (let floID in receivers)
                         trx.addoutput(floID, receivers[floID]);
                     trx.addflodata(floData.replace(/\n/g, ' '));
-                    for (let i = 0; i < wifSeq.length; i++)
-                        trx.signinput(i, wifSeq[i], 1);
+                    for (let floID in senders)
+                        trx.sign(senders[floID].wif, 1);
                     var signedTxHash = trx.serialize();
                     broadcastTx(signedTxHash)
                         .then(txid => resolve(txid))
                         .catch(error => reject(error))
                 }).catch(error => reject(error))
             }).catch(error => reject(error))
+        })
+    }
+
+    //Create a multisig transaction
+    const createMultisigTx = floBlockchainAPI.createMultisigTx = function (redeemScript, receivers, amounts, floData = '', strict_utxo = true) {
+        return new Promise((resolve, reject) => {
+            var multisig = floCrypto.decodeRedeemScript(redeemScript);
+
+            //validate multisig script and flodata
+            if (!multisig)
+                return reject(`Invalid redeemScript`);
+            var senderAddr = multisig.address;
+            if (!floCrypto.validateFloID(senderAddr))
+                return reject(`Invalid multisig : ${senderAddr}`);
+            else if (!floCrypto.validateASCII(floData))
+                return reject("Invalid FLO_Data: only printable ASCII characters are allowed");
+            //validate receiver addresses
+            if (!Array.isArray(receivers))
+                receivers = [receivers];
+            for (let r of receivers)
+                if (!floCrypto.validateFloID(r))
+                    return reject(`Invalid address : ${r}`);
+            //validate amounts
+            if (!Array.isArray(amounts))
+                amounts = [amounts];
+            if (amounts.length != receivers.length)
+                return reject("Receivers and amounts have different length");
+            var sendAmt = 0;
+            for (let a of amounts) {
+                if (typeof a !== 'number' || a <= 0)
+                    return reject(`Invalid amount : ${a}`);
+                sendAmt += a;
+            }
+
+            getBalance(senderAddr).then(balance => {
+                var fee = DEFAULT.fee;
+                if (balance < sendAmt + fee)
+                    return reject("Insufficient FLO balance!");
+                //get unconfirmed tx list
+                promisedAPI(`api/addr/${senderAddr}`).then(result => {
+                    readTxs(senderAddr, 0, result.unconfirmedTxApperances).then(result => {
+                        let unconfirmedSpent = {};
+                        for (let tx of result.items)
+                            if (tx.confirmations == 0)
+                                for (let vin of tx.vin)
+                                    if (vin.addr === senderAddr) {
+                                        if (Array.isArray(unconfirmedSpent[vin.txid]))
+                                            unconfirmedSpent[vin.txid].push(vin.vout);
+                                        else
+                                            unconfirmedSpent[vin.txid] = [vin.vout];
+                                    }
+                        //get utxos list
+                        promisedAPI(`api/addr/${senderAddr}/utxo`).then(utxos => {
+                            //form/construct the transaction data
+                            var trx = bitjs.transaction();
+                            var utxoAmt = 0.0;
+                            for (var i = utxos.length - 1;
+                                (i >= 0) && (utxoAmt < sendAmt + fee); i--) {
+                                //use only utxos with confirmations (strict_utxo mode)
+                                if (utxos[i].confirmations || !strict_utxo) {
+                                    if (utxos[i].txid in unconfirmedSpent && unconfirmedSpent[utxos[i].txid].includes(utxos[i].vout))
+                                        continue; //A transaction has already used the utxo, but is unconfirmed.
+                                    trx.addinput(utxos[i].txid, utxos[i].vout, redeemScript); //for multisig, script=redeemScript
+                                    utxoAmt += utxos[i].amount;
+                                };
+                            }
+                            if (utxoAmt < sendAmt + fee)
+                                reject("Insufficient FLO: Some UTXOs are unconfirmed");
+                            else {
+                                for (let i in receivers)
+                                    trx.addoutput(receivers[i], amounts[i]);
+                                var change = utxoAmt - sendAmt - fee;
+                                if (change > DEFAULT.minChangeAmt)
+                                    trx.addoutput(senderAddr, change);
+                                trx.addflodata(floData.replace(/\n/g, ' '));
+                                resolve(trx);
+                            }
+                        }).catch(error => reject(error))
+                    }).catch(error => reject(error))
+                }).catch(error => reject(error))
+            }).catch(error => reject(error))
+        });
+    }
+
+    //Create and send multisig transaction
+    const sendMultisigTx = floBlockchainAPI.sendMultisigTx = function (redeemScript, privateKeys, receivers, amounts, floData = '', strict_utxo = true) {
+        return new Promise((resolve, reject) => {
+            var multisig = floCrypto.decodeRedeemScript(redeemScript);
+            if (!multisig)
+                return reject(`Invalid redeemScript`);
+            if (privateKeys.length < multisig.required)
+                return reject(`Insufficient privateKeys (required ${multisig.required})`);
+            for (let pk of privateKeys) {
+                var flag = false;
+                for (let pub of multisig.pubkeys)
+                    if (floCrypto.verifyPrivKey(pk, pub, false))
+                        flag = true;
+                if (!flag)
+                    return reject(`Invalid Private key`);
+            }
+            createMultisigTx(redeemScript, receivers, amounts, floData, strict_utxo).then(trx => {
+                for (let pk of privateKeys)
+                    trx.sign(pk, 1);
+                var signedTxHash = trx.serialize();
+                broadcastTx(signedTxHash)
+                    .then(txid => resolve(txid))
+                    .catch(error => reject(error))
+            }).catch(error => reject(error))
+        })
+    }
+
+    floBlockchainAPI.writeMultisigData = function (redeemScript, data, privatekeys, receiverAddr = DEFAULT.receiverID, options = {}) {
+        let strict_utxo = options.strict_utxo === false ? false : true,
+            sendAmt = isNaN(options.sendAmt) ? DEFAULT.sendAmt : options.sendAmt;
+        return new Promise((resolve, reject) => {
+            if (!floCrypto.validateFloID(receiverAddr))
+                return reject(`Invalid receiver: ${receiverAddr}`);
+            sendMultisigTx(redeemScript, privatekeys, receiverAddr, sendAmt, data, strict_utxo)
+                .then(txid => resolve(txid))
+                .catch(error => reject(error))
         })
     }
 
