@@ -1,4 +1,4 @@
-(function (GLOBAL) { //lib v1.3.2
+(function (GLOBAL) { //lib v1.3.3
     'use strict';
     /* Utility Libraries required for Standard operations
      * All credits for these codes belong to their respective creators, moderators and owners.
@@ -4349,15 +4349,6 @@
 
         var bitjs = GLOBAL.bitjs = function () { };
 
-        function ascii_to_hexa(str) {
-            var arr1 = [];
-            for (var n = 0, l = str.length; n < l; n++) {
-                var hex = Number(str.charCodeAt(n)).toString(16);
-                arr1.push(hex);
-            }
-            return arr1.join('');
-        }
-
         /* public vars */
         bitjs.pub = 0x23; // flochange - changed the prefix to FLO Mainnet PublicKey Prefix 0x23
         bitjs.priv = 0xa3; //flochange - changed the prefix to FLO Mainnet Private key prefix 0xa3
@@ -4497,10 +4488,18 @@
                 return this.outputs.push(o);
             }
 
+            // flochange - Added fn to assign flodata to tx
+            btrx.addflodata = function (data) {
+                //checks for valid flo-data string
+                if (typeof data !== "string")
+                    throw Error("floData should be String");
+                if (data.length > 1040)
+                    throw Error("floData Character Limit Exceeded");
+                if (bitjs.strToBytes(data).some(c => c < 32 || c > 127))
+                    throw Error("floData contains Invalid characters (only ASCII characters allowed");
 
-            btrx.addflodata = function (txcomments) { // flochange - this whole function needs to be done
-                this.floData = txcomments;
-                return this.floData; //flochange .. returning the txcomments -- check if the function return will assign
+                this.floData = data;
+                return this.floData;
             }
 
 
@@ -4793,28 +4792,13 @@
                 }
 
                 buffer = buffer.concat(bitjs.numToBytes(parseInt(this.locktime), 4));
-                var flohex = ascii_to_hexa(this.floData);
-                var floDataCount = this.floData.length;
-                var floDataCountString;
-                //flochange -- creating unique data character count logic for floData. This string is prefixed before actual floData string in Raw Transaction
-                if (floDataCount < 16) {
-                    floDataCountString = floDataCount.toString(16);
-                    floDataCountString = "0" + floDataCountString;
-                } else if (floDataCount < 253) {
-                    floDataCountString = floDataCount.toString(16);
-                } else if (floDataCount <= 1040) {
-                    let floDataCountAdjusted = (floDataCount - 253) + parseInt("0xfd00fd");
-                    let floDataCountStringAdjusted = floDataCountAdjusted.toString(16);
-                    floDataCountString = floDataCountStringAdjusted.substr(0, 2) + floDataCountStringAdjusted.substr(4, 2) + floDataCountStringAdjusted.substr(2, 2);
-                } else {
-                    floDataCountString = "Character Limit Exceeded";
-                }
 
+                //flochange -- append floData field
+                buffer = buffer.concat(bitjs.numToVarInt(this.floData.length));
+                buffer = buffer.concat(bitjs.strToBytes(this.floData))
 
-                return Crypto.util.bytesToHex(buffer) + floDataCountString + flohex; // flochange -- Addition of floDataCountString and floData in serialization
+                return Crypto.util.bytesToHex(buffer);
             }
-
-
 
             return btrx;
 
@@ -4854,6 +4838,36 @@
         bitjs.bytesToNum = function (bytes) {
             if (bytes.length == 0) return 0;
             else return bytes[0] + 256 * bitjs.bytesToNum(bytes.slice(1));
+        }
+
+        //flochange - adding fn to convert string (for flodata) to byte
+        bitjs.strToBytes = function (str) {
+            return str.split('').map(c => c.charCodeAt(0));
+        }
+
+        /* decompress an compressed public key */
+        bitjs.pubkeydecompress = function (pubkey) {
+            if ((typeof (pubkey) == 'string') && pubkey.match(/^[a-f0-9]+$/i)) {
+                var curve = EllipticCurve.getSECCurveByName("secp256k1");
+                try {
+                    var pt = curve.curve.decodePointHex(pubkey);
+                    var x = pt.getX().toBigInteger();
+                    var y = pt.getY().toBigInteger();
+
+                    var publicKeyBytes = EllipticCurve.integerToBytes(x, 32);
+                    publicKeyBytes = publicKeyBytes.concat(EllipticCurve.integerToBytes(y, 32));
+                    publicKeyBytes.unshift(0x04);
+                    return Crypto.util.bytesToHex(publicKeyBytes);
+                } catch (e) {
+                    // console.log(e);
+                    return false;
+                }
+            }
+            return false;
+        }
+
+        bitjs.verifySignature = function (hash, sig, pubkey) {
+            return Bitcoin.ECDSA.verify(hash, sig, pubkey);
         }
 
         /* clone an object */
