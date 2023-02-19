@@ -1,4 +1,4 @@
-(function (GLOBAL) { //lib v1.4.0
+(function (GLOBAL) { //lib v1.4.1
     'use strict';
     /* Utility Libraries required for Standard operations
      * All credits for these codes belong to their respective creators, moderators and owners.
@@ -5224,17 +5224,26 @@
 
         //https://raw.github.com/bitcoinjs/bitcoinjs-lib/09e8c6e184d6501a0c2c59d73ca64db5c0d3eb95/src/address.js
         Bitcoin.Address = function (bytes) {
-            if (GLOBAL.cryptocoin == "FLO")
-                this.version = 0x23; // FLO mainnet public address
-            else if (GLOBAL.cryptocoin == "FLO_TEST")
-                this.version = 0x73; // FLO testnet public address
             if ("string" == typeof bytes) {
-                bytes = Bitcoin.Address.decodeString(bytes, this.version);
+                var d = Bitcoin.Address.decodeString(bytes);
+                bytes = d.hash;
+                if (GLOBAL.cryptocoin == "FLO" && (d.version == Bitcoin.Address.standardVersion || d.version == Bitcoin.Address.multisigVersion))
+                    this.version = d.version;
+                else if (GLOBAL.cryptocoin == "FLO_TEST" && d.version == Bitcoin.Address.testnetVersion)
+                    this.version = d.version;
+                else throw "Version (prefix) " + d.version + " not supported!";
+            } else {
+                if (GLOBAL.cryptocoin == "FLO")
+                    this.version = Bitcoin.Address.standardVersion;
+                else if (GLOBAL.cryptocoin == "FLO_TEST")
+                    this.version = Bitcoin.Address.testnetVersion; // FLO testnet public address
             }
             this.hash = bytes;
         };
 
-        Bitcoin.Address.networkVersion = 0x23; // (FLO mainnet 0x23, 35D), (Bitcoin Mainnet, 0x00, 0D) // *this has no effect *
+        Bitcoin.Address.standardVersion = 0x23; // (FLO mainnet 0x23, 35D), (Bitcoin Mainnet, 0x00, 0D)
+        Bitcoin.Address.multisigVersion = 0x5e; // (FLO multisig 0x5e, 94D)
+        Bitcoin.Address.testnetVersion = 0x73; // (FLO testnet 0x73, 115D)
 
         /**
          * Serialize this object as a standard Bitcoin address.
@@ -5263,7 +5272,7 @@
         /**
          * Parse a Bitcoin address contained in a string.
          */
-        Bitcoin.Address.decodeString = function (string, version) {
+        Bitcoin.Address.decodeString = function (string) {
             var bytes = Bitcoin.Base58.decode(string);
             var hash = bytes.slice(0, 21);
             var checksum = Crypto.SHA256(Crypto.SHA256(hash, {
@@ -5279,11 +5288,12 @@
                 throw "Checksum validation failed!";
             }
 
-            if (version != hash.shift()) {
+            /*if (version != hash.shift()) {
                 throw "Version " + hash.shift() + " not supported!";
-            }
+            }*/
 
-            return hash;
+            var version = hash.shift();
+            return { version, hash };
         };
         //https://raw.github.com/bitcoinjs/bitcoinjs-lib/e90780d3d3b8fc0d027d2bcb38b80479902f223e/src/ecdsa.js
         Bitcoin.ECDSA = (function () {
