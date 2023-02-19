@@ -1,4 +1,4 @@
-(function (EXPORTS) { //floCrypto v2.3.4
+(function (EXPORTS) { //floCrypto v2.3.4a
     /* FLO Crypto Operators */
     'use strict';
     const floCrypto = EXPORTS;
@@ -222,7 +222,7 @@
             key.setCompressed(true);
             if (isfloID && pubKey_floID == key.getBitcoinAddress())
                 return true;
-            else if (!isfloID && pubKey_floID == key.getPubKeyHex())
+            else if (!isfloID && pubKey_floID.toUpperCase() == key.getPubKeyHex().toUpperCase())
                 return true;
             else
                 return false;
