@@ -1,4 +1,4 @@
-(function (GLOBAL) { //lib v1.4.1
+(function (GLOBAL) { //lib v1.4.1a
     'use strict';
     /* Utility Libraries required for Standard operations
      * All credits for these codes belong to their respective creators, moderators and owners.
@@ -4834,6 +4834,8 @@
                 if (typeof rs == "string")
                     rs = Crypto.util.hexToBytes(rs);
                 var script = this.parseScript(rs);
+                if (!(script[0] > 80 && script[script.length - 2] > 80 && script[script.length - 1] == 174)) //OP_CHECKMULTISIG
+                    throw "Invalid RedeemScript";
                 var r = {};
                 r.required = script[0] - 80;
                 r.pubkeys = [];
