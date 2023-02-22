@@ -1,4 +1,4 @@
-(function (EXPORTS) { //floCrypto v2.3.4a
+(function (EXPORTS) { //floCrypto v2.3.5
     /* FLO Crypto Operators */
     'use strict';
     const floCrypto = EXPORTS;
@@ -290,13 +290,15 @@
             return false;
     }
 
-    //Check the public-key for the address (any blockchain)
+    //Check the public-key (or redeem-script) for the address (any blockchain)
     floCrypto.verifyPubKey = function (pubKeyHex, address) {
-        let raw = decodeAddress(address),
-            pub_hash = Crypto.util.bytesToHex(ripemd160(Crypto.SHA256(Crypto.util.hexToBytes(pubKeyHex), {
-                asBytes: true
-            })));
-        return raw ? pub_hash === raw.hex : false;
+        let raw = decodeAddress(address);
+        if (!raw)
+            return;
+        let pub_hash = Crypto.util.bytesToHex(ripemd160(Crypto.SHA256(Crypto.util.hexToBytes(pubKeyHex), { asBytes: true })));
+        if (typeof raw.bech_version !== 'undefined' && raw.bytes.length == 32) //bech32-multisig
+            raw.hex = Crypto.util.bytesToHex(ripemd160(raw.bytes, { asBytes: true }));
+        return pub_hash === raw.hex;
     }
 
     //Convert the given address (any blockchain) to equivalent floID
@@ -306,13 +308,42 @@
         let raw = decodeAddress(address);
         if (!raw)
             return;
-        else if (options) {
+        else if (options) { //if (optional) version check is passed
             if (typeof raw.version !== 'undefined' && (!options.std || !options.std.includes(raw.version)))
                 return;
             if (typeof raw.bech_version !== 'undefined' && (!options.bech || !options.bech.includes(raw.bech_version)))
                 return;
         }
         raw.bytes.unshift(bitjs.pub);
+        let hash = Crypto.SHA256(Crypto.SHA256(raw.bytes, {
+            asBytes: true
+        }), {
+            asBytes: true
+        });
+        return bitjs.Base58.encode(raw.bytes.concat(hash.slice(0, 4)));
+    }
+
+    //Convert the given multisig address (any blockchain) to equivalent multisig floID
+    floCrypto.toMultisigFloID = function (address, options = null) {
+        if (!address)
+            return;
+        let raw = decodeAddress(address);
+        if (!raw)
+            return;
+        else if (options) { //if (optional) version check is passed
+            if (typeof raw.version !== 'undefined' && (!options.std || !options.std.includes(raw.version)))
+                return;
+            if (typeof raw.bech_version !== 'undefined' && (!options.bech || !options.bech.includes(raw.bech_version)))
+                return;
+        }
+        if (typeof raw.bech_version !== 'undefined') {
+            if (raw.bytes.length != 32) return; //multisig bech address have 32 bytes
+            //multisig-bech:hash=SHA256 whereas multisig:hash=r160(SHA265), thus ripemd160 the bytes from multisig-bech
+            raw.bytes = ripemd160(raw.bytes, {
+                asBytes: true
+            });
+        }
+        raw.bytes.unshift(bitjs.multisig);
         let hash = Crypto.SHA256(Crypto.SHA256(raw.bytes, {
             asBytes: true
         }), {
@@ -329,8 +360,13 @@
             raw2 = decodeAddress(addr2);
         if (!raw1 || !raw2)
             return false;
-        else
+        else {
+            if (typeof raw1.bech_version !== 'undefined' && raw1.bytes.length == 32) //bech32-multisig
+                raw1.hex = Crypto.util.bytesToHex(ripemd160(raw1.bytes, { asBytes: true }));
+            if (typeof raw2.bech_version !== 'undefined' && raw2.bytes.length == 32) //bech32-multisig
+                raw2.hex = Crypto.util.bytesToHex(ripemd160(raw2.bytes, { asBytes: true }));
             return raw1.hex === raw2.hex;
+        }
     }
 
     const decodeAddress = floCrypto.decodeAddr = function (address) {
@@ -350,7 +386,7 @@
                 hex: Crypto.util.bytesToHex(bytes),
                 bytes
             }
-        } else if (address.length == 42) { //bech encoding
+        } else if (address.length == 42 || address.length == 62) { //bech encoding
             let decode = coinjs.bech32_decode(address);
             if (decode) {
                 let bytes = decode.data;
