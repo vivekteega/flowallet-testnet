@@ -1,4 +1,4 @@
-(function (GLOBAL) { //lib v1.4.1a
+(function (GLOBAL) { //lib v1.4.1b
     'use strict';
     /* Utility Libraries required for Standard operations
      * All credits for these codes belong to their respective creators, moderators and owners.
@@ -6704,6 +6704,7 @@
             return {
                 'address': address,
                 'redeemScript': r.redeemScript,
+                'scripthash': Crypto.util.bytesToHex(program),
                 'size': r.size
             };
         }
@@ -6797,15 +6798,16 @@
             };
         }
 
-        coinjs.multisigBech32Address = function (raw_redeemscript) {
-            var program = Crypto.SHA256(Crypto.util.hexToBytes(raw_redeemscript), {
+        coinjs.multisigBech32Address = function (redeemscript) {
+            var program = Crypto.SHA256(Crypto.util.hexToBytes(redeemscript), {
                 asBytes: true
             });
             var address = coinjs.bech32_encode(coinjs.bech32.hrp, [coinjs.bech32.version].concat(coinjs.bech32_convert(program, 8, 5, true)));
             return {
                 'address': address,
                 'type': 'multisigBech32',
-                'redeemscript': Crypto.util.bytesToHex(program)
+                'redeemScript': redeemscript,
+                'scripthash': Crypto.util.bytesToHex(program)
             };
         }
 
@@ -7803,7 +7805,7 @@
                             var n = u.getElementsByTagName("tx_output_n")[0].childNodes[0].nodeValue;
                             var scr = script || u.getElementsByTagName("script")[0].childNodes[0].nodeValue;
 
-                            if (segwit) { //also for MULTISIG_BECH32 (p2wsh-multisig)(script = raw_redeemscript; for p2wsh-multisig)
+                            if (segwit) { //also for MULTISIG_BECH32 (p2wsh-multisig)(script = redeemscript; for p2wsh-multisig)
                                 /* this is a small hack to include the value with the redeemscript to make the signing procedure smoother. 
                                 It is not standard and removed during the signing procedure. */
 
