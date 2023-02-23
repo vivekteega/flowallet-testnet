@@ -1,4 +1,4 @@
-(function (EXPORTS) { //floBlockchainAPI v2.4.2
+(function (EXPORTS) { //floBlockchainAPI v2.4.3
     /* FLO Blockchain Operator to send/receive data from blockchain using API calls*/
     'use strict';
     const floBlockchainAPI = EXPORTS;
@@ -14,6 +14,13 @@
         minChangeAmt: 0.0005,
         receiverID: floGlobals.adminID
     };
+
+    const SATOSHI_IN_BTC = 1e8;
+
+    const util = floBlockchainAPI.util = {};
+
+    util.Sat_to_FLO = value => parseFloat((value / SATOSHI_IN_BTC).toFixed(8));
+    util.FLO_to_Sat = value => parseInt(value * SATOSHI_IN_BTC);
 
     Object.defineProperties(floBlockchainAPI, {
         sendAmt: {
@@ -587,7 +594,7 @@
         return signedTxHex;
     }
 
-    floBlockchainAPI.checkSigned = function (tx, bool = true) {
+    const checkSigned = floBlockchainAPI.checkSigned = function (tx, bool = true) {
         tx = deserializeTx(tx);
         let n = [];
         for (let i = 0; i < tx.inputs.length; i++) {
@@ -647,6 +654,61 @@
         let raw_bytes = Crypto.util.hexToBytes(clone.serialize());
         let txid = Crypto.SHA256(Crypto.SHA256(raw_bytes, { asBytes: true }), { asBytes: true }).reverse();
         return Crypto.util.bytesToHex(txid);
+    }
+
+    const getTxOutput = (txid, i) => new Promise((resolve, reject) => {
+        fetch_api(`api/tx/${txid}`)
+            .then(result => resolve(result.vout[i]))
+            .catch(error => reject(error))
+    });
+
+    function getOutputAddress(outscript) {
+        var bytes, version;
+        switch (outscript[0]) {
+            case 118: //legacy
+                bytes = outscript.slice(3, outscript.length - 2);
+                version = bitjs.pub;
+                break
+            case 169: //multisig
+                bytes = outscript.slice(2, outscript.length - 1);
+                version = bitjs.multisig;
+                break;
+            default: return; //unknown
+        }
+        bytes.unshift(version);
+        var hash = Crypto.SHA256(Crypto.SHA256(bytes, { asBytes: true }), { asBytes: true });
+        var checksum = hash.slice(0, 4);
+        return bitjs.Base58.encode(bytes.concat(checksum));
+    }
+
+    floBlockchainAPI.parseTransaction = function (tx) {
+        return new Promise((resolve, reject) => {
+            tx = deserializeTx(tx);
+            let result = {};
+            let promises = [];
+            //Parse Inputs
+            for (let i = 0; i < tx.inputs.length; i++)
+                promises.push(getTxOutput(tx.inputs[i].outpoint.hash, tx.inputs[i].outpoint.index));
+            Promise.all(promises).then(inputs => {
+                result.inputs = inputs.map(inp => Object({
+                    address: inp.scriptPubKey.addresses[0],
+                    value: parseFloat(inp.value)
+                }));
+                let signed = checkSigned(tx, false);
+                result.inputs.forEach((inp, i) => inp.signed = signed[i]);
+                //Parse Outputs
+                result.outputs = tx.outputs.map(out => Object({
+                    address: getOutputAddress(out.script),
+                    value: util.Sat_to_FLO(out.value)
+                }))
+                //Parse Totals
+                result.total_input = parseFloat(result.inputs.reduce((a, inp) => a += inp.value, 0).toFixed(8));
+                result.total_output = parseFloat(result.outputs.reduce((a, out) => a += out.value, 0).toFixed(8));
+                result.fee = parseFloat((result.total_input - result.total_output).toFixed(8));
+                result.floData = tx.floData;
+                resolve(result);
+            }).catch(error => reject(error))
+        })
     }
 
     //Broadcast signed Tx in blockchain using API
