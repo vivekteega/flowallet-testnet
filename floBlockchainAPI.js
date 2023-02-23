@@ -1,4 +1,4 @@
-(function (EXPORTS) { //floBlockchainAPI v2.4.1
+(function (EXPORTS) { //floBlockchainAPI v2.4.2
     /* FLO Blockchain Operator to send/receive data from blockchain using API calls*/
     'use strict';
     const floBlockchainAPI = EXPORTS;
@@ -566,17 +566,87 @@
         })
     }
 
+    function deserializeTx(tx) {
+        if (typeof tx === 'string' || Array.isArray(tx)) {
+            try {
+                tx = bitjs.transaction(tx);
+            } catch {
+                throw "Invalid transaction hex";
+            }
+        } else if (typeof tx !== 'object' || typeof tx.sign !== 'function')
+            throw "Invalid transaction object";
+        return tx;
+    }
+
     floBlockchainAPI.signTx = function (tx, privateKey, sighashtype = 1) {
         if (!floCrypto.getFloID(privateKey))
             throw "Invalid Private key";
         //deserialize if needed
-        if (!(tx instanceof Object)) {
-            if (typeof tx === 'string' || Array.isArray(tx))
-                tx = bitjs.transaction(tx)
-        } else if (typeof tx.sign !== 'function')
-            throw "Tx is not a instance of transaction";
-        var signedTxHex = tx.sign(privateKey);
+        tx = deserializeTx(tx);
+        var signedTxHex = tx.sign(privateKey, sighashtype);
         return signedTxHex;
+    }
+
+    floBlockchainAPI.checkSigned = function (tx, bool = true) {
+        tx = deserializeTx(tx);
+        let n = [];
+        for (let i = 0; i < tx.inputs.length; i++) {
+            var s = tx.scriptDecode(i);
+            if (s['type'] === 'scriptpubkey')
+                n.push(s.signed);
+            else if (s['type'] === 'multisig') {
+                var rs = tx.decodeRedeemScript(s['rs']);
+                let x = {
+                    s: 0,
+                    r: rs['required'],
+                    t: rs['pubkeys'].length
+                };
+                //check input script for signatures
+                var script = Array.from(tx.inputs[i].script);
+                if (script[0] == 0) { //script with signatures
+                    script = tx.parseScript(script);
+                    for (var k = 0; k < script.length; k++)
+                        if (Array.isArray(script[k]) && script[k][0] == 48) //0x30 DERSequence
+                            x.s++;
+                }
+                //validate counts
+                if (x.r > x.t)
+                    throw "signaturesRequired is more than publicKeys";
+                else if (x.s < x.r)
+                    n.push(x);
+                else
+                    n.push(true);
+            }
+        }
+        return bool ? !(n.filter(x => x !== true).length) : n;
+    }
+
+    floBlockchainAPI.checkIfSameTx = function (tx1, tx2) {
+        tx1 = deserializeTx(tx1);
+        tx2 = deserializeTx(tx2);
+        //compare input and output length
+        if (tx1.inputs.length !== tx2.inputs.length || tx1.outputs.length !== tx2.outputs.length)
+            return false;
+        //compare flodata
+        if (tx1.floData !== tx2.floData)
+            return false
+        //compare inputs
+        for (let i = 0; i < tx1.inputs.length; i++)
+            if (tx1.inputs[i].outpoint.hash !== tx2.inputs[i].outpoint.hash || tx1.inputs[i].outpoint.index !== tx2.inputs[i].outpoint.index)
+                return false;
+        //compare outputs
+        for (let i = 0; i < tx1.outputs.length; i++)
+            if (tx1.outputs[i].value !== tx2.outputs[i].value || Crypto.util.bytesToHex(tx1.outputs[i].script) !== Crypto.util.bytesToHex(tx2.outputs[i].script))
+                return false;
+        return true;
+    }
+
+    floBlockchainAPI.transactionID = function (tx) {
+        tx = deserializeTx(tx);
+        let clone = bitjs.clone(tx);
+        let raw_bytes = Crypto.util.hexToBytes(clone.serialize());
+        let txid = Crypto.SHA256(Crypto.SHA256(raw_bytes, { asBytes: true }), { asBytes: true }).reverse();
+        return Crypto.util.bytesToHex(txid);
     }
 
     //Broadcast signed Tx in blockchain using API
