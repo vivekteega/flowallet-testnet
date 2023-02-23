@@ -1,4 +1,4 @@
-(function (GLOBAL) { //lib v1.4.1a
+(function (GLOBAL) { //lib v1.4.2
     'use strict';
     /* Utility Libraries required for Standard operations
      * All credits for these codes belong to their respective creators, moderators and owners.
@@ -4492,7 +4492,7 @@
             };
         }
 
-        bitjs.transaction = function () {
+        bitjs.transaction = function (tx_data = undefined) {
             var btrx = {};
             btrx.version = 2; //flochange look at this version
             btrx.inputs = [];
@@ -4991,6 +4991,78 @@
 
                 return Crypto.util.bytesToHex(buffer);
             }
+
+            /* deserialize a transaction */
+            function deserialize(buffer) {
+                if (typeof buffer == "string") {
+                    buffer = Crypto.util.hexToBytes(buffer)
+                }
+
+                var pos = 0;
+
+                var readAsInt = function (bytes) {
+                    if (bytes == 0) return 0;
+                    pos++;
+                    return buffer[pos - 1] + readAsInt(bytes - 1) * 256;
+                }
+
+                var readVarInt = function () {
+                    pos++;
+                    if (buffer[pos - 1] < 253) {
+                        return buffer[pos - 1];
+                    }
+                    return readAsInt(buffer[pos - 1] - 251);
+                }
+
+                var readBytes = function (bytes) {
+                    pos += bytes;
+                    return buffer.slice(pos - bytes, pos);
+                }
+
+                var readVarString = function () {
+                    var size = readVarInt();
+                    return readBytes(size);
+                }
+
+                var bytesToStr = function (bytes) {
+                    return bytes.map(b => String.fromCharCode(b)).join('');
+                }
+
+                const self = btrx;
+
+                self.version = readAsInt(4);
+
+                var ins = readVarInt();
+                for (var i = 0; i < ins; i++) {
+                    self.inputs.push({
+                        outpoint: {
+                            hash: Crypto.util.bytesToHex(readBytes(32).reverse()),
+                            index: readAsInt(4)
+                        },
+                        script: readVarString(),
+                        sequence: readAsInt(4)
+                    });
+                }
+
+                var outs = readVarInt();
+                for (var i = 0; i < outs; i++) {
+                    self.outputs.push({
+                        value: bitjs.bytesToNum(readBytes(8)),
+                        script: readVarString()
+                    });
+                }
+
+                self.lock_time = readAsInt(4);
+
+                //flochange - floData field
+                self.floData = bytesToStr(readVarString());
+
+                return self;
+            }
+
+            //deserialize the data if passed
+            if (tx_data)
+                deserialize(tx_data);
 
             return btrx;
 
@@ -6704,6 +6776,7 @@
             return {
                 'address': address,
                 'redeemScript': r.redeemScript,
+                'scripthash': Crypto.util.bytesToHex(program),
                 'size': r.size
             };
         }
@@ -6797,15 +6870,16 @@
             };
         }
 
-        coinjs.multisigBech32Address = function (raw_redeemscript) {
-            var program = Crypto.SHA256(Crypto.util.hexToBytes(raw_redeemscript), {
+        coinjs.multisigBech32Address = function (redeemscript) {
+            var program = Crypto.SHA256(Crypto.util.hexToBytes(redeemscript), {
                 asBytes: true
             });
             var address = coinjs.bech32_encode(coinjs.bech32.hrp, [coinjs.bech32.version].concat(coinjs.bech32_convert(program, 8, 5, true)));
             return {
                 'address': address,
                 'type': 'multisigBech32',
-                'redeemscript': Crypto.util.bytesToHex(program)
+                'redeemScript': redeemscript,
+                'scripthash': Crypto.util.bytesToHex(program)
             };
         }
 
@@ -7803,7 +7877,7 @@
                             var n = u.getElementsByTagName("tx_output_n")[0].childNodes[0].nodeValue;
                             var scr = script || u.getElementsByTagName("script")[0].childNodes[0].nodeValue;
 
-                            if (segwit) { //also for MULTISIG_BECH32 (p2wsh-multisig)(script = raw_redeemscript; for p2wsh-multisig)
+                            if (segwit) { //also for MULTISIG_BECH32 (p2wsh-multisig)(script = redeemscript; for p2wsh-multisig)
                                 /* this is a small hack to include the value with the redeemscript to make the signing procedure smoother. 
                                 It is not standard and removed during the signing procedure. */
 
