@@ -1,4 +1,4 @@
-(function (EXPORTS) { //floBlockchainAPI v2.4.0
+(function (EXPORTS) { //floBlockchainAPI v2.4.1
     /* FLO Blockchain Operator to send/receive data from blockchain using API calls*/
     'use strict';
     const floBlockchainAPI = EXPORTS;
@@ -121,8 +121,8 @@
         });
     }
 
-    //Send Tx to blockchain 
-    const sendTx = floBlockchainAPI.sendTx = function (senderAddr, receiverAddr, sendAmt, privKey, floData = '', strict_utxo = true) {
+    //create a transaction with single sender
+    const createTx = function (senderAddr, receiverAddr, sendAmt, floData = '', strict_utxo = true) {
         return new Promise((resolve, reject) => {
             if (!floCrypto.validateASCII(floData))
                 return reject("Invalid FLO_Data: only printable ASCII characters are allowed");
@@ -130,8 +130,6 @@
                 return reject(`Invalid address : ${senderAddr}`);
             else if (!floCrypto.validateFloID(receiverAddr))
                 return reject(`Invalid address : ${receiverAddr}`);
-            else if (privKey.length < 1 || !floCrypto.verifyPrivKey(privKey, senderAddr))
-                return reject("Invalid Private key!");
             else if (typeof sendAmt !== 'number' || sendAmt <= 0)
                 return reject(`Invalid sendAmt : ${sendAmt}`);
 
@@ -175,14 +173,35 @@
                                 if (change > DEFAULT.minChangeAmt)
                                     trx.addoutput(senderAddr, change);
                                 trx.addflodata(floData.replace(/\n/g, ' '));
-                                var signedTxHash = trx.sign(privKey, 1);
-                                broadcastTx(signedTxHash)
-                                    .then(txid => resolve(txid))
-                                    .catch(error => reject(error))
+                                resolve(trx);
                             }
                         }).catch(error => reject(error))
                     }).catch(error => reject(error))
                 }).catch(error => reject(error))
+            }).catch(error => reject(error))
+        })
+    }
+
+    floBlockchainAPI.createTx = function (senderAddr, receiverAddr, sendAmt, floData = '', strict_utxo = true) {
+        return new Promise((resolve, reject) => {
+            createTx(senderAddr, receiverAddr, sendAmt, floData, strict_utxo)
+                .then(trx => resolve(trx.serialize()))
+                .catch(error => reject(error))
+        })
+    }
+
+    //Send Tx to blockchain 
+    const sendTx = floBlockchainAPI.sendTx = function (senderAddr, receiverAddr, sendAmt, privKey, floData = '', strict_utxo = true) {
+        return new Promise((resolve, reject) => {
+            if (!floCrypto.validateFloID(senderAddr, true))
+                return reject(`Invalid address : ${senderAddr}`);
+            else if (privKey.length < 1 || !floCrypto.verifyPrivKey(privKey, senderAddr))
+                return reject("Invalid Private key!");
+            createTx(senderAddr, receiverAddr, sendAmt, floData, strict_utxo).then(trx => {
+                var signedTxHash = trx.sign(privKey, 1);
+                broadcastTx(signedTxHash)
+                    .then(txid => resolve(txid))
+                    .catch(error => reject(error))
             }).catch(error => reject(error))
         });
     }
@@ -419,7 +438,7 @@
     }
 
     //Create a multisig transaction
-    const createMultisigTx = floBlockchainAPI.createMultisigTx = function (redeemScript, receivers, amounts, floData = '', strict_utxo = true) {
+    const createMultisigTx = function (redeemScript, receivers, amounts, floData = '', strict_utxo = true) {
         return new Promise((resolve, reject) => {
             var multisig = floCrypto.decodeRedeemScript(redeemScript);
 
@@ -499,6 +518,15 @@
         });
     }
 
+    //Same as above, but explict call should return serialized tx-hex
+    floBlockchainAPI.createMultisigTx = function (redeemScript, receivers, amounts, floData = '', strict_utxo = true) {
+        return new Promise((resolve, reject) => {
+            createMultisigTx(redeemScript, receivers, amounts, floData, strict_utxo)
+                .then(trx => resolve(trx.serialize()))
+                .catch(error => reject(error))
+        })
+    }
+
     //Create and send multisig transaction
     const sendMultisigTx = floBlockchainAPI.sendMultisigTx = function (redeemScript, privateKeys, receivers, amounts, floData = '', strict_utxo = true) {
         return new Promise((resolve, reject) => {
@@ -536,6 +564,19 @@
                 .then(txid => resolve(txid))
                 .catch(error => reject(error))
         })
+    }
+
+    floBlockchainAPI.signTx = function (tx, privateKey, sighashtype = 1) {
+        if (!floCrypto.getFloID(privateKey))
+            throw "Invalid Private key";
+        //deserialize if needed
+        if (!(tx instanceof Object)) {
+            if (typeof tx === 'string' || Array.isArray(tx))
+                tx = bitjs.transaction(tx)
+        } else if (typeof tx.sign !== 'function')
+            throw "Tx is not a instance of transaction";
+        var signedTxHex = tx.sign(privateKey);
+        return signedTxHex;
     }
 
     //Broadcast signed Tx in blockchain using API
