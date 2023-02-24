@@ -1,4 +1,4 @@
-(function (GLOBAL) { //lib v1.4.2
+(function (GLOBAL) { //lib v1.4.2a
     'use strict';
     /* Utility Libraries required for Standard operations
      * All credits for these codes belong to their respective creators, moderators and owners.
@@ -4355,6 +4355,12 @@
         bitjs.multisig = 0x5e; //flochange - prefix for FLO Mainnet Multisig 0x5e
         bitjs.compressed = false;
 
+        if (GLOBAL.cryptocoin == 'FLO_TEST') {
+            bitjs.pub = 0x73; // flochange - changed the prefix to FLO TestNet PublicKey Prefix 0x73
+            bitjs.priv = 0xa3; //flochange - changed the prefix to FLO TestNet Private key prefix 0xa3
+            bitjs.multisig = 0xc6; //flochange - prefix for FLO TestNet Multisig 0xc6
+        }
+
         /* provide a privkey and return an WIF  */
         bitjs.privkey2wif = function (h) {
             var r = Crypto.util.hexToBytes(h);
@@ -5301,23 +5307,22 @@
             if ("string" == typeof bytes) {
                 var d = Bitcoin.Address.decodeString(bytes);
                 bytes = d.hash;
-                if (GLOBAL.cryptocoin == "FLO" && (d.version == Bitcoin.Address.standardVersion || d.version == Bitcoin.Address.multisigVersion))
-                    this.version = d.version;
-                else if (GLOBAL.cryptocoin == "FLO_TEST" && d.version == Bitcoin.Address.testnetVersion)
+                if (d.version == Bitcoin.Address.standardVersion || d.version == Bitcoin.Address.multisigVersion)
                     this.version = d.version;
                 else throw "Version (prefix) " + d.version + " not supported!";
             } else {
-                if (GLOBAL.cryptocoin == "FLO")
-                    this.version = Bitcoin.Address.standardVersion;
-                else if (GLOBAL.cryptocoin == "FLO_TEST")
-                    this.version = Bitcoin.Address.testnetVersion; // FLO testnet public address
+                this.version = Bitcoin.Address.standardVersion;
             }
             this.hash = bytes;
         };
 
         Bitcoin.Address.standardVersion = 0x23; // (FLO mainnet 0x23, 35D), (Bitcoin Mainnet, 0x00, 0D)
         Bitcoin.Address.multisigVersion = 0x5e; // (FLO multisig 0x5e, 94D)
-        Bitcoin.Address.testnetVersion = 0x73; // (FLO testnet 0x73, 115D)
+
+        if (GLOBAL.cryptocoin == "FLO_TEST") {
+            Bitcoin.Address.standardVersion = 0x73; // (FLO testnet 0x73, 115D), (Bitcoin Mainnet, 0x00, 0D)
+            Bitcoin.Address.multisigVersion = 0xc6; // (FLO testnet multisig 0xc6, 198D)
+        }
 
         /**
          * Serialize this object as a standard Bitcoin address.
