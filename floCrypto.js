@@ -1,4 +1,4 @@
-(function (EXPORTS) { //floCrypto v2.3.5
+(function (EXPORTS) { //floCrypto v2.3.5a
     /* FLO Crypto Operators */
     'use strict';
     const floCrypto = EXPORTS;
@@ -234,7 +234,7 @@
     floCrypto.getMultisigAddress = function (publicKeyList, requiredSignatures) {
         if (!Array.isArray(publicKeyList) || !publicKeyList.length)
             return null;
-        if (!Number.isInteger(requiredSignatures) || requiredSignatures < 1)
+        if (!Number.isInteger(requiredSignatures) || requiredSignatures < 1 || requiredSignatures > publicKeyList.length)
             return null;
         try {
             var multisig = bitjs.pubkeys2multisig(publicKeyList, requiredSignatures);
