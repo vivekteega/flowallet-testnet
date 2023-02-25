@@ -1,4 +1,4 @@
-(function (EXPORTS) { //floBlockchainAPI v2.4.0
+(function (EXPORTS) { //floBlockchainAPI v2.4.3
     /* FLO Blockchain Operator to send/receive data from blockchain using API calls*/
     'use strict';
     const floBlockchainAPI = EXPORTS;
@@ -14,6 +14,13 @@
         minChangeAmt: 0.0005,
         receiverID: floGlobals.adminID
     };
+
+    const SATOSHI_IN_BTC = 1e8;
+
+    const util = floBlockchainAPI.util = {};
+
+    util.Sat_to_FLO = value => parseFloat((value / SATOSHI_IN_BTC).toFixed(8));
+    util.FLO_to_Sat = value => parseInt(value * SATOSHI_IN_BTC);
 
     Object.defineProperties(floBlockchainAPI, {
         sendAmt: {
@@ -121,8 +128,8 @@
         });
     }
 
-    //Send Tx to blockchain 
-    const sendTx = floBlockchainAPI.sendTx = function (senderAddr, receiverAddr, sendAmt, privKey, floData = '', strict_utxo = true) {
+    //create a transaction with single sender
+    const createTx = function (senderAddr, receiverAddr, sendAmt, floData = '', strict_utxo = true) {
         return new Promise((resolve, reject) => {
             if (!floCrypto.validateASCII(floData))
                 return reject("Invalid FLO_Data: only printable ASCII characters are allowed");
@@ -130,8 +137,6 @@
                 return reject(`Invalid address : ${senderAddr}`);
             else if (!floCrypto.validateFloID(receiverAddr))
                 return reject(`Invalid address : ${receiverAddr}`);
-            else if (privKey.length < 1 || !floCrypto.verifyPrivKey(privKey, senderAddr))
-                return reject("Invalid Private key!");
             else if (typeof sendAmt !== 'number' || sendAmt <= 0)
                 return reject(`Invalid sendAmt : ${sendAmt}`);
 
@@ -175,14 +180,35 @@
                                 if (change > DEFAULT.minChangeAmt)
                                     trx.addoutput(senderAddr, change);
                                 trx.addflodata(floData.replace(/\n/g, ' '));
-                                var signedTxHash = trx.sign(privKey, 1);
-                                broadcastTx(signedTxHash)
-                                    .then(txid => resolve(txid))
-                                    .catch(error => reject(error))
+                                resolve(trx);
                             }
                         }).catch(error => reject(error))
                     }).catch(error => reject(error))
                 }).catch(error => reject(error))
+            }).catch(error => reject(error))
+        })
+    }
+
+    floBlockchainAPI.createTx = function (senderAddr, receiverAddr, sendAmt, floData = '', strict_utxo = true) {
+        return new Promise((resolve, reject) => {
+            createTx(senderAddr, receiverAddr, sendAmt, floData, strict_utxo)
+                .then(trx => resolve(trx.serialize()))
+                .catch(error => reject(error))
+        })
+    }
+
+    //Send Tx to blockchain 
+    const sendTx = floBlockchainAPI.sendTx = function (senderAddr, receiverAddr, sendAmt, privKey, floData = '', strict_utxo = true) {
+        return new Promise((resolve, reject) => {
+            if (!floCrypto.validateFloID(senderAddr, true))
+                return reject(`Invalid address : ${senderAddr}`);
+            else if (privKey.length < 1 || !floCrypto.verifyPrivKey(privKey, senderAddr))
+                return reject("Invalid Private key!");
+            createTx(senderAddr, receiverAddr, sendAmt, floData, strict_utxo).then(trx => {
+                var signedTxHash = trx.sign(privKey, 1);
+                broadcastTx(signedTxHash)
+                    .then(txid => resolve(txid))
+                    .catch(error => reject(error))
             }).catch(error => reject(error))
         });
     }
@@ -419,7 +445,7 @@
     }
 
     //Create a multisig transaction
-    const createMultisigTx = floBlockchainAPI.createMultisigTx = function (redeemScript, receivers, amounts, floData = '', strict_utxo = true) {
+    const createMultisigTx = function (redeemScript, receivers, amounts, floData = '', strict_utxo = true) {
         return new Promise((resolve, reject) => {
             var multisig = floCrypto.decodeRedeemScript(redeemScript);
 
@@ -499,6 +525,15 @@
         });
     }
 
+    //Same as above, but explict call should return serialized tx-hex
+    floBlockchainAPI.createMultisigTx = function (redeemScript, receivers, amounts, floData = '', strict_utxo = true) {
+        return new Promise((resolve, reject) => {
+            createMultisigTx(redeemScript, receivers, amounts, floData, strict_utxo)
+                .then(trx => resolve(trx.serialize()))
+                .catch(error => reject(error))
+        })
+    }
+
     //Create and send multisig transaction
     const sendMultisigTx = floBlockchainAPI.sendMultisigTx = function (redeemScript, privateKeys, receivers, amounts, floData = '', strict_utxo = true) {
         return new Promise((resolve, reject) => {
@@ -535,6 +570,144 @@
             sendMultisigTx(redeemScript, privatekeys, receiverAddr, sendAmt, data, strict_utxo)
                 .then(txid => resolve(txid))
                 .catch(error => reject(error))
+        })
+    }
+
+    function deserializeTx(tx) {
+        if (typeof tx === 'string' || Array.isArray(tx)) {
+            try {
+                tx = bitjs.transaction(tx);
+            } catch {
+                throw "Invalid transaction hex";
+            }
+        } else if (typeof tx !== 'object' || typeof tx.sign !== 'function')
+            throw "Invalid transaction object";
+        return tx;
+    }
+
+    floBlockchainAPI.signTx = function (tx, privateKey, sighashtype = 1) {
+        if (!floCrypto.getFloID(privateKey))
+            throw "Invalid Private key";
+        //deserialize if needed
+        tx = deserializeTx(tx);
+        var signedTxHex = tx.sign(privateKey, sighashtype);
+        return signedTxHex;
+    }
+
+    const checkSigned = floBlockchainAPI.checkSigned = function (tx, bool = true) {
+        tx = deserializeTx(tx);
+        let n = [];
+        for (let i = 0; i < tx.inputs.length; i++) {
+            var s = tx.scriptDecode(i);
+            if (s['type'] === 'scriptpubkey')
+                n.push(s.signed);
+            else if (s['type'] === 'multisig') {
+                var rs = tx.decodeRedeemScript(s['rs']);
+                let x = {
+                    s: 0,
+                    r: rs['required'],
+                    t: rs['pubkeys'].length
+                };
+                //check input script for signatures
+                var script = Array.from(tx.inputs[i].script);
+                if (script[0] == 0) { //script with signatures
+                    script = tx.parseScript(script);
+                    for (var k = 0; k < script.length; k++)
+                        if (Array.isArray(script[k]) && script[k][0] == 48) //0x30 DERSequence
+                            x.s++;
+                }
+                //validate counts
+                if (x.r > x.t)
+                    throw "signaturesRequired is more than publicKeys";
+                else if (x.s < x.r)
+                    n.push(x);
+                else
+                    n.push(true);
+            }
+        }
+        return bool ? !(n.filter(x => x !== true).length) : n;
+    }
+
+    floBlockchainAPI.checkIfSameTx = function (tx1, tx2) {
+        tx1 = deserializeTx(tx1);
+        tx2 = deserializeTx(tx2);
+        //compare input and output length
+        if (tx1.inputs.length !== tx2.inputs.length || tx1.outputs.length !== tx2.outputs.length)
+            return false;
+        //compare flodata
+        if (tx1.floData !== tx2.floData)
+            return false
+        //compare inputs
+        for (let i = 0; i < tx1.inputs.length; i++)
+            if (tx1.inputs[i].outpoint.hash !== tx2.inputs[i].outpoint.hash || tx1.inputs[i].outpoint.index !== tx2.inputs[i].outpoint.index)
+                return false;
+        //compare outputs
+        for (let i = 0; i < tx1.outputs.length; i++)
+            if (tx1.outputs[i].value !== tx2.outputs[i].value || Crypto.util.bytesToHex(tx1.outputs[i].script) !== Crypto.util.bytesToHex(tx2.outputs[i].script))
+                return false;
+        return true;
+    }
+
+    floBlockchainAPI.transactionID = function (tx) {
+        tx = deserializeTx(tx);
+        let clone = bitjs.clone(tx);
+        let raw_bytes = Crypto.util.hexToBytes(clone.serialize());
+        let txid = Crypto.SHA256(Crypto.SHA256(raw_bytes, { asBytes: true }), { asBytes: true }).reverse();
+        return Crypto.util.bytesToHex(txid);
+    }
+
+    const getTxOutput = (txid, i) => new Promise((resolve, reject) => {
+        fetch_api(`api/tx/${txid}`)
+            .then(result => resolve(result.vout[i]))
+            .catch(error => reject(error))
+    });
+
+    function getOutputAddress(outscript) {
+        var bytes, version;
+        switch (outscript[0]) {
+            case 118: //legacy
+                bytes = outscript.slice(3, outscript.length - 2);
+                version = bitjs.pub;
+                break
+            case 169: //multisig
+                bytes = outscript.slice(2, outscript.length - 1);
+                version = bitjs.multisig;
+                break;
+            default: return; //unknown
+        }
+        bytes.unshift(version);
+        var hash = Crypto.SHA256(Crypto.SHA256(bytes, { asBytes: true }), { asBytes: true });
+        var checksum = hash.slice(0, 4);
+        return bitjs.Base58.encode(bytes.concat(checksum));
+    }
+
+    floBlockchainAPI.parseTransaction = function (tx) {
+        return new Promise((resolve, reject) => {
+            tx = deserializeTx(tx);
+            let result = {};
+            let promises = [];
+            //Parse Inputs
+            for (let i = 0; i < tx.inputs.length; i++)
+                promises.push(getTxOutput(tx.inputs[i].outpoint.hash, tx.inputs[i].outpoint.index));
+            Promise.all(promises).then(inputs => {
+                result.inputs = inputs.map(inp => Object({
+                    address: inp.scriptPubKey.addresses[0],
+                    value: parseFloat(inp.value)
+                }));
+                let signed = checkSigned(tx, false);
+                result.inputs.forEach((inp, i) => inp.signed = signed[i]);
+                //Parse Outputs
+                result.outputs = tx.outputs.map(out => Object({
+                    address: getOutputAddress(out.script),
+                    value: util.Sat_to_FLO(out.value)
+                }))
+                //Parse Totals
+                result.total_input = parseFloat(result.inputs.reduce((a, inp) => a += inp.value, 0).toFixed(8));
+                result.total_output = parseFloat(result.outputs.reduce((a, out) => a += out.value, 0).toFixed(8));
+                result.fee = parseFloat((result.total_input - result.total_output).toFixed(8));
+                result.floData = tx.floData;
+                resolve(result);
+            }).catch(error => reject(error))
         })
     }
 
