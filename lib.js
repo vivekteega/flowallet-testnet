@@ -1,4 +1,4 @@
-(function (GLOBAL) { //lib v1.4.2a
+(function (GLOBAL) { //lib v1.4.2b
     'use strict';
     /* Utility Libraries required for Standard operations
      * All credits for these codes belong to their respective creators, moderators and owners.
@@ -4527,14 +4527,12 @@
                 if (addr.version === bitjs.pub) { // regular address
                     buf.push(118); //OP_DUP
                     buf.push(169); //OP_HASH160
-                    buf.push(addr.bytes.length);
-                    buf = buf.concat(addr.bytes); // address in bytes
+                    buf = this.writeBytesToScriptBuffer(buf, addr.bytes);// address in bytes
                     buf.push(136); //OP_EQUALVERIFY
                     buf.push(172); //OP_CHECKSIG
                 } else if (addr.version === bitjs.multisig) { // multisig address
                     buf.push(169); //OP_HASH160
-                    buf.push(addr.bytes.length);
-                    buf = buf.concat(addr.bytes); // address in bytes
+                    buf = this.writeBytesToScriptBuffer(buf, addr.bytes);// address in bytes
                     buf.push(135); //OP_EQUAL
                 }
 
@@ -4796,6 +4794,27 @@
                 return KBigInt;
             };
 
+            btrx.writeBytesToScriptBuffer = function (buf, bytes) {
+                if (bytes.length < 76) { //OP_PUSHDATA1
+                    buf.push(bytes.length);
+                } else if (bytes.length <= 0xff) {
+                    buf.push(76); //OP_PUSHDATA1
+                    buf.push(bytes.length);
+                } else if (bytes.length <= 0xffff) {
+                    buf.push(77); //OP_PUSHDATA2
+                    buf.push(bytes.length & 0xff);
+                    buf.push((bytes.length >>> 8) & 0xff);
+                } else {
+                    buf.push(78); //OP_PUSHDATA4
+                    buf.push(bytes.length & 0xff);
+                    buf.push((bytes.length >>> 8) & 0xff);
+                    buf.push((bytes.length >>> 16) & 0xff);
+                    buf.push((bytes.length >>> 24) & 0xff);
+                }
+                buf = buf.concat(bytes);
+                return buf;
+            }
+
             btrx.parseScript = function (script) {
 
                 var chunks = [];
@@ -4859,8 +4878,7 @@
                 var signature = this.transactionSig(index, wif, shType);
                 var buf = [];
                 var sigBytes = Crypto.util.hexToBytes(signature);
-                buf.push(sigBytes.length);
-                buf = buf.concat(sigBytes);
+                buf = this.writeBytesToScriptBuffer(buf, sigBytes);
                 var pubKeyBytes = Crypto.util.hexToBytes(key['pubkey']);
                 buf.push(pubKeyBytes.length);
                 buf = buf.concat(pubKeyBytes);
@@ -4908,16 +4926,14 @@
                     for (let y in sigsList) {
                         var sighash = Crypto.util.hexToBytes(this.transactionHash(index, sigsList[y].slice(-1)[0] * 1));
                         if (bitjs.verifySignature(sighash, sigsList[y], pubkeyList[x])) {
-                            buf.push(sigsList[y].length);
-                            buf = buf.concat(sigsList[y]);
+                            buf = this.writeBytesToScriptBuffer(buf, sigsList[y]);
                             break; //ensures duplicate sigs from same pubkey are not added
                         }
                     }
                 }
 
                 //append redeemscript
-                buf.push(redeemScript.length);
-                buf = buf.concat(redeemScript);
+                buf = this.writeBytesToScriptBuffer(buf, redeemScript);
 
                 this.inputs[index].script = buf;
                 return true;
