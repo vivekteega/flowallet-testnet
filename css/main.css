@@ -636,12 +636,14 @@ h3 {
   display: grid;
   text-align: center;
   align-items: center;
+  justify-items: center;
 }
 .multi-state-button > * {
   grid-area: 1/1/2/2;
 }
 .multi-state-button button {
   z-index: 1;
+  width: 100%;
 }
 
 .clip {

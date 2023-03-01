@@ -608,7 +608,6 @@
                 <div class="multi-state-button">
                     <button id="confirm_transaction_button" class="button button--primary cta" type="submit"
                         onclick="sendMessage()">Confirm</button>
-                    <sm-spinner class="hide"></sm-spinner>
                 </div>
             </sm-form>
         </div>
@@ -788,8 +787,6 @@
                 case 'get_private_key_popup':
                     getRef('get_private_key').classList.remove('hide')
                     getRef('transaction_result').classList.add('hide')
-                    getRef('confirm_transaction_button').classList.remove('hide')
-                    getRef('confirm_transaction_button').nextElementSibling.classList.add('hide')
                     break;
                 case 'retrieve_flo_id_popup':
                     getRef('recovered_flo_id_wrapper').classList.add('hide')
@@ -884,6 +881,33 @@
                     fn.call(this, e)
                 }
             })
+        }
+        function buttonLoader(id, show) {
+            const button = typeof id === 'string' ? getRef(id) : id;
+            button.disabled = show;
+            const animOptions = {
+                duration: 200,
+                fill: 'forwards',
+                easing: 'ease'
+            }
+            if (show) {
+                button.animate([
+                    {
+                        clipPath: 'circle(100%)',
+                    },
+                    {
+                        clipPath: 'circle(0)',
+                    },
+                ], animOptions).onfinish = e => {
+                    e.target.commitStyles()
+                    e.target.cancel()
+                }
+                button.parentNode.append(createElement('sm-spinner'))
+            } else {
+                button.style = ''
+                const potentialTarget = button.parentNode.querySelector('sm-spinner')
+                if (potentialTarget) potentialTarget.remove();
+            }
         }
         // detect browser version
         function detectBrowser() {
@@ -1614,14 +1638,16 @@
             const receiver = getRef('receiver').value.trim();
             const floData = getRef('flo_data_textarea').value.trim();
             const privKey = getRef('get_private_key_field').value.trim();
-            getRef('confirm_transaction_button').disabled = true;
-            getRef('confirm_transaction_button').classList.add('hide')
-            getRef('confirm_transaction_button').nextElementSibling.classList.remove('hide')
+            buttonLoader('confirm_transaction_button', true)
             floWebWallet.sendTransaction(sender, receiver, amount, floData, privKey).then((transactionId) => {
                 showTransactionResult('success', transactionId);
                 getRef('send_form').reset();
+                getRef('refresh_balance_button').classList.add('hide')
+                getRef('sendBtn').disabled = true;
             }).catch((error) => {
                 showTransactionResult('failed', error);
+            }).finally(() => {
+                buttonLoader('confirm_transaction_button', false)
             })
         }
 
