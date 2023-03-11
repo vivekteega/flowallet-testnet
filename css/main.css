@@ -880,12 +880,6 @@ h3 {
   text-align: center;
   align-content: center;
 }
-#transaction_result.success .icon--failed {
-  display: none;
-}
-#transaction_result.failed .icon--success {
-  display: none;
-}
 #transaction_result h3 {
   text-align: center;
   width: 100%;

@@ -837,16 +837,6 @@ h3 {
   justify-content: center;
   text-align: center;
   align-content: center;
-  &.success {
-    .icon--failed {
-      display: none;
-    }
-  }
-  &.failed {
-    .icon--success {
-      display: none;
-    }
-  }
   h3 {
     text-align: center;
     width: 100%;

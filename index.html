@@ -305,12 +305,6 @@
                         <div id="balance_card">
                             <div class="flex align-center space-between">
                                 <h5>Balance</h5>
-                                <button id="refresh_balance_button" class="button button--small button--colored hide"
-                                    onclick="checkSenderBalance()">Refresh</button>
-                            </div>
-                            <div class="flex align-end gap-0-3">
-                                <b id="sender_balance" style="font-size: 2.5rem;line-height: 1;">0</b>
-                                <span>FLO</span>
                             </div>
                             <p style="line-height: 1.2; opacity: 0.7;">
                                 Sender balance will be shown once you enter a valid address
@@ -611,22 +605,7 @@
                 </div>
             </sm-form>
         </div>
-        <div id="transaction_result" class="hide">
-            <svg class="icon icon--success" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
-                width="24px" fill="#000000">
-                <path d="M0 0h24v24H0z" fill="none" />
-                <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" />
-            </svg>
-            <svg class="icon icon--failed" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
-                width="24px" fill="#000000">
-                <path d="M0 0h24v24H0z" fill="none" />
-                <path
-                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
-            </svg>
-            <h3 id="transaction_result__title"></h3>
-            <p id="transaction_result__description"></p>
-            <a id="transaction_link" style="margin-top: 1.5rem;" target="_blank">See transaction on blockchain</a>
-        </div>
+        <div id="transaction_result"></div>
     </sm-popup>
     <template id="saved_id_template">
         <li class="saved-id grid interact" tabindex="0">
@@ -717,6 +696,9 @@
                 }
             }
         }
+        function $(selector) {
+            return document.querySelector(selector);
+        }
 
         // returns dom with specified element
         function createElement(tagName, options = {}) {
@@ -786,7 +768,7 @@
                     break;
                 case 'get_private_key_popup':
                     getRef('get_private_key').classList.remove('hide')
-                    getRef('transaction_result').classList.add('hide')
+                    renderElem(getRef('transaction_result'), html``)
                     break;
                 case 'retrieve_flo_id_popup':
                     getRef('recovered_flo_id_wrapper').classList.add('hide')
@@ -1412,7 +1394,7 @@
             getRef(`${openSavedIdPopupFor === 'sender' ? 'getBal_addr' : 'receiver'}`).focusIn()
             if (openSavedIdPopupFor === 'sender') {
                 checkSenderBalance()
-                getRef('refresh_balance_button').classList.remove('hide')
+                $('#refresh_balance_button').classList.remove('hide')
             }
             closePopup()
         })
@@ -1566,20 +1548,44 @@
         getRef('getBal_addr').addEventListener('input', debounce(e => {
             if (e.target.isValid) {
                 checkSenderBalance()
-                getRef('refresh_balance_button').classList.remove('hide')
             } else {
-                getRef('sender_balance').textContent = `0`;
-                getRef('refresh_balance_button').classList.add('hide')
+                resetBalance()
             }
         }, 100))
 
         function checkSenderBalance() {
-            getRef('sender_balance').innerHTML = `<sm-spinner></sm-spinner>`;
+            renderBalance(0, true)
             floWebWallet.getBalance(getRef('getBal_addr').value.trim()).then((retrievedBal) => {
-                getRef('sender_balance').textContent = parseFloat(retrievedBal);
+                renderBalance(parseFloat(retrievedBal))
             }).catch((error) => {
-                console.error(error);
+                notify(error, 'error');
+                resetBalance()
             })
+        }
+
+        function renderBalance(balance = 0, loading = false) {
+            renderElem(getRef('balance_card'), html`
+                <div class="flex align-center space-between">
+                    <h5>Balance</h5>
+                    <button id="refresh_balance_button" class="button button--small button--colored hide"
+                        onclick="checkSenderBalance()">Refresh</button>
+                </div>
+                <div class="flex align-end gap-0-3">
+                    <b id="sender_balance" style="font-size: 2.5rem;line-height: 1;">${loading ? html`<sm-spinner></sm-spinner>` : balance}</b>
+                    <span>FLO</span>
+                </div>
+            `)
+        }
+
+        function resetBalance() {
+            renderElem(getRef('balance_card'), html`
+                <div class="flex align-center space-between">
+                    <h5>Balance</h5>
+                </div>
+                <p style="line-height: 1.2; opacity: 0.7;">
+                    Sender balance will be shown once you enter a valid address
+                </p>
+            `)
         }
 
 
@@ -1640,31 +1646,30 @@
             const privKey = getRef('get_private_key_field').value.trim();
             buttonLoader('confirm_transaction_button', true)
             floWebWallet.sendTransaction(sender, receiver, amount, floData, privKey).then((transactionId) => {
-                showTransactionResult('success', transactionId);
+                showTransactionResult(true, transactionId);
                 getRef('send_form').reset();
-                getRef('refresh_balance_button').classList.add('hide')
                 getRef('sendBtn').disabled = true;
+                resetBalance()
             }).catch((error) => {
-                showTransactionResult('failed', error);
+                showTransactionResult(false, error);
             }).finally(() => {
                 buttonLoader('confirm_transaction_button', false)
             })
         }
 
-        function showTransactionResult(status, result) {
-            getRef('transaction_result').className = status;
-            if (status === 'success') {
-                getRef('transaction_link').href = `https://flosight.duckdns.org/tx/${result}`
-                getRef('transaction_link').parentNode.classList.remove('hide')
-                getRef('transaction_result__title').textContent = 'Transaction request sent'
-                getRef('transaction_result__description').textContent = 'This might take upto 30 mins to complete and reflect on blockchain.'
-            } else {
-                getRef('transaction_result__title').textContent = 'Transaction failed'
-                getRef('transaction_result__description').textContent = result
-                getRef('transaction_link').parentNode.classList.add('hide')
-            }
+        function showTransactionResult(success, result) {
             getRef('get_private_key').classList.add('hide')
-            getRef('transaction_result').classList.remove('hide')
+            renderElem(getRef('transaction_result'), html`
+                ${success ? html`
+                    <svg class="icon icon--success" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <path d="M0 0h24v24H0z" fill="none" /> <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" /> </svg>
+                ` : ''}
+                ${!success ? html`
+                    <svg class="icon icon--failed" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <path d="M0 0h24v24H0z" fill="none" /> <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" /> </svg>
+                ` : ''}
+                <h3 id="transaction_result__title">${success ? 'Transaction request sent' : 'Transaction failed'}</h3>
+                <p id="transaction_result__description"> ${success ? 'This might take upto 30 mins to complete and reflect on blockchain.' : result} </p>
+                ${success ? html`<a id="transaction_link" href=${`https://flosight.duckdns.org/tx/${result}`} style="margin-top: 1.5rem;" target="_blank">See transaction on blockchain</a>` : ''}
+            `)
         }
 
 
