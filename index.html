@@ -1602,6 +1602,9 @@
                     `)
                     document.getElementById('sender_tokens_wrapper').classList.remove('hidden')
                     handleTokenSelection()
+                } else {
+                    document.getElementById('sender_tokens_wrapper').classList.add('hidden')
+                    clearSelection()
                 }
             }).catch((error) => {
                 notify(error, 'error');
@@ -1614,6 +1617,7 @@
             getRef('tx_token_amount').value = ''
             getRef('flo_data_wrapper').classList.remove('hidden')
             getRef('flo_data_textarea').value = ''
+            getRef('tx_flo_amount').value = ''
         }
         function handleTokenSelection() {
             const selectedToken = document.getElementById('sender_tokens_wrapper').querySelector('input[type="radio"]:checked')
@@ -1626,6 +1630,7 @@
             getRef('tx_token_amount').classList.remove('hidden')
             getRef('tx_token_amount').placeholder = `${tokenName.charAt(0).toUpperCase() + tokenName.slice(1)} amount`
             getRef('tx_token_amount').setAttribute('max', tokenBalance)
+            getRef('tx_flo_amount').value = '0.001'
         }
         getRef('tx_token_amount').addEventListener('input', e => {
             const tokenAmount = parseFloat(e.target.value.trim())
@@ -1661,6 +1666,11 @@
                         <b id="sender_balance" style="font-size: 2.5rem;line-height: 1;">${loading ? html`<sm-spinner></sm-spinner>` : balance}</b>
                         <span>FLO</span>
                     </div>
+                    ${!loading && balance == 0 ? html`
+                        <p style="margin-top: 1.5rem; color: var(--danger-color)">
+                            You don't have any FLO in your wallet. Please add some FLO to your wallet to send FLO.
+                        </p>
+                    ` : ''}
                 </div>
                 <div id="sender_tokens_wrapper" class="grid hidden"></div>
             `)
