@@ -42,7 +42,7 @@
     </script>
 </head>
 
-<body onload="onLoadStartUp()" class="hide">
+<body onload="onLoadStartUp()" class="hidden">
     <sm-notifications id="notification_drawer"></sm-notifications>
     <sm-popup id="confirmation_popup">
         <h4 id="confirm_title"></h4>
@@ -198,7 +198,7 @@
                     Add FLO address
                 </button>
             </div>
-            <div id="transactions" class="hide page">
+            <div id="transactions" class="hidden page">
                 <header class="grid">
                     <div class="grid align-center w-100">
                         <a href="#/home" class="flex interact icon-only">
@@ -246,7 +246,7 @@
                                 <span id="flo_balance"></span>
                             </div>
                         </div>
-                        <div id="tokens" class="grid gap-0-5 hide">
+                        <div id="tokens" class="grid gap-0-5 hidden">
                             <div class="flex align-center">
                                 <svg class="icon margin-right-0-5" xmlns="http://www.w3.org/2000/svg" height="24px"
                                     viewBox="0 0 24 24" width="24px" fill="#000000">
@@ -287,7 +287,7 @@
                         <span>Loading transactions</span>
                     </div>
                 </div>
-                <button id="scroll_to_top" class="fab hide" onclick="backToTop()">
+                <button id="scroll_to_top" class="fab hidden" onclick="backToTop()">
                     <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
                         fill="#000000">
                         <path d="M0 0h24v24H0z" fill="none" />
@@ -295,7 +295,7 @@
                     </svg>
                 </button>
             </div>
-            <div id="send" class="page hide gap-1">
+            <div id="send" class="page hidden gap-1">
                 <div class="grid full-bleed">
                     <h3>Send</h3>
                     <p>Perform FLO blockchain transactions</p>
@@ -310,7 +310,7 @@
                                 Sender balance will be shown once you enter a valid address
                             </p>
                         </div>
-                        <sm-input id="getBal_addr" class="w-100" placeholder="Sender FLO address"
+                        <sm-input id="sender_flo_addr" class="w-100" placeholder="Sender FLO address"
                             error-text="Invalid FLO address" data-flo-id="" animate required>
                             <button slot="right" class="icon-only" onclick="showFloIdPicker('sender')"
                                 title="Select from saved IDs">
@@ -336,21 +336,27 @@
                         </sm-input>
                     </div>
                     <div class="grid gap-1">
-                        <sm-input id="amount" type="number" placeholder="Amount" step="0.00001" min="0.00001"
-                            error-text="Invalid amount" animate required>
+                        <sm-input id="tx_flo_amount" type="number" placeholder="FLO amount" step="0.00000001"
+                            min="0.00000001" error-text="Invalid amount" animate required>
                         </sm-input>
-                        <sm-textarea id="flo_data_textarea" placeholder="FLO data" rows="8" maxlength="1040" animate>
-                        </sm-textarea>
-                        <div id="show_character_count">1040/1040</div>
-                        <p id="flo_data_status"></p>
-                        <button class="button button--primary hide" id="fix_invalid_button"
+                        <sm-input id="tx_token_amount" type="number" class="hidden" placeholder="Token amount"
+                            step="0.00000001" min="0.00000001" error-text="Invalid amount" animate required disabled>
+                        </sm-input>
+                        <div id="flo_data_wrapper" class="grid gap-0-5">
+                            <sm-textarea id="flo_data_textarea" placeholder="FLO data" rows="8" maxlength="1040"
+                                animate>
+                            </sm-textarea>
+                            <div id="show_character_count">1040/1040</div>
+                            <p id="flo_data_status"></p>
+                        </div>
+                        <button class="button button--primary hidden" id="fix_invalid_button"
                             onclick="removeInvalid()">Fix</button>
-                        <button class="button button--primary cta" id="sendBtn" type="submit"
+                        <button class="button button--primary cta" id="send_button" type="submit"
                             onclick="openPopup('get_private_key_popup')" disabled>Send</button>
                     </div>
                 </sm-form>
             </div>
-            <div id="settings" class="page hide gap-2">
+            <div id="settings" class="page hidden gap-2">
                 <h3>Settings</h3>
                 <section class="grid gap-1">
                     <h4>Accent color</h4>
@@ -425,10 +431,10 @@
             <h3>Add address</h3>
         </header>
         <sm-form>
-            <sm-input id="floAddr" placeholder="FLO address" error-text="Invalid FLO address" autofocus data-flo-id
-                animate required>
+            <sm-input id="flo_addr_to_save" placeholder="FLO address" error-text="Invalid FLO address" autofocus
+                data-flo-id animate required>
             </sm-input>
-            <sm-input id="addrLabel" placeholder="Name" animate></sm-input>
+            <sm-input id="label_to_save" placeholder="Name" animate></sm-input>
             <button class="button button--primary cta" type="submit" onclick="saveFloId()" disabled>Add</button>
         </sm-form>
     </sm-popup>
@@ -450,7 +456,7 @@
                 <sm-copy id="edit_saved_id"></sm-copy>
             </div>
             <sm-form>
-                <sm-input id="newAddrLabel" placeholder="Name" autofocus animate required></sm-input>
+                <sm-input id="new_addr_label" placeholder="Name" autofocus animate required></sm-input>
                 <div class="flex align-center space-between">
                     <button class="button icon-only" title="Delete this FLO address?" onclick="deleteSaved()">
                         <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
@@ -507,14 +513,14 @@
                     it.</p>
             </div>
             <sm-form>
-                <div id="recovered_flo_id_wrapper" class="hide">
+                <div id="recovered_flo_id_wrapper" class="hidden">
                     <h5>Recovered FLO address</h5>
                     <sm-copy id="recovered_flo_id"></sm-copy>
                 </div>
                 <sm-input id="retrieve_flo_id_field" type="password" error-text="Invalid private key"
                     placeholder="Private key" class="password-field" required autofocus>
                     <label slot="right" class="interact">
-                        <input type="checkbox" class="hide" readonly onchange="togglePrivateKeyVisibility(this)">
+                        <input type="checkbox" class="hidden" readonly onchange="togglePrivateKeyVisibility(this)">
                         <svg class="icon invisible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
                             width="24px" fill="#000000">
                             <title>Hide password</title>
@@ -582,7 +588,7 @@
             <sm-form>
                 <sm-input id="get_private_key_field" class="password-field " type="password" required autofocus>
                     <label slot="right" class="interact">
-                        <input type="checkbox" class="hide" readonly onchange="togglePrivateKeyVisibility(this)">
+                        <input type="checkbox" class="hidden" readonly onchange="togglePrivateKeyVisibility(this)">
                         <svg class="icon invisible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
                             width="24px" fill="#000000">
                             <title>Hide password</title>
@@ -767,11 +773,11 @@
                     getRef('search_saved_ids_picker').value = ''
                     break;
                 case 'get_private_key_popup':
-                    getRef('get_private_key').classList.remove('hide')
+                    getRef('get_private_key').classList.remove('hidden')
                     renderElem(getRef('transaction_result'), html``)
                     break;
                 case 'retrieve_flo_id_popup':
-                    getRef('recovered_flo_id_wrapper').classList.add('hide')
+                    getRef('recovered_flo_id_wrapper').classList.add('hidden')
                     break;
             }
         })
@@ -923,7 +929,7 @@
             } else {
                 notify('Browser is not fully compatible, some features may not work. for best experience please use Chrome, Edge, Firefox or Safari', 'error')
             }
-            document.body.classList.remove('hide')
+            document.body.classList.remove('hidden')
             document.querySelectorAll('sm-input[data-flo-id]').forEach(input => input.customValidation = floCrypto.validateFloID)
             document.querySelectorAll('sm-input[data-private-key]').forEach(input => input.customValidation = floCrypto.getPubKeyHex)
             document.addEventListener('keyup', (e) => {
@@ -1037,9 +1043,9 @@
             let previousActiveElement = getRef('main_navbar').querySelector('.nav-item--active')
             const currentActiveElement = document.querySelector(`.nav-item[href="#/${pageId}"]`)
             if (currentActiveElement) {
-                if (getRef('main_navbar').classList.contains('hide')) {
+                if (getRef('main_navbar').classList.contains('hidden')) {
                     getRef('main_navbar').classList.remove('hide-away')
-                    getRef('main_navbar').classList.remove('hide')
+                    getRef('main_navbar').classList.remove('hidden')
                     getRef('main_navbar').animate([
                         {
                             transform: isMobileView ? `translateY(100%)` : `translateX(-100%)`,
@@ -1055,7 +1061,7 @@
                         easing: 'ease'
                     })
                 }
-                getRef('main_header').classList.remove('hide')
+                getRef('main_header').classList.remove('hidden')
                 const previousActiveElementIndex = [...getRef('main_navbar').querySelectorAll('.nav-item')].indexOf(previousActiveElement)
                 const currentActiveElementIndex = [...getRef('main_navbar').querySelectorAll('.nav-item')].indexOf(currentActiveElement)
                 const isOnTop = previousActiveElementIndex < currentActiveElementIndex
@@ -1098,7 +1104,7 @@
                 previousActiveElement.classList.remove('nav-item--active');
                 currentActiveElement.classList.add('nav-item--active')
             } else {
-                if (!getRef('main_navbar').classList.contains('hide')) {
+                if (!getRef('main_navbar').classList.contains('hidden')) {
                     getRef('main_navbar').classList.add('hide-away')
                     getRef('main_navbar').animate([
                         {
@@ -1114,13 +1120,13 @@
                         fill: 'forwards',
                         easing: 'ease'
                     }).onfinish = () => {
-                        getRef('main_navbar').classList.add('hide')
+                        getRef('main_navbar').classList.add('hidden')
                     }
-                    getRef('main_header').classList.add('hide')
+                    getRef('main_header').classList.add('hidden')
                 }
             }
-            document.querySelectorAll('.page').forEach(page => page.classList.add('hide'))
-            getRef(pageId).classList.remove('hide')
+            document.querySelectorAll('.page').forEach(page => page.classList.add('hidden'))
+            getRef(pageId).classList.remove('hidden')
             getRef(pageId).animate([{ opacity: 0 }, { opacity: 1 }], { duration: 300, fill: 'forwards', easing: 'ease' })
         }
 
@@ -1240,6 +1246,16 @@
         mobileQuery.addEventListener('change', handleMobileChange)
 
         handleMobileChange(mobileQuery)
+
+        // fetch with json response
+        async function fetchJSON(url, options) {
+            const response = await fetch(url, options)
+            if (response.ok) {
+                return await response.json()
+            } else {
+                throw new Error(response.statusText)
+            }
+        }
     </script>
     <script>
         //UI for webWallet
@@ -1300,21 +1316,19 @@
                 try {
                     scrollToTopObserver.disconnect()
                     // retrieve tokens and render them
-                    getRef('tokens').classList.add('hide')
-                    fetch(`https://ranchimallflo.duckdns.org/api/v1.0/getFloAddressBalance?floAddress=${queriedFloId}`).then(res => res.json()).then(({ floAddressBalances }) => {
-                        const frag = document.createDocumentFragment()
-                        getRef('token_list').innerHTML = ''
-                        let hasTokens = false
+                    getRef('tokens').classList.add('hidden')
+                    fetchJSON(`https://ranchimallflo.duckdns.org/api/v1.0/getFloAddressBalance?floAddress=${queriedFloId}`).then(({ floAddressBalances }) => {
+                        let ownedTokens = []
                         for (const token in floAddressBalances) {
-                            hasTokens = true
-                            frag.append(createElement('li', {
-                                className: 'token-item',
-                                innerHTML: `<span>${token}: </span><span>${parseFloat(floAddressBalances[token].balance.toFixed(8))}</span>`
-                            }))
+                            ownedTokens.push(html`
+                                <li class="token-item">
+                                    <span>${token}: </span><span>${parseFloat(floAddressBalances[token].balance.toFixed(8))}</span>
+                                </li>
+                            `)
                         }
-                        if (hasTokens) {
-                            getRef('token_list').append(frag)
-                            getRef('tokens').classList.remove('hide')
+                        if (ownedTokens.length) {
+                            renderElem(getRef('token_list'), html`${ownedTokens}`)
+                            getRef('tokens').classList.remove('hidden')
                         }
                     }).catch(e => {
                         console.error(e)
@@ -1334,8 +1348,8 @@
                         }
                     })
                     // show spinner
-                    getRef('transactions_scroller').nextElementSibling.classList.remove('hide')
-                    getRef('transactions_scroller').classList.add('hide')
+                    getRef('transactions_scroller').nextElementSibling.classList.remove('hidden')
+                    getRef('transactions_scroller').classList.add('hidden')
                     getRef('transactions_list').innerHTML = '';
                     await floWebWallet.syncTransactions(queriedFloId);
                     let allTransactions = (await floWebWallet.readTransactions(queriedFloId)).reverse();
@@ -1350,8 +1364,8 @@
                         transactionsLazyLoader = new LazyLoader('#transactions_list', allTransactions, render.transactionCard)
                         transactionsLazyLoader.init()
                     }
-                    getRef('transactions_scroller').classList.remove('hide')
-                    getRef('transactions_scroller').nextElementSibling.classList.add('hide')
+                    getRef('transactions_scroller').classList.remove('hidden')
+                    getRef('transactions_scroller').nextElementSibling.classList.add('hidden')
                     getRef('transactions_scroller').scroll({
                         top: 0
                     })
@@ -1372,7 +1386,7 @@
             if (e.target.closest('.edit-saved')) {
                 const target = e.target.closest('.saved-id');
                 getRef('edit_saved_id').setAttribute('value', target.dataset.floId)
-                getRef('newAddrLabel').value = target.dataset.name
+                getRef('new_addr_label').value = target.dataset.name
                 openPopup('edit_saved_popup')
             } else if (e.target.closest('.copy-saved-id')) {
                 const target = e.target.closest('.saved-id');
@@ -1390,11 +1404,11 @@
         })
         delegate(getRef('saved_ids_picker_list'), 'click', '.saved-id', e => {
             const target = e.target.closest('.saved-id');
-            getRef(`${openSavedIdPopupFor === 'sender' ? 'getBal_addr' : 'receiver'}`).value = target.dataset.floId
-            getRef(`${openSavedIdPopupFor === 'sender' ? 'getBal_addr' : 'receiver'}`).focusIn()
+            getRef(`${openSavedIdPopupFor === 'sender' ? 'sender_flo_addr' : 'receiver'}`).value = target.dataset.floId
+            getRef(`${openSavedIdPopupFor === 'sender' ? 'sender_flo_addr' : 'receiver'}`).focusIn()
             if (openSavedIdPopupFor === 'sender') {
                 checkSenderBalance()
-                $('#refresh_balance_button').classList.remove('hide')
+                $('#refresh_balance_button').classList.remove('hidden')
             }
             closePopup()
         })
@@ -1422,10 +1436,10 @@
                         duration: 150,
                         easing: 'ease',
                     }).onfinish = () => {
-                        getRef('scroll_to_top').classList.add('hide')
+                        getRef('scroll_to_top').classList.add('hidden')
                     }
                 } else {
-                    getRef('scroll_to_top').classList.remove('hide')
+                    getRef('scroll_to_top').classList.remove('hidden')
                     getRef('scroll_to_top').animate([
                         {
                             transform: 'scale(0)',
@@ -1521,8 +1535,8 @@
 
 
         function saveFloId() {
-            const floID = getRef('floAddr').value.trim()
-            let name = getRef('addrLabel').value.trim();
+            const floID = getRef('flo_addr_to_save').value.trim()
+            let name = getRef('label_to_save').value.trim();
             if (name == '')
                 name = 'Unknown'
             compactIDB.addData('labels', name, floID).then((resolve) => {
@@ -1545,7 +1559,7 @@
             }
         }
 
-        getRef('getBal_addr').addEventListener('input', debounce(e => {
+        getRef('sender_flo_addr').addEventListener('input', debounce(e => {
             if (e.target.isValid) {
                 checkSenderBalance()
             } else {
@@ -1555,29 +1569,105 @@
 
         function checkSenderBalance() {
             renderBalance(0, true)
-            floWebWallet.getBalance(getRef('getBal_addr').value.trim()).then((retrievedBal) => {
+            const senderFloAddr = getRef('sender_flo_addr').value.trim()
+            Promise.all([
+                floWebWallet.getBalance(senderFloAddr),
+                fetchJSON(`https://ranchimallflo.duckdns.org/api/v1.0/getFloAddressBalance?floAddress=${senderFloAddr}`)
+            ]).then(([retrievedBal, { floAddressBalances }]) => {
                 renderBalance(parseFloat(retrievedBal))
+                let ownedTokens = []
+                for (const token in floAddressBalances) {
+                    ownedTokens.push(html`
+                        <label class="token-balance">
+                            <input type="radio" name="sender-token" data-balance=${floAddressBalances[token].balance.toFixed(8)} value=${token}/>
+                            <span>${token} </span><b class="margin-left-auto">${parseFloat(floAddressBalances[token].balance.toFixed(8))}</b>
+                        </label>
+                    `)
+                }
+                if (ownedTokens.length) {
+                    ownedTokens.push(html`
+                        <label class="token-balance">
+                            <input type="radio" name="sender-token" value="none" checked/>
+                            <span>Don't send a token</span>
+                        </label>
+                    `)
+                    renderElem(document.getElementById('sender_tokens_wrapper'), html.for(document.getElementById('sender_tokens_wrapper'), senderFloAddr)`
+                        <h5>Tokens</h5>
+                        <p>Select a token, if you want to send a token.</p>
+                        <form onsubmit="event.preventDefault()" onchange=${handleTokenSelection} class="grid gap-1">
+                            <div class="grid gap-0-5">
+                                ${ownedTokens}
+                            </div>
+                        </form>
+                    `)
+                    document.getElementById('sender_tokens_wrapper').classList.remove('hidden')
+                    handleTokenSelection()
+                }
             }).catch((error) => {
                 notify(error, 'error');
                 resetBalance()
             })
         }
+        function clearSelection() {
+            getRef('tx_token_amount').disabled = true
+            getRef('tx_token_amount').classList.add('hidden')
+            getRef('tx_token_amount').value = ''
+            getRef('flo_data_wrapper').classList.remove('hidden')
+            getRef('flo_data_textarea').value = ''
+        }
+        function handleTokenSelection() {
+            const selectedToken = document.getElementById('sender_tokens_wrapper').querySelector('input[type="radio"]:checked')
+            if (selectedToken.value === 'none')
+                return clearSelection(e)
+            const tokenName = selectedToken.value
+            const tokenBalance = parseFloat(selectedToken.dataset.balance)
+            getRef('flo_data_wrapper').classList.add('hidden')
+            getRef('tx_token_amount').disabled = false
+            getRef('tx_token_amount').classList.remove('hidden')
+            getRef('tx_token_amount').placeholder = `${tokenName.charAt(0).toUpperCase() + tokenName.slice(1)} amount`
+            getRef('tx_token_amount').setAttribute('max', tokenBalance)
+        }
+        getRef('tx_token_amount').addEventListener('input', e => {
+            const tokenAmount = parseFloat(e.target.value.trim())
+            const selectedToken = document.getElementById('sender_tokens_wrapper').querySelector('input[type="radio"]:checked')
+            const tokenName = selectedToken.value
+            const tokenBalance = parseFloat(selectedToken.dataset.balance)
+            const { rangeOverflow, rangeUnderflow } = e.target.validity;
+            if (rangeUnderflow)
+                e.target.setAttribute('error-text', `Minimum 0.00000001 ${tokenName} allowed`)
+            if (rangeOverflow)
+                e.target.setAttribute('error-text', `You can send ${tokenName} upto ${tokenBalance} only`)
+            getRef('flo_data_textarea').value = `send ${tokenAmount} ${tokenName}#`
+        })
+        getRef('tx_flo_amount').addEventListener('input', e => {
+            const floAmount = parseFloat(e.target.value.trim())
+            const { rangeOverflow, rangeUnderflow } = e.target.validity;
+            if (rangeUnderflow)
+                e.target.setAttribute('error-text', `Minimum 0.00000001 FLO allowed`)
+            if (rangeOverflow)
+                e.target.setAttribute('error-text', `You can send FLO upto ${getRef('sender_balance').textContent} only`)
+        })
 
         function renderBalance(balance = 0, loading = false) {
+            getRef('tx_flo_amount').setAttribute('max', balance)
             renderElem(getRef('balance_card'), html`
-                <div class="flex align-center space-between">
-                    <h5>Balance</h5>
-                    <button id="refresh_balance_button" class="button button--small button--colored hide"
-                        onclick="checkSenderBalance()">Refresh</button>
+                <div class="grid">
+                    <div class="flex align-center space-between">
+                        <h5>Balance</h5>
+                        <button id="refresh_balance_button" class="button button--small button--colored hidden"
+                            onclick="checkSenderBalance()">Refresh</button>
+                    </div>
+                    <div class="flex align-end gap-0-3">
+                        <b id="sender_balance" style="font-size: 2.5rem;line-height: 1;">${loading ? html`<sm-spinner></sm-spinner>` : balance}</b>
+                        <span>FLO</span>
+                    </div>
                 </div>
-                <div class="flex align-end gap-0-3">
-                    <b id="sender_balance" style="font-size: 2.5rem;line-height: 1;">${loading ? html`<sm-spinner></sm-spinner>` : balance}</b>
-                    <span>FLO</span>
-                </div>
+                <div id="sender_tokens_wrapper" class="grid hidden"></div>
             `)
         }
 
         function resetBalance() {
+            clearSelection()
             renderElem(getRef('balance_card'), html`
                 <div class="flex align-center space-between">
                     <h5>Balance</h5>
@@ -1590,7 +1680,7 @@
 
 
         function saveChanges() {
-            let name = getRef('newAddrLabel').value.trim();
+            let name = getRef('new_addr_label').value.trim();
             if (name == '')
                 name = 'Unknown';
             compactIDB.writeData('labels', name, getRef('edit_saved_id').value).then((resolve) => {
@@ -1633,22 +1723,22 @@
         function retrieveFloId() {
             const privKey = getRef('retrieve_flo_id_field').value.trim()
             floWebWallet.recoverAddr(privKey).then(({ floID }) => {
-                getRef('recovered_flo_id_wrapper').classList.remove('hide')
+                getRef('recovered_flo_id_wrapper').classList.remove('hidden')
                 getRef('recovered_flo_id').value = floID
             })
         }
 
         function sendMessage() {
-            const sender = getRef('getBal_addr').value.trim();
-            const amount = parseFloat(getRef('amount').value.trim());
+            const sender = getRef('sender_flo_addr').value.trim();
+            const floAmount = parseFloat(getRef('tx_flo_amount').value.trim());
             const receiver = getRef('receiver').value.trim();
             const floData = getRef('flo_data_textarea').value.trim();
             const privKey = getRef('get_private_key_field').value.trim();
             buttonLoader('confirm_transaction_button', true)
-            floWebWallet.sendTransaction(sender, receiver, amount, floData, privKey).then((transactionId) => {
+            floWebWallet.sendTransaction(sender, receiver, floAmount, floData, privKey).then((transactionId) => {
                 showTransactionResult(true, transactionId);
                 getRef('send_form').reset();
-                getRef('sendBtn').disabled = true;
+                getRef('send_button').disabled = true;
                 resetBalance()
             }).catch((error) => {
                 showTransactionResult(false, error);
@@ -1658,7 +1748,7 @@
         }
 
         function showTransactionResult(success, result) {
-            getRef('get_private_key').classList.add('hide')
+            getRef('get_private_key').classList.add('hidden')
             renderElem(getRef('transaction_result'), html`
                 ${success ? html`
                     <svg class="icon icon--success" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <path d="M0 0h24v24H0z" fill="none" /> <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" /> </svg>
@@ -1700,12 +1790,12 @@
 
         getRef('flo_data_textarea').addEventListener('input', function (e) {
             if (this.value.trim() !== '') {
-                getRef('sendBtn').classList.add('hide')
-                getRef('fix_invalid_button').classList.remove('hide')
+                getRef('send_button').classList.add('hidden')
+                getRef('fix_invalid_button').classList.remove('hidden')
             }
             else {
-                getRef('sendBtn').classList.remove('hide')
-                getRef('fix_invalid_button').classList.add('hide')
+                getRef('send_button').classList.remove('hidden')
+                getRef('fix_invalid_button').classList.add('hidden')
             }
             if (1040 - this.value.length) {
                 getRef('show_character_count').textContent = `${1040 - this.value.length} /1040`
@@ -1717,8 +1807,8 @@
         function checkFloData() {
             const floDataText = getRef('flo_data_textarea').value;
             if (/^[\x20-\x7E]*$/.test(floDataText)) {
-                getRef('sendBtn').classList.remove('hide')
-                getRef('fix_invalid_button').classList.add('hide')
+                getRef('send_button').classList.remove('hidden')
+                getRef('fix_invalid_button').classList.add('hidden')
                 getRef('flo_data_status').textContent = ''
             }
             else {
@@ -1730,17 +1820,6 @@
             getRef('flo_data_textarea').value = floDataText.replace(/\s/g, " ").replace(/[^\x20-\x7E]/g, '');
             checkFloData()
         }
-
-        // let preventUnconfirmedUTXO = true
-        // getRef('allow_utxo_switch').addEventListener('change', e => {
-        //     preventUnconfirmedUTXO = !e.target.checked
-        //     localStorage.preventUnconfirmedUTXO = preventUnconfirmedUTXO
-        // })
-        // if (localStorage.getItem('preventUnconfirmedUTXO') !== 'null') {
-        //     const getBoolean = (localStorage.preventUnconfirmedUTXO === 'false')
-        //     preventUnconfirmedUTXO = getBoolean
-        //     getRef('allow_utxo_switch').checked = getBoolean
-        // }
 
         const selectedColors = [
             '--dark-red',
