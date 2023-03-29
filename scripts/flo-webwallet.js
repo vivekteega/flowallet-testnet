@@ -68,45 +68,29 @@
     }
 
     //Get new Tx in blockchain since last sync using API
-    function getNewTxs(addr, ignoreOld) {
-        return new Promise((resolve, reject) => {
-            floBlockchainAPI.readTxs(addr, 0, 1).then(response => {
-                var newItems = response.totalItems - ignoreOld;
-                if (newItems) {
-                    floBlockchainAPI.readTxs(addr, 0, newItems * 2).then(response => {
-                        var filteredData = [];
-                        for (let i = 0; i < newItems; i++) {
-                            var item = {
-                                time: response.items[i].time,
-                                txid: response.items[i].txid,
-                                floData: response.items[i].floData
-                            }
-                            if (response.items[i].isCoinBase) {
-                                item.sender = '(mined)' + response.items[i].vin[0].coinbase;
-                                item.receiver = addr;
-                            } else {
-                                item.sender = response.items[i].vin[0].addr;
-                                item.receiver = response.items[i].vout[0].scriptPubKey.addresses[0];
-                            }
-                            filteredData.unshift(item);
-                        }
-                        resolve({
-                            totalItems: response.totalItems,
-                            items: filteredData
-                        });
-                    }).catch(error => {
-                        reject(error);
-                    });
-                } else
-                    resolve({
-                        totalItems: response.totalItems,
-                        items: []
+    async function getNewTxs(addr, ignoreOld) {
+        try {
+            const { totalItems } = await floBlockchainAPI.readTxs(addr, 0, 1);
+            const newItems = totalItems - ignoreOld;
+            if (newItems > 0) {
+                const { items: newTxs } = await floBlockchainAPI.readTxs(addr, 0, newItems * 2);
+                const filteredData = []
+                newTxs
+                    .slice(0, newItems)
+                    .forEach(({ time, txid, floData, isCoinBase, vin, vout }) => {
+                        const sender = isCoinBase ? `(mined)${vin[0].coinbase}` : vin[0].addr;
+                        const receiver = isCoinBase ? addr : vout[0].scriptPubKey.addresses[0];
+                        filteredData.unshift({ time, txid, floData, sender, receiver });
                     })
-            }).catch(error => {
-                reject(error);
-            });
-        });
+                return { totalItems, items: filteredData };
+            } else {
+                return { totalItems, items: [] };
+            }
+        } catch (error) {
+            throw new Error(`Failed to get new transactions for ${addr}: ${error.message}`);
+        }
     }
+
 
     //read transactions stored in IDB : resolves Array(storedItems)
     floWebWallet.readTransactions = function (addr) {
