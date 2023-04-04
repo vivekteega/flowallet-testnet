@@ -775,6 +775,7 @@
                 case 'get_private_key_popup':
                     getRef('get_private_key').classList.remove('hidden')
                     renderElem(getRef('transaction_result'), html``)
+                    getRef('confirm_transaction_button').disabled = true
                     break;
                 case 'retrieve_flo_id_popup':
                     getRef('recovered_flo_id_wrapper').classList.add('hidden')
@@ -870,6 +871,7 @@
                 }
             })
         }
+
         function buttonLoader(id, show) {
             const button = typeof id === 'string' ? getRef(id) : id;
             button.disabled = show;
@@ -879,6 +881,7 @@
                 easing: 'ease'
             }
             if (show) {
+                button.parentNode.append(createElement('sm-spinner'))
                 button.animate([
                     {
                         clipPath: 'circle(100%)',
@@ -886,13 +889,9 @@
                     {
                         clipPath: 'circle(0)',
                     },
-                ], animOptions).onfinish = e => {
-                    e.target.commitStyles()
-                    e.target.cancel()
-                }
-                button.parentNode.append(createElement('sm-spinner'))
+                ], animOptions)
             } else {
-                button.style = ''
+                button.getAnimations().forEach(anim => anim.cancel())
                 const potentialTarget = button.parentNode.querySelector('sm-spinner')
                 if (potentialTarget) potentialTarget.remove();
             }
