@@ -307,24 +307,33 @@
                                 <h5>Balance</h5>
                             </div>
                             <p style="line-height: 1.2; opacity: 0.7;">
-                                Sender balance will be shown once you enter a valid address
+                                Sender balance will be shown once you enter sender private key
                             </p>
                         </div>
-                        <sm-input id="sender_flo_addr" class="w-100" placeholder="Sender FLO address"
-                            error-text="Invalid FLO address" data-flo-id="" animate required>
-                            <button slot="right" class="icon-only" onclick="showFloIdPicker('sender')"
-                                title="Select from saved IDs">
-                                <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
-                                    width="24px" fill="#000000">
+                        <sm-input id="get_private_key_field" placeholder="Sender's private key" class="password-field"
+                            type="password" error-text="Invalid private key" data-private-key required autofocus>
+                            <label slot="right" class="interact">
+                                <input type="checkbox" class="hidden" readonly
+                                    onchange="togglePrivateKeyVisibility(this)">
+                                <svg class="icon invisible" xmlns="http://www.w3.org/2000/svg" height="24px"
+                                    viewBox="0 0 24 24" width="24px" fill="#000000">
+                                    <title>Hide password</title>
+                                    <path d="M0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0z" fill="none" />
+                                    <path
+                                        d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z" />
+                                </svg>
+                                <svg class="icon visible" xmlns="http://www.w3.org/2000/svg" height="24px"
+                                    viewBox="0 0 24 24" width="24px" fill="#000000">
+                                    <title>Show password</title>
                                     <path d="M0 0h24v24H0z" fill="none" />
                                     <path
-                                        d="M21 5v14h2V5h-2zm-4 14h2V5h-2v14zM14 5H2c-.55 0-1 .45-1 1v12c0 .55.45 1 1 1h12c.55 0 1-.45 1-1V6c0-.55-.45-1-1-1zM8 7.75c1.24 0 2.25 1.01 2.25 2.25S9.24 12.25 8 12.25 5.75 11.24 5.75 10 6.76 7.75 8 7.75zM12.5 17h-9v-.75c0-1.5 3-2.25 4.5-2.25s4.5.75 4.5 2.25V17z" />
+                                        d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" />
                                 </svg>
-                            </button>
+                            </label>
                         </sm-input>
                         <sm-input id="receiver" class="w-100" placeholder="Receiver's FLO address"
                             error-text="Invalid FLO address" data-flo-id="" animate required>
-                            <button slot="right" class="icon-only" onclick="showFloIdPicker('receiver')"
+                            <button slot="right" class="icon-only" onclick="openPopup('saved_ids_popup')"
                                 title="Select from saved IDs">
                                 <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
                                     width="24px" fill="#000000">
@@ -351,8 +360,10 @@
                         </div>
                         <button class="button button--primary hidden" id="fix_invalid_button"
                             onclick="removeInvalid()">Fix</button>
-                        <button class="button button--primary cta" id="send_button" type="submit"
-                            onclick="openPopup('get_private_key_popup')" disabled>Send</button>
+                        <div class="multi-state-button">
+                            <button id="send_button" class="button button--primary cta" type="submit"
+                                onclick="sendMessage()">Send</button>
+                        </div>
                     </div>
                 </sm-form>
             </div>
@@ -562,7 +573,7 @@
             </div>
         </section>
     </sm-popup>
-    <sm-popup id="get_private_key_popup">
+    <sm-popup id="transaction_result_popup">
         <header slot="header" class="popup__header">
             <button class="popup__header__close justify-self-start" onclick="closePopup()">
                 <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
@@ -573,44 +584,6 @@
                 </svg>
             </button>
         </header>
-        <div class="grid gap-1-5 h-100" id="get_private_key">
-            <svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px"
-                viewBox="0 0 24 24" width="24px" fill="#000000">
-                <g>
-                    <rect fill="none" height="24" width="24" />
-                </g>
-                <g>
-                    <path
-                        d="M21,10h-8.35C11.83,7.67,9.61,6,7,6c-3.31,0-6,2.69-6,6s2.69,6,6,6c2.61,0,4.83-1.67,5.65-4H13l2,2l2-2l2,2l4-4.04L21,10z M7,15c-1.65,0-3-1.35-3-3c0-1.65,1.35-3,3-3s3,1.35,3,3C10,13.65,8.65,15,7,15z" />
-                </g>
-            </svg>
-            <h4>Enter sender's private key</h4>
-            <sm-form>
-                <sm-input id="get_private_key_field" class="password-field " type="password" required autofocus>
-                    <label slot="right" class="interact">
-                        <input type="checkbox" class="hidden" readonly onchange="togglePrivateKeyVisibility(this)">
-                        <svg class="icon invisible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
-                            width="24px" fill="#000000">
-                            <title>Hide password</title>
-                            <path d="M0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0z" fill="none" />
-                            <path
-                                d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z" />
-                        </svg>
-                        <svg class="icon visible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
-                            width="24px" fill="#000000">
-                            <title>Show password</title>
-                            <path d="M0 0h24v24H0z" fill="none" />
-                            <path
-                                d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" />
-                        </svg>
-                    </label>
-                </sm-input>
-                <div class="multi-state-button">
-                    <button id="confirm_transaction_button" class="button button--primary cta" type="submit"
-                        onclick="sendMessage()">Confirm</button>
-                </div>
-            </sm-form>
-        </div>
         <div id="transaction_result"></div>
     </sm-popup>
     <template id="saved_id_template">
@@ -761,8 +734,6 @@
                     getRef('saved_ids_picker_list').append(frag)
                     getRef('search_saved_ids_picker').focusIn()
                     break;
-                case 'get_private_key_popup':
-                    break;
             }
         })
         document.addEventListener('popupclosed', e => {
@@ -772,10 +743,8 @@
                     getRef('saved_ids_picker_list').innerHTML = ''
                     getRef('search_saved_ids_picker').value = ''
                     break;
-                case 'get_private_key_popup':
-                    getRef('get_private_key').classList.remove('hidden')
+                case 'transaction_result_popup':
                     renderElem(getRef('transaction_result'), html``)
-                    getRef('confirm_transaction_button').disabled = true
                     break;
                 case 'retrieve_flo_id_popup':
                     getRef('recovered_flo_id_wrapper').classList.add('hidden')
@@ -1403,12 +1372,8 @@
         })
         delegate(getRef('saved_ids_picker_list'), 'click', '.saved-id', e => {
             const target = e.target.closest('.saved-id');
-            getRef(`${openSavedIdPopupFor === 'sender' ? 'sender_flo_addr' : 'receiver'}`).value = target.dataset.floId
-            getRef(`${openSavedIdPopupFor === 'sender' ? 'sender_flo_addr' : 'receiver'}`).focusIn()
-            if (openSavedIdPopupFor === 'sender') {
-                checkSenderBalance()
-                $('#refresh_balance_button').classList.remove('hidden')
-            }
+            getRef('receiver').value = target.dataset.floId
+            getRef('receiver').focusIn()
             closePopup()
         })
 
@@ -1473,12 +1438,6 @@
             getRef('created_flo_id').append(card);
             openPopup('create_flo_id_popup');
         });
-
-        let openSavedIdPopupFor = null;
-        function showFloIdPicker(type) {
-            openSavedIdPopupFor = type;
-            openPopup('saved_ids_popup');
-        }
 
         // Create array of objects from object of objects
         async function getArrayOfSavedIds() {
@@ -1558,7 +1517,7 @@
             }
         }
 
-        getRef('sender_flo_addr').addEventListener('input', debounce(e => {
+        getRef('get_private_key_field').addEventListener('input', debounce(e => {
             if (e.target.isValid) {
                 checkSenderBalance()
             } else {
@@ -1568,7 +1527,8 @@
 
         function checkSenderBalance() {
             renderBalance(0, true)
-            const senderFloAddr = getRef('sender_flo_addr').value.trim()
+            const senderPrivateKey = getRef('get_private_key_field').value.trim()
+            const senderFloAddr = floCrypto.getFloID(senderPrivateKey)
             Promise.all([
                 floWebWallet.getBalance(senderFloAddr),
                 fetchJSON(`https://ranchimallflo.duckdns.org/api/v1.0/getFloAddressBalance?floAddress=${senderFloAddr}`)
@@ -1738,26 +1698,37 @@
         }
 
         function sendMessage() {
-            const sender = getRef('sender_flo_addr').value.trim();
+            const privKey = getRef('get_private_key_field').value.trim();
+            const sender = floCrypto.getFloID(privKey)
             const floAmount = parseFloat(getRef('tx_flo_amount').value.trim());
             const receiver = getRef('receiver').value.trim();
             const floData = getRef('flo_data_textarea').value.trim();
-            const privKey = getRef('get_private_key_field').value.trim();
-            buttonLoader('confirm_transaction_button', true)
-            floWebWallet.sendTransaction(sender, receiver, floAmount, floData, privKey).then((transactionId) => {
-                showTransactionResult(true, transactionId);
-                getRef('send_form').reset();
-                getRef('send_button').disabled = true;
-                resetBalance()
-            }).catch((error) => {
-                showTransactionResult(false, error);
-            }).finally(() => {
-                buttonLoader('confirm_transaction_button', false)
+            const selectedToken = document.getElementById('sender_tokens_wrapper').querySelector('input[type="radio"]:checked')
+            const tokenAmount = parseFloat(getRef('tx_token_amount').value.trim())
+            const tokenName = selectedToken.value
+            getConfirmation(`Confirm transaction`, {
+                message: `
+                    Sending ${floAmount} FLO ${tokenName !== 'none' ? ` and ${tokenAmount} ${tokenName}` : ''} to ${receiver} 
+                `,
+                confirmText: 'Send',
+            }).then(res => {
+                if (res) {
+                    buttonLoader('send_button', true)
+                    floWebWallet.sendTransaction(sender, receiver, floAmount, floData, privKey).then((transactionId) => {
+                        showTransactionResult(true, transactionId);
+                        getRef('send_form').reset();
+                        getRef('send_button').disabled = true;
+                        resetBalance()
+                    }).catch((error) => {
+                        showTransactionResult(false, error);
+                    }).finally(() => {
+                        buttonLoader('send_button', false)
+                    })
+                }
             })
         }
 
         function showTransactionResult(success, result) {
-            getRef('get_private_key').classList.add('hidden')
             renderElem(getRef('transaction_result'), html`
                 ${success ? html`
                     <svg class="icon icon--success" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <path d="M0 0h24v24H0z" fill="none" /> <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" /> </svg>
@@ -1769,6 +1740,7 @@
                 <p id="transaction_result__description"> ${success ? 'This might take upto 30 mins to complete and reflect on blockchain.' : result} </p>
                 ${success ? html`<a id="transaction_link" href=${`https://flosight.ranchimall.net/tx/${result}`} style="margin-top: 1.5rem;" target="_blank">See transaction on blockchain</a>` : ''}
             `)
+            openPopup('transaction_result_popup')
         }
 
 
