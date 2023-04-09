@@ -1705,10 +1705,9 @@
             const floData = getRef('flo_data_textarea').value.trim();
             const selectedToken = document.getElementById('sender_tokens_wrapper').querySelector('input[type="radio"]:checked')
             const tokenAmount = parseFloat(getRef('tx_token_amount').value.trim())
-            const tokenName = selectedToken.value
             getConfirmation(`Confirm transaction`, {
                 message: `
-                    Sending ${floAmount} FLO ${tokenName !== 'none' ? ` and ${tokenAmount} ${tokenName}` : ''} to ${receiver} 
+                    Sending ${floAmount} FLO ${selectedToken && selectedToken.value !== 'none' ? ` and ${tokenAmount} ${selectedToken.value}` : ''} to ${receiver} 
                 `,
                 confirmText: 'Send',
             }).then(res => {
