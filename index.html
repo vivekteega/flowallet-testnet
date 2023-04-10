@@ -92,7 +92,7 @@
         <div id="pages_container">
             <div id="home" class="page flex h-100">
                 <div class="flex direction-column gap-2 h-100">
-                    <section class="flex">
+                    <section id="primary_actions_wrapper">
                         <button id="gen_new_addr_btn" class="button primary-action interact">
                             <svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24"
                                 height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
@@ -117,6 +117,15 @@
                                     d="M14 12c0-1.1-.9-2-2-2s-2 .9-2 2 .9 2 2 2 2-.9 2-2zm-2-9c-4.97 0-9 4.03-9 9H0l4 4 4-4H5c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.51 0-2.91-.49-4.06-1.3l-1.42 1.44C8.04 20.3 9.94 21 12 21c4.97 0 9-4.03 9-9s-4.03-9-9-9z" />
                             </svg>
                             Retrieve FLO address
+                        </button>
+                        <button class="button primary-action interact" onclick="openPopup('check_balance_popup')">
+                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+                                width="24px" fill="#000000">
+                                <path d="M0 0h24v24H0z" fill="none" />
+                                <path
+                                    d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z" />
+                            </svg>
+                            Check balance
                         </button>
                     </section>
                     <section class="flex direction-column h-100">
@@ -552,6 +561,30 @@
             </sm-form>
         </section>
     </sm-popup>
+    <sm-popup id="check_balance_popup">
+        <header slot="header" class="popup__header">
+            <button class="popup__header__close justify-self-start" onclick="closePopup()">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
+                    fill="#000000">
+                    <path d="M0 0h24v24H0V0z" fill="none" />
+                    <path
+                        d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
+                </svg>
+            </button>
+            <h3>Check balance</h3>
+        </header>
+        <sm-form id="check_balance_form">
+            <sm-input id="check_balance_field" type="text" error-text="Invalid FLO address" placeholder="FLO address"
+                data-flo-id="" required autofocus>
+            </sm-input>
+            <div class="multi-state-button">
+                <button id="check_balance_button" class="button button--primary cta" type="submit"
+                    onclick="checkBalance()" disabled>Check</button>
+            </div>
+        </sm-form>
+        <div id="balance_wrapper" class="hidden grid gap-0-5" style="margin-top: 2rem">
+        </div>
+    </sm-popup>
     <sm-popup id="saved_ids_popup">
         <header slot="header" class="popup__header">
             <button class="popup__header__close justify-self-start" onclick="closePopup()">
@@ -748,6 +781,10 @@
                     break;
                 case 'retrieve_flo_id_popup':
                     getRef('recovered_flo_id_wrapper').classList.add('hidden')
+                    break;
+                case 'check_balance_popup':
+                    getRef('balance_wrapper').classList.add('hidden')
+                    getRef('check_balance_form')._checkValidity()
                     break;
             }
         })
@@ -1694,6 +1731,35 @@
             floWebWallet.recoverAddr(privKey).then(({ floID }) => {
                 getRef('recovered_flo_id_wrapper').classList.remove('hidden')
                 getRef('recovered_flo_id').value = floID
+            })
+        }
+
+        function checkBalance() {
+            getRef('balance_wrapper').classList.add('hidden')
+            const floID = getRef('check_balance_field').value.trim()
+            buttonLoader(getRef('check_balance_button'), true)
+            Promise.all([
+                floWebWallet.getBalance(floID),
+                fetchJSON(`https://ranchimallflo.duckdns.org/api/v1.0/getFloAddressBalance?floAddress=${floID}`)
+            ]).then(([retrievedBal, { floAddressBalances }]) => {
+                renderElem(getRef('balance_wrapper'), html`
+                    <h4>Balance</h4>
+                    <div class="flex gap-0-5 align-center space-between">
+                        <span>FLO:</span>
+                        <strong style="font-size: 1.1rem">${retrievedBal}</strong>
+                    </div>
+                    ${floAddressBalances ? Object.keys(floAddressBalances).map(token => html`
+                        <div class="flex gap-0-5 align-center space-between">
+                            <span>${token}:</span>
+                            <strong style="font-size: 1.1rem">${parseFloat(floAddressBalances[token].balance.toFixed(8))}</strong>
+                        </div>
+                    `) : ''}
+                `)
+                getRef('balance_wrapper').classList.remove('hidden')
+            }).catch(err => {
+                notify(err, 'error')
+            }).finally(() => {
+                buttonLoader(getRef('check_balance_button'), false)
             })
         }
 

@@ -686,6 +686,11 @@ h3 {
   padding: 0.5rem 1.5rem 4rem 1.5rem;
 }
 
+#primary_actions_wrapper {
+  display: grid;
+  gap: 0.5rem;
+}
+
 .primary-action {
   display: flex;
   padding: 0.8rem 1rem;
@@ -695,12 +700,10 @@ h3 {
   border-radius: 0.5rem;
   background-color: transparent;
   border: thin solid rgba(var(--text-color), 0.3);
+  text-align: left;
 }
 .primary-action .icon {
   fill: var(--accent-color);
-}
-.primary-action:not(:last-of-type) {
-  margin-right: 0.5rem;
 }
 
 #saved_ids_list {
@@ -980,6 +983,9 @@ h3 {
     left: 0;
     right: 0;
   }
+  #primary_actions_wrapper {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 @media screen and (min-width: 40rem) {
   body {
@@ -1035,6 +1041,10 @@ h3 {
     left: 0;
     border-radius: 0 1rem 1rem 0;
     bottom: auto;
+  }
+  #primary_actions_wrapper {
+    display: flex;
+    flex-wrap: wrap;
   }
   #create_flo_id_popup,
 #retrieve_flo_id_popup {
