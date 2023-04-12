@@ -1,4 +1,4 @@
-(function (EXPORTS) { //floBlockchainAPI v2.4.4
+(function (EXPORTS) { //floBlockchainAPI v2.4.5
     /* FLO Blockchain Operator to send/receive data from blockchain using API calls*/
     'use strict';
     const floBlockchainAPI = EXPORTS;
@@ -21,6 +21,7 @@
 
     util.Sat_to_FLO = value => parseFloat((value / SATOSHI_IN_BTC).toFixed(8));
     util.FLO_to_Sat = value => parseInt(value * SATOSHI_IN_BTC);
+    util.toFixed = value => parseFloat((value).toFixed(8));
 
     Object.defineProperties(floBlockchainAPI, {
         sendAmt: {
@@ -120,11 +121,21 @@
     }
 
     //Get balance for the given Address
-    const getBalance = floBlockchainAPI.getBalance = function (addr) {
+    const getBalance = floBlockchainAPI.getBalance = function (addr, after = null) {
         return new Promise((resolve, reject) => {
-            promisedAPI(`api/addr/${addr}/balance`)
-                .then(balance => resolve(parseFloat(balance)))
-                .catch(error => reject(error));
+            let api = `api/addr/${addr}/balance`;
+            if (after) {
+                if (typeof after === 'string' && /^[0-9a-z]{64}$/i.test(after))
+                    api += '?after=' + after;
+                else return reject("Invalid 'after' parameter");
+            }
+            promisedAPI(api).then(result => {
+                if (typeof result === 'object' && result.lastItem) {
+                    getBalance(addr, result.lastItem)
+                        .then(r => resolve(util.toFixed(r + result.data)))
+                        .catch(error => reject(error))
+                } else resolve(result);
+            }).catch(error => reject(error))
         });
     }
 
