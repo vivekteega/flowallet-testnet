@@ -1,4 +1,4 @@
-(function (EXPORTS) { //floBlockchainAPI v2.4.6
+(function (EXPORTS) { //floBlockchainAPI v2.5.0
     /* FLO Blockchain Operator to send/receive data from blockchain using API calls*/
     'use strict';
     const floBlockchainAPI = EXPORTS;
@@ -745,23 +745,49 @@
         })
     }
 
+    const isUndefined = val => typeof val === 'undefined';
+
     //Read Txs of Address between from and to
-    const readTxs = floBlockchainAPI.readTxs = function (addr, from, to) {
+    const readTxs = floBlockchainAPI.readTxs = function (addr, options = {}) {
         return new Promise((resolve, reject) => {
-            promisedAPI(`api/addrs/${addr}/txs?from=${from}&to=${to}`)
+            let api = `api/addrs/${addr}/txs`;
+            //API options
+            let api_options = [];
+            if (!isUndefined(options.after))
+                api_options.push(`after=${options.after}`);
+            else {
+                if (!isUndefined(options.from))
+                    api_options.push(`from=${options.from}`);
+                if (!isUndefined(options.to))
+                    api_options.push(`to=${options.to}`);
+            }
+            if (!isUndefined(options.mempool))
+                api_options.push(`mempool=${options.mempool}`)
+            if (api_options.length)
+                api += "?" + api_options.join('&');
+            promisedAPI(api)
                 .then(response => resolve(response))
                 .catch(error => reject(error))
         });
     }
 
     //Read All Txs of Address (newest first)
-    floBlockchainAPI.readAllTxs = function (addr) {
+    const readAllTxs = floBlockchainAPI.readAllTxs = function (addr, options) {
         return new Promise((resolve, reject) => {
-            promisedAPI(`api/addrs/${addr}/txs?from=0&to=1`).then(response => {
-                promisedAPI(`api/addrs/${addr}/txs?from=0&to=${response.totalItems}0`)
-                    .then(response => resolve(response.items))
-                    .catch(error => reject(error));
-            }).catch(error => reject(error))
+            readTxs(addr, options).then(response => {
+                if (response.incomplete) {
+                    let next_options = Object.assign({}, options);
+                    next_options.after = response.lastItem;
+                    readAllTxs(addr, next_options).then(r => {
+                        r.items = r.items.concat(response.items);   //latest tx are 1st in array
+                        resolve(r);
+                    }).catch(error => reject(error))
+                } else
+                    resolve({
+                        lastKey: response.lastItem || options.after,
+                        items: response.items
+                    });
+            })
         });
     }
 
