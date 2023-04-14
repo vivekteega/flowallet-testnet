@@ -1,4 +1,4 @@
-(function (EXPORTS) { //floBlockchainAPI v2.5.0
+(function (EXPORTS) { //floBlockchainAPI v2.5.1
     /* FLO Blockchain Operator to send/receive data from blockchain using API calls*/
     'use strict';
     const floBlockchainAPI = EXPORTS;
@@ -793,8 +793,9 @@
 
     /*Read flo Data from txs of given Address
     options can be used to filter data
-    limit       : maximum number of filtered data (default = 1000, negative  = no limit)
-    ignoreOld   : ignore old txs (default = 0)
+    after       : query after the given txid
+    mempool     : query mempool tx or not (options same as readAllTx, DEFAULT=false: ignore unconfirmed tx)
+    ignoreOld   : ignore old txs (deprecated: support for backward compatibility only, cannot be used with 'after')
     sentOnly    : filters only sent data
     receivedOnly: filters only received data
     pattern     : filters data that with JSON pattern
@@ -804,98 +805,73 @@
     receiver    : flo-id(s) of receiver
     */
     floBlockchainAPI.readData = function (addr, options = {}) {
-        options.limit = options.limit || 0;
-        options.ignoreOld = options.ignoreOld || 0;
-        if (typeof options.senders === "string") options.senders = [options.senders];
-        if (typeof options.receivers === "string") options.receivers = [options.receivers];
         return new Promise((resolve, reject) => {
-            promisedAPI(`api/addrs/${addr}/txs?from=0&to=1`).then(response => {
-                var newItems = response.totalItems - options.ignoreOld;
-                promisedAPI(`api/addrs/${addr}/txs?from=0&to=${newItems * 2}`).then(response => {
-                    if (options.limit <= 0)
-                        options.limit = response.items.length;
-                    var filteredData = [];
-                    let numToRead = response.totalItems - options.ignoreOld,
-                        unconfirmedCount = 0;
-                    for (let i = 0; i < numToRead && filteredData.length < options.limit; i++) {
-                        if (!response.items[i].confirmations) { //unconfirmed transactions
-                            unconfirmedCount++;
-                            if (numToRead < response.items[i].length)
-                                numToRead++;
-                            continue;
-                        }
-                        if (options.pattern) {
-                            try {
-                                let jsonContent = JSON.parse(response.items[i].floData);
-                                if (!Object.keys(jsonContent).includes(options.pattern))
-                                    continue;
-                            } catch (error) {
-                                continue;
-                            }
-                        }
-                        if (options.sentOnly) {
-                            let flag = false;
-                            for (let vin of response.items[i].vin)
-                                if (vin.addr === addr) {
-                                    flag = true;
-                                    break;
-                                }
-                            if (!flag) continue;
-                        }
-                        if (Array.isArray(options.senders)) {
-                            let flag = false;
-                            for (let vin of response.items[i].vin)
-                                if (options.senders.includes(vin.addr)) {
-                                    flag = true;
-                                    break;
-                                }
-                            if (!flag) continue;
-                        }
-                        if (options.receivedOnly) {
-                            let flag = false;
-                            for (let vout of response.items[i].vout)
-                                if (vout.scriptPubKey.addresses[0] === addr) {
-                                    flag = true;
-                                    break;
-                                }
-                            if (!flag) continue;
-                        }
-                        if (Array.isArray(options.receivers)) {
-                            let flag = false;
-                            for (let vout of response.items[i].vout)
-                                if (options.receivers.includes(vout.scriptPubKey.addresses[0])) {
-                                    flag = true;
-                                    break;
-                                }
-                            if (!flag) continue;
-                        }
-                        if (options.filter && !options.filter(response.items[i].floData))
-                            continue;
 
-                        if (options.tx) {
-                            let d = {}
-                            d.txid = response.items[i].txid;
-                            d.time = response.items[i].time;
-                            d.blockheight = response.items[i].blockheight;
-                            d.senders = new Set(response.items[i].vin.map(v => v.addr));
-                            d.receivers = new Set(response.items[i].vout.map(v => v.scriptPubKey.addresses[0]));
-                            d.data = response.items[i].floData;
-                            filteredData.push(d);
-                        } else
-                            filteredData.push(response.items[i].floData);
+            //fetch options
+            let fetch_options = {};
+            fetch_options.mempool = isUndefined(options.mempool) ? 'false' : options.mempool; //DEFAULT: ignore unconfirmed tx
+            if (!isUndefined(options.after)) {
+                if (!isUndefined(options.ignoreOld)) //Backward support
+                    return reject("Invalid options: cannot use after and ignoreOld in same query");
+                else
+                    fetch_options.after = options.after;
+            }
+            readAllTxs(addr, fetch_options).then(response => {
+
+                if (Number.isInteger(options.ignoreOld))  //backward support, cannot be used with options.after
+                    response.items.splice(-options.ignoreOld);   //negative to count from end of the array
+
+                if (typeof options.senders === "string") options.senders = [options.senders];
+                if (typeof options.receivers === "string") options.receivers = [options.receivers];
+
+                //filter the txs based on options
+                const filteredData = response.items.filter(tx => {
+
+                    if (!tx.confirmations)  //unconfirmed transactions: this should not happen as we send mempool=false in API query
+                        return false;
+
+                    if (options.sentOnly && !tx.vin.some(vin => vin.addr === addr))
+                        return false;
+                    else if (Array.isArray(options.senders) && !tx.vin.some(vin => options.senders.includes(vin.addr)))
+                        return false;
+
+                    if (options.receivedOnly && !tx.vout.some(vout => vout.scriptPubKey.addresses[0] === addr))
+                        return false;
+                    else if (Array.isArray(options.receivers) && !tx.vout.some(vout => options.receivers.includes(vout.scriptPubKey.addresses[0])))
+                        return false;
+
+                    if (options.pattern) {
+                        try {
+                            let jsonContent = JSON.parse(tx.floData);
+                            if (!Object.keys(jsonContent).includes(options.pattern))
+                                return false;
+                        } catch {
+                            return false;
+                        }
                     }
-                    resolve({
-                        totalTxs: response.totalItems - unconfirmedCount,
-                        data: filteredData
-                    });
-                }).catch(error => {
-                    reject(error);
-                });
-            }).catch(error => {
-                reject(error);
-            });
-        });
-    }
 
+                    if (options.filter && !options.filter(tx.floData))
+                        return false;
+
+                    return true;
+                }).map(tx => options.tx ? {
+                    txid: tx.txid,
+                    time: tx.time,
+                    blockheight: tx.blockheight,
+                    senders: new Set(tx.vin.map(v => v.addr)),
+                    receivers: new Set(tx.vout.map(v => v.scriptPubKey.addresses[0])),
+                    data: tx.floData
+                } : tx.floData);
+
+                const result = { lastKey: response.lastKey };
+                if (options.tx)
+                    result.items = filteredData;
+                else
+                    result.data = filteredData
+                resolve(result);
+
+            }).catch(error => reject(error))
+        })
+    }
 
 })('object' === typeof module ? module.exports : window.floBlockchainAPI = {});
