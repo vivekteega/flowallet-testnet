@@ -847,7 +847,9 @@ h3 {
   border-radius: 0.3rem;
   font-size: 0.9rem;
   span:first-of-type {
-    text-transform: capitalize;
+    &::first-letter {
+      text-transform: capitalize;
+    }
   }
   input {
     height: 1rem;
