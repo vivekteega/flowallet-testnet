@@ -254,6 +254,71 @@
         })
     }
 
+    floBlockchainAPI.splitUTXOs = function (floID, privKey, count, floData = '') {
+        return new Promise((resolve, reject) => {
+            if (!floCrypto.validateFloID(floID, true))
+                return reject(`Invalid floID`);
+            if (!floCrypto.verifyPrivKey(privKey, floID))
+                return reject("Invalid Private Key");
+            if (!floCrypto.validateASCII(floData))
+                return reject("Invalid FLO_Data: only printable ASCII characters are allowed");
+            var fee = DEFAULT.fee;
+            var splitAmt = DEFAULT.sendAmt + fee;
+            var requiredAmt = splitAmt * count;
+            getBalance(floID).then(balance => {
+                var fee = DEFAULT.fee;
+                if (balance < requiredAmt + fee)
+                    return reject("Insufficient FLO balance!");
+                //get unconfirmed tx list
+                promisedAPI(`api/addr/${floID}`).then(result => {
+                    readTxs(floID, 0, result.unconfirmedTxApperances).then(result => {
+                        let unconfirmedSpent = {};
+                        for (let tx of result.items)
+                            if (tx.confirmations == 0)
+                                for (let vin of tx.vin)
+                                    if (vin.addr === floID) {
+                                        if (Array.isArray(unconfirmedSpent[vin.txid]))
+                                            unconfirmedSpent[vin.txid].push(vin.vout);
+                                        else
+                                            unconfirmedSpent[vin.txid] = [vin.vout];
+                                    }
+                        //get utxos list
+                        promisedAPI(`api/addr/${floID}/utxo`).then(utxos => {
+                            //form/construct the transaction data
+                            var trx = bitjs.transaction();
+                            var utxoAmt = 0.0;
+                            for (let i = utxos.length - 1;
+                                (i >= 0) && (utxoAmt < requiredAmt + fee); i--) {
+                                //use only utxos with confirmations (strict_utxo mode)
+                                if (utxos[i].confirmations || !strict_utxo) {
+                                    if (utxos[i].txid in unconfirmedSpent && unconfirmedSpent[utxos[i].txid].includes(utxos[i].vout))
+                                        continue; //A transaction has already used the utxo, but is unconfirmed.
+                                    trx.addinput(utxos[i].txid, utxos[i].vout, utxos[i].scriptPubKey);
+                                    utxoAmt += utxos[i].amount;
+                                };
+                            }
+                            if (utxoAmt < requiredAmt + fee)
+                                reject("Insufficient FLO: Some UTXOs are unconfirmed");
+                            else {
+                                for (let i = 0; i < count; i++)
+                                    trx.addoutput(floID, splitAmt);
+                                var change = utxoAmt - requiredAmt - fee;
+                                if (change > DEFAULT.minChangeAmt)
+                                    trx.addoutput(floID, change);
+                                trx.addflodata(floData.replace(/\n/g, ' '));
+                                var signedTxHash = trx.sign(privKey, 1);
+                                broadcastTx(signedTxHash)
+                                    .then(txid => resolve(txid))
+                                    .catch(error => reject(error))
+                            }
+                        }).catch(error => reject(error))
+                    }).catch(error => reject(error))
+                }).catch(error => reject(error))
+            }).catch(error => reject(error))
+
+        })
+    }
+
     /**Write data into blockchain from (and/or) to multiple floID
      * @param  {Array} senderPrivKeys List of sender private-keys
      * @param  {string} data FLO data of the txn
