@@ -1318,7 +1318,7 @@
                                     let selectedSmartContract = filteredSmartContracts[0] || {}
                                     if (scName && scAddress)
                                         selectedSmartContract = getScDetails(scName, scAddress)
-                                    const { contractName, contractAddress, acceptingToken, tokenIdentification, userChoices } = selectedSmartContract
+                                    const { price, contractName, contractAddress, acceptingToken, sellingToken, tokenIdentification, userChoices, contractSubType } = selectedSmartContract
                                     history.replaceState(null, null, `#/smartcontracts/participate?scName=${contractName}&scAddress=${contractAddress}`)
                                     renderElem(getRef('smart_contract_participate_form'), html`
                                         <div class="grid gap-0-5">
@@ -1338,6 +1338,12 @@
                                                         </label>
                                                     `)}
                                                 </div>
+                                        `: ''}
+                                        ${contractSubType === 'tokenswap' ? html`
+                                            <div class="grid gap-0-3">
+                                                <h3>Swap ${acceptingToken} with ${sellingToken}</h3>
+                                                <p>Exchange rate: 1 ${acceptingToken} = ${price} ${sellingToken}
+                                            </div>
                                         `: ''}
                                         <div class="grid gap-0-5">
                                             <span id="participation_amount_label" class="label">Participation amount (${acceptingToken || tokenIdentification})</span>
@@ -2572,7 +2578,7 @@
         //             name = floGlobals.smartContracts[0].contractName
         //             address = floGlobals.smartContracts[0].contractAddress
         //         }
-        //         fetchJSON(`${floGlobals.tokenApiUrl}/api/v2/smartContractInfo?contractName=${name}&contractAddress=${address}`)
+        //         fetchJSON(`https://ranchimallflo.duckdns.org/api/v2/smartContractInfo?contractName=${name}&contractAddress=${address}`)
         //             .then(info => {
         //                 console.log(info)
         //                 const {
