@@ -409,7 +409,7 @@
                     <div class="grid gap-1">
                         <h4>Actions</h4>
                         <ul id="smart_contract_actions" class="flex align-center flex-wrap gap-0-5">
-                            <li>
+                            <li class="hidden">
                                 <a class="button smart-contract-action" href="#/smartcontracts/deposit">
                                     <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px"
                                         viewBox="0 0 24 24" width="24px" fill="#000000">
@@ -419,7 +419,7 @@
                                     <span>Deposit</span>
                                 </a>
                             </li>
-                            <li>
+                            <li class="hidden">
                                 <a class="button smart-contract-action" href="#/smartcontracts/participate">
                                     <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px"
                                         viewBox="0 0 24 24" width="24px" fill="#000000">
@@ -441,7 +441,7 @@
                                     <span>Update price</span>
                                 </a>
                             </li>
-                            <li>
+                            <li class="hidden">
                                 <a class="button smart-contract-action" href="#/smartcontracts/trigger">
                                     <svg class="icon" xmlns="http://www.w3.org/2000/svg"
                                         enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px"
@@ -455,7 +455,7 @@
                             </li>
                         </ul>
                     </div>
-                    <div class="grid gap-1">
+                    <div class="grid gap-1 hidden">
                         <h4>Creation templates</h4>
                         <ul id="smart_contract_creation_templates">
                             <li>
@@ -1266,41 +1266,51 @@
                                 break;
                             case 'deposit': {
                                 const filteredSmartContracts = filterSmartContracts({ type: 'continuos-event' })
-                                renderElem(getRef('smart_contract_deposit_form'), html`
-                                    <div class="grid gap-0-5">
-                                        <span class="label">FLO private key</span>
-                                        <sm-input class="password-field" type="password" error-text="Invalid private key" data-private-key required>
-                                            <label slot="right" class="interact">
-                                                <input type="checkbox" class="hidden" readonly="" onchange="togglePrivateKeyVisibility(this)">
-                                                <svg class="icon invisible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <title>Hide password</title> <path d="M0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0z" fill="none"></path> <path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"></path> </svg>
-                                                <svg class="icon visible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <title>Show password</title> <path d="M0 0h24v24H0z" fill="none"></path> <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"></path> </svg>
-                                            </label>
-                                        </sm-input>
-                                    </div>
-                                    <div class="grid gap-0-5">
-                                        <span class="label">Select smart contract</span>
-                                        <sm-select>
-                                            ${render.availableSmartContractOptions(filteredSmartContracts)}
-                                        </sm-select>
-                                    </div>
-                                    <div class="grid gap-0-5">
-                                        <span class="label">Amount</span>
-                                        <sm-input type="number" required></sm-input>
-                                    </div>
-                                    <div class="grid gap-0-5">
-                                        <span class="label">Expiration (Time after which unspent amount will be returned)</span>
-                                        <input type="datetime-local" required>
-                                    </div>
-                                    <div class="multi-state-button">
-                                        <button class="button button--primary" type="submit" disabled>Deposit</button>
-                                    </div>
-                                `)
+                                if (filteredSmartContracts.length) {
+                                    renderElem(getRef('smart_contract_deposit_form'), html`
+                                        <div class="grid gap-0-5">
+                                            <span class="label">FLO private key</span>
+                                            <sm-input class="password-field" type="password" error-text="Invalid private key" data-private-key required>
+                                                <label slot="right" class="interact">
+                                                    <input type="checkbox" class="hidden" readonly="" onchange="togglePrivateKeyVisibility(this)">
+                                                    <svg class="icon invisible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <title>Hide password</title> <path d="M0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0z" fill="none"></path> <path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"></path> </svg>
+                                                    <svg class="icon visible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <title>Show password</title> <path d="M0 0h24v24H0z" fill="none"></path> <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"></path> </svg>
+                                                </label>
+                                            </sm-input>
+                                        </div>
+                                        <div class="grid gap-0-5">
+                                            <span class="label">Select smart contract</span>
+                                            <sm-select>
+                                                ${render.availableSmartContractOptions(filteredSmartContracts)}
+                                            </sm-select>
+                                        </div>
+                                        <div class="grid gap-0-5">
+                                            <span class="label">Amount</span>
+                                            <sm-input type="number" required></sm-input>
+                                        </div>
+                                        <div class="grid gap-0-5">
+                                            <span class="label">Expiration (Time after which unspent amount will be returned)</span>
+                                            <input type="datetime-local" required>
+                                        </div>
+                                        <div class="multi-state-button">
+                                            <button class="button button--primary" type="submit" disabled>Deposit</button>
+                                        </div>
+                                    `)
+                                } else {
+                                    renderElem(getRef('smart_contract_deposit_form'), html`
+                                        <div class="grid justify-items-center gap-0-5">
+                                            <svg class="icon icon--big" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><circle cx="15.5" cy="9.5" r="1.5"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm0-3.5c.73 0 1.39.19 1.97.53.12-.14.86-.98 1.01-1.14-.85-.56-1.87-.89-2.98-.89-1.11 0-2.13.33-2.99.88.97 1.09.01.02 1.01 1.14.59-.33 1.25-.52 1.98-.52z"/></svg>
+                                            <strong class="justify-self-center">No smart contracts found</strong>
+                                        </div>
+                                    `)
+                                }
                                 showChildElement('smartcontracts', 2, { entry: slideInLeft, exit: slideOutLeft })
                                 break;
                             }
                             case 'participate': {
                                 const filteredSmartContracts = filterSmartContracts()
-                                renderElem(getRef('smart_contract_participate_form'), html`
+                                if (filteredSmartContracts.length) {
+                                    renderElem(getRef('smart_contract_participate_form'), html`
                                     <div class="grid gap-0-5">
                                         <span class="label">FLO private key</span>
                                         <sm-input class="password-field" type="password" error-text="Invalid private key" data-private-key="" required="">
@@ -1325,52 +1335,70 @@
                                         <button class="button button--primary" type="submit" disabled>Send</button>
                                     </div>
                                 `)
+                                } else {
+                                    renderElem(getRef('smart_contract_participate_form'), html`
+                                        <div class="grid justify-items-center gap-0-5">
+                                            <svg class="icon icon--big" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><circle cx="15.5" cy="9.5" r="1.5"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm0-3.5c.73 0 1.39.19 1.97.53.12-.14.86-.98 1.01-1.14-.85-.56-1.87-.89-2.98-.89-1.11 0-2.13.33-2.99.88.97 1.09.01.02 1.01 1.14.59-.33 1.25-.52 1.98-.52z"/></svg>
+                                            <strong class="justify-self-center">No smart contracts found</strong>
+                                        </div>
+                                    `)
+                                }
                                 showChildElement('smartcontracts', 3, { entry: slideInLeft, exit: slideOutLeft })
                                 break;
                             }
                             case 'updateprice': {
                                 const filteredSmartContracts = filterSmartContracts({ type: 'continuos-event', dynamic: true })
                                 const { contractName, contractAddress, oracle_address, price, acceptingToken } = filteredSmartContracts[0] || {}
-                                showChildElement('smartcontracts', 4, !firstLoad ? { entry: slideInLeft, exit: slideOutLeft } : {})
                                 console.log('filteredSmartContracts', filteredSmartContracts)
-                                renderElem(getRef('smart_contract_update_form'), html`
-                                    <div class="grid gap-0-5">
-                                        <span class="label">Oracle FLO Address</span>
-                                        <sm-copy value=${oracle_address}></sm-copy>
-                                    </div>
-                                    <div class="grid gap-0-5">
-                                        <span class="label">Oracle FLO private key</span>
-                                        <sm-input id="oracle_private_key" class="password-field" type="password" error-text="Invalid private key" data-private-key="" required="">
-                                            <label slot="right" class="interact">
-                                                <input type="checkbox" class="hidden" readonly="" onchange="togglePrivateKeyVisibility(this)">
-                                                <svg class="icon invisible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <title>Hide password</title> <path d="M0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0z" fill="none"></path> <path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"></path> </svg>
-                                                <svg class="icon visible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <title>Show password</title> <path d="M0 0h24v24H0z" fill="none"></path> <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"></path> </svg>
-                                            </label>
-                                        </sm-input>
-                                    </div>
-                                    <div class="grid gap-0-5">
-                                        <span class="label">Select smart contract</span>
-                                        <sm-select id="selected_smart_contract" onchange=${handleSmartContractSelection}>
-                                            ${render.availableSmartContractOptions(filteredSmartContracts)}
-                                        </sm-select>
-                                    </div>
-                                    <p>
-                                        <span class="label">Current price: </span>
-                                        <span class="label">${price} ${acceptingToken}</span>
-                                    </p>
-                                    <div class="grid gap-0-5">
-                                        <span class="label">Updated price (${acceptingToken})</span>
-                                        <sm-input id="updated_price" type="number" step="0.00000001" min="0.00000001" error-text="Minimum 0.00000001 required" required></sm-input>
-                                    </div>
-                                    <div class="multi-state-button">
-                                        <button class="button button--primary" type="submit" onclick=${updatePrice} disabled>Update</button>
-                                    </div>
-                                `)
+                                if (filteredSmartContracts.length) {
+                                    renderElem(getRef('smart_contract_update_form'), html`
+                                        <div class="grid gap-0-5">
+                                            <span class="label">Oracle FLO Address</span>
+                                            <sm-copy id="oracle_address" value=${oracle_address}></sm-copy>
+                                        </div>
+                                        <div class="grid gap-0-5">
+                                            <span class="label">Oracle FLO private key</span>
+                                            <sm-input id="oracle_private_key" class="password-field" type="password" error-text="Invalid private key" data-private-key="" required="">
+                                                <label slot="right" class="interact">
+                                                    <input type="checkbox" class="hidden" readonly="" onchange="togglePrivateKeyVisibility(this)">
+                                                    <svg class="icon invisible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <title>Hide password</title> <path d="M0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0z" fill="none"></path> <path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"></path> </svg>
+                                                    <svg class="icon visible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <title>Show password</title> <path d="M0 0h24v24H0z" fill="none"></path> <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"></path> </svg>
+                                                </label>
+                                            </sm-input>
+                                        </div>
+                                        <div class="grid gap-0-5">
+                                            <span class="label">Select smart contract</span>
+                                            <sm-select id="selected_smart_contract" onchange=${handleSmartContractSelection}>
+                                                ${render.availableSmartContractOptions(filteredSmartContracts)}
+                                            </sm-select>
+                                        </div>
+                                        <p>
+                                            <span class="label">Current price: </span>
+                                            <span id="current_price" class="label">${price} ${acceptingToken}</span>
+                                        </p>
+                                        <div class="grid gap-0-5">
+                                            <span id="updated_price_label" class="label">Updated price (${acceptingToken})</span>
+                                            <sm-input id="updated_price" type="number" step="0.00000001" min="0.00000001" error-text="Minimum 0.00000001 required" required></sm-input>
+                                        </div>
+                                        <div class="multi-state-button">
+                                            <button id="update_price_button" class="button button--primary" type="submit" onclick=${updatePrice} disabled>Update</button>
+                                        </div>
+                                    `)
+                                } else {
+                                    renderElem(getRef('smart_contract_update_form'), html`
+                                        <div class="grid justify-items-center gap-0-5">
+                                            <svg class="icon icon--big" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><circle cx="15.5" cy="9.5" r="1.5"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm0-3.5c.73 0 1.39.19 1.97.53.12-.14.86-.98 1.01-1.14-.85-.56-1.87-.89-2.98-.89-1.11 0-2.13.33-2.99.88.97 1.09.01.02 1.01 1.14.59-.33 1.25-.52 1.98-.52z"/></svg>
+                                            <strong class="justify-self-center">No smart contracts found</strong>
+                                        </div>
+                                    `)
+                                }
+                                showChildElement('smartcontracts', 4, !firstLoad ? { entry: slideInLeft, exit: slideOutLeft } : {})
                                 break;
                             }
                             case 'trigger': {
                                 const filteredSmartContracts = filterSmartContracts({ type: 'one-time-event', subType: 'external-event' })
-                                renderElem(getRef('smart_contract_trigger_form'), html`
+                                if (filteredSmartContracts.length) {
+                                    renderElem(getRef('smart_contract_trigger_form'), html`
                                     <div class="grid gap-0-5">
                                         <span class="label">FLO private key</span>
                                         <sm-input class="password-field" type="password" error-text="Invalid private key" data-private-key="" required="">
@@ -1404,6 +1432,14 @@
                                         <button class="button button--primary" type="submit" disabled>Trigger</button>
                                     </div>
                                 `)
+                                } else {
+                                    renderElem(getRef('smart_contract_trigger_form'), html`
+                                        <div class="grid justify-items-center gap-0-5">
+                                            <svg class="icon icon--big" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><circle cx="15.5" cy="9.5" r="1.5"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm0-3.5c.73 0 1.39.19 1.97.53.12-.14.86-.98 1.01-1.14-.85-.56-1.87-.89-2.98-.89-1.11 0-2.13.33-2.99.88.97 1.09.01.02 1.01 1.14.59-.33 1.25-.52 1.98-.52z"/></svg>
+                                            <strong class="justify-self-center">No smart contracts found</strong>
+                                        </div>
+                                    `)
+                                }
                                 showChildElement('smartcontracts', 5, { entry: slideInLeft, exit: slideOutLeft })
                                 break;
                             }
@@ -2568,7 +2604,7 @@
         // }
 
         function filterSmartContracts(options) {
-            const { type, subType, dynamic = false } = options
+            const { type, subType, dynamic = false } = options || {}
             let filteredSmartContracts = (floGlobals.smartContracts || []);
             if (type) {
                 filteredSmartContracts = filteredSmartContracts.filter(sc => sc.contractType === type)
@@ -2580,15 +2616,25 @@
             return filteredSmartContracts
         }
 
-        function handleSmartContractSelection() {
-            console.log('handleSmartContractSelection')
+        function handleSmartContractSelection(e) {
+            const selectedSmartContract = e.target.value
+            const [contractName, contractAddress] = selectedSmartContract.split('_')
+            const details = floGlobals.smartContracts.find(sc => sc.contractName === contractName && sc.contractAddress === contractAddress)
+            if (!details) return
+            const { price, acceptingToken, oracle_address } = details
+            getRef('smart_contract_update_form').querySelector('#oracle_address').value = oracle_address
+            getRef('smart_contract_update_form').querySelector('#current_price').textContent = `${price} ${acceptingToken}`
+            getRef('smart_contract_update_form').querySelector('#updated_price_label').textContent = `Updated price (${acceptingToken})`
         }
 
         function updatePrice(e) {
             const selectedSmartContract = document.getElementById('selected_smart_contract').value
             const [contractName, contractAddress] = (selectedSmartContract).split('_')
             const oraclePrivateKey = document.getElementById('oracle_private_key').value
-            const oracleAddress = floCrypto.getFloID(oraclePrivateKey)
+            const oracleAddress = document.getElementById('oracle_address')
+            if (!floCrypto.verifyPrivKey(oraclePrivateKey, oracleAddress)) {
+                return notify(`Private key doesn't match with Oracle address`, 'error')
+            }
             const updatedPrice = parseFloat(document.getElementById('updated_price').value.trim())
             const floData = ` {"price-update":{"contract-name": "${contractName}", "contract-address": "${contractAddress}", "price": ${updatedPrice}}} `
             console.log(floData)
@@ -2601,6 +2647,7 @@
                 buttonLoader(e.target.closest('button'), true)
                 floBlockchainAPI.writeData(oracleAddress, floData, oraclePrivateKey, contractAddress).then((txid) => {
                     showTransactionResult(true, txid)
+                    getRef('smart_contract_update_form').reset()
                 }).catch((error) => {
                     showTransactionResult(false, error)
                 }).finally(() => {
