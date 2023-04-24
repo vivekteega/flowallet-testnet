@@ -2702,6 +2702,7 @@
                     floBlockchainAPI.sendTx(participantAddress, contractAddress, floGlobals.sendAmt, participantPrivateKey, floData).then(txid => {
                         showTransactionResult(true, txid)
                         getRef('smart_contract_participate_form').reset()
+                        document.getElementById('participate_button').disabled = true
                     }).catch(error => {
                         showTransactionResult(false, error)
                     }).finally(() => {
@@ -2735,6 +2736,7 @@
                 floBlockchainAPI.writeData(oracleAddress, floData, oraclePrivateKey, contractAddress).then((txid) => {
                     showTransactionResult(true, txid)
                     getRef('smart_contract_update_form').reset()
+                    document.getElementById('update_price_button').disabled = true
                 }).catch((error) => {
                     showTransactionResult(false, error)
                 }).finally(() => {
