@@ -12,10 +12,11 @@
         rel="stylesheet">
     <link rel="stylesheet" href="css/main.min.css">
     <script>
-        /* Constants for FLO blockchain operations !!Make sure to add this at begining!! */
+        /* Constants for FLO blockchain operations !!Make sure to add this at beginning!! */
         const floGlobals = {
             blockchain: "FLO",
-            tokenApiUrl: 'https://ranchimallflo.duckdns.org'
+            tokenApiUrl: 'https://ranchimallflo.duckdns.org',
+            // tokenURL: 'https://ranchimallflo-testing.duckdns.org/'
         }
     </script>
     <script src="scripts/components.js" defer></script>
@@ -45,21 +46,6 @@
                         floGlobals.smartContracts = smartContracts
                             .filter(sc => sc.status === 'active')
                             .sort((a, b) => a.contractName.localeCompare(b.contractName))
-                        // floGlobals.smartContracts.push({
-                        //     "blockNumber": 2294144,
-                        //     "closeDate": null,
-                        //     "contractAddress": "oVbebBNuERWbouDg65zLfdataWEMTnsL8r",
-                        //     "contractName": "twitter",
-                        //     "contractSubType": "tokenswap",
-                        //     "contractType": "continuos-event",
-                        //     "expiryDate": "1668503201",
-                        //     "incorporationDate": "25e2e483aad1ba8bd9272a1234535f5e210d08220eba2d3991ddccad6ddc39e2",
-                        //     "status": "active",
-                        //     "acceptingToken": 'FLO',
-                        //     "transactionHash": "64abe801d12224d10422de88070a76ad8c6d17b533ba5288fb0961b4cbf6adf4",
-                        //     "oracle_address": "odzijPEJ1ToULkvRKiKYuzgbGFSXgC4R1o",
-                        //     "price": 1
-                        // })
                         floGlobals.smartContracts.forEach((sc, index) => {
                             floGlobals.scMap.set(`${sc.contractName}_${sc.contractAddress}`, index)
                         })
@@ -1355,7 +1341,7 @@
                                         `: ''}
                                         <div class="grid gap-0-5">
                                             <span id="participation_amount_label" class="label">Participation amount (${acceptingToken || tokenIdentification})</span>
-                                            <sm-input id="participation_amount" type="number" required></sm-input>
+                                            <sm-input id="participation_amount" type="number" step="0.00000001" min="0.00000001" required></sm-input>
                                         </div>
                                         <div class="grid gap-0-5">
                                             <span class="label">FLO private key</span>
@@ -2709,15 +2695,15 @@
                     return notify(`Insufficient balance. You have ${balance} ${acceptingToken || tokenIdentification}`, 'error')
                 }
                 getConfirmation('Participate', {
-                    message: `Are you sure you want to participate in ${contractName} with ${participationAmount} ${acceptingToken}?`,
+                    message: `Are you sure you want to participate in ${contractName} with ${participationAmount} ${acceptingToken || tokenIdentification}?`,
                     confirmText: 'Participate',
                 }).then(res => {
                     if (!res) return
-                    floBlockchainAPI.sendTx(participantPrivateKey, contractAddress, floGlobals.sendAmt, participantPrivateKey, floData).then(txid => {
-                        notify(`Participation successful. Txid: ${txid}`, 'success')
+                    floBlockchainAPI.sendTx(participantAddress, contractAddress, floGlobals.sendAmt, participantPrivateKey, floData).then(txid => {
+                        showTransactionResult(true, txid)
                         getRef('smart_contract_participate_form').reset()
                     }).catch(error => {
-                        notify(`Participation failed. ${error}`, 'error')
+                        showTransactionResult(false, error)
                     }).finally(() => {
                         buttonLoader('participate_button', false)
                     })
