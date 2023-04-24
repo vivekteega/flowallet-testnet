@@ -304,7 +304,9 @@ h3 {
 }
 
 .capitalize {
-  text-transform: capitalize;
+  &::first-letter {
+    text-transform: uppercase;
+  }
 }
 
 .sticky {
@@ -1122,6 +1124,7 @@ h3 {
     font-weight: 500;
     font-size: 0.8rem;
     border-radius: 0;
+    min-width: 10rem;
     &__indicator {
       width: 0.25rem;
       height: 50%;
