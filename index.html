@@ -14,9 +14,9 @@
     <script>
         /* Constants for FLO blockchain operations !!Make sure to add this at beginning!! */
         const floGlobals = {
-            blockchain: "FLO",
-            tokenApiUrl: 'https://ranchimallflo.duckdns.org',
-            // tokenURL: 'https://ranchimallflo-testing.duckdns.org/'
+            blockchain: "FLO_TEST",
+            tokenApiUrl: 'https://ranchimallflo-testing.duckdns.org',
+            tokenURL: 'https://ranchimallflo-testing.duckdns.org/'
         }
     </script>
     <script src="scripts/components.js" defer></script>
@@ -626,7 +626,7 @@
                         <span class="nav-item__title">Send</span>
                     </a>
                 </li>
-                <li class="hidden">
+                <li class="">
                     <a href="#/smartcontracts" class="nav-item interact" title='Send FLO data'>
                         <svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24"
                             height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
@@ -2670,7 +2670,7 @@
                             const userChoice = getRef('smart_contract_participate_form').querySelector('input[name="choice"]:checked').value
                             if (!userChoice)
                                 return notify('Please select a choice', 'error')
-                            floData = `send ${participationAmount} ${tokenIdentification} to ${contractName}@ to FLO address ${contractAddress} with the userchoice: ${userChoice}`
+                            floData = `send ${participationAmount} ${tokenIdentification}# to ${contractName}@ to FLO address ${contractAddress} with the userchoice: ${userChoice}`
                             break
                     }
                 }
