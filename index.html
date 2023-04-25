@@ -1914,7 +1914,7 @@
                         for (const token in floAddressBalances) {
                             ownedTokens.push(html`
                                 <li class="token-item">
-                                    <span>${token}: </span><span>${parseFloat(floAddressBalances[token].balance.toFixed(8))}</span>
+                                    <span>${token}: </span><span>${parseFloat((floAddressBalances[token].balance || 0).toFixed(8))}</span>
                                 </li>
                             `)
                         }
@@ -2285,8 +2285,8 @@
                 for (const token in floAddressBalances) {
                     ownedTokens.push(html`
                         <label class="token-balance">
-                            <input type="radio" name="sender-token" data-balance=${floAddressBalances[token].balance.toFixed(8)} value=${token}/>
-                            <span>${token} </span><b class="margin-left-auto">${parseFloat(floAddressBalances[token].balance.toFixed(8))}</b>
+                            <input type="radio" name="sender-token" data-balance=${(floAddressBalances[token].balance || 0).toFixed(8)} value=${token}/>
+                            <span>${token} </span><b class="margin-left-auto">${parseFloat((floAddressBalances[token].balance || 0).toFixed(8))}</b>
                         </label>
                     `)
                 }
@@ -2452,6 +2452,7 @@
                 floWebWallet.getBalance(floID),
                 fetchJSON(`https://ranchimallflo.duckdns.org/api/v1.0/getFloAddressBalance?floAddress=${floID}`)
             ]).then(([retrievedBal, { floAddressBalances }]) => {
+                console.log(floAddressBalances)
                 renderElem(getRef('balance_wrapper'), html`
                     <h4>Balance</h4>
                     <div class="flex gap-0-5 align-center space-between">
@@ -2461,7 +2462,7 @@
                     ${floAddressBalances ? Object.keys(floAddressBalances).map(token => html`
                         <div class="flex gap-0-5 align-center space-between">
                             <span>${token}:</span>
-                            <strong style="font-size: 1.1rem">${parseFloat(floAddressBalances[token].balance.toFixed(8))}</strong>
+                            <strong style="font-size: 1.1rem">${parseFloat((floAddressBalances[token].balance || 0).toFixed(8))}</strong>
                         </div>
                     `) : ''}
                 `)
