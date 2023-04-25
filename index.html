@@ -314,7 +314,12 @@
                                 <sm-chip value="all">All</sm-chip>
                             </sm-chips>
                         </div>
-                        <ul id="transactions_list" class="flex"></ul>
+                        <ul id="transactions_list" class="flex observe-empty-state"></ul>
+                        <div class="empty-state">
+                            <h4>
+                                Looks a bit empty here, no transactions yet.
+                            </h4>
+                        </div>
                     </div>
                 </section>
                 <div class="empty-state justify-center align-center h-100">
@@ -1250,7 +1255,12 @@
                     const floId = wildcards[0]
                     if (floId && floCrypto.validateFloID(floId)) {
                         render.transactions(floId).then(() => {
-                            scrollToTopObserver.observe(getRef('transactions_list').firstElementChild)
+                            if (getRef('transactions_list').firstElementChild) {
+                                scrollToTopObserver.observe(getRef('transactions_list').firstElementChild)
+                                getRef('filter_selector').classList.remove('hidden')
+                            } else {
+                                getRef('filter_selector').classList.add('hidden')
+                            }
                         })
                     } else {
                         notify('Invalid Flo ID', 'error')
