@@ -16,7 +16,8 @@
         const floGlobals = {
             blockchain: "FLO",
             tokenApiUrl: 'https://ranchimallflo.duckdns.org',
-            // tokenURL: 'https://ranchimallflo-testing.duckdns.org/'
+            // tokenURL: 'https://ranchimallflo-testing.duckdns.org/',
+            expirationDays: 60,
         }
     </script>
     <script src="scripts/components.js" defer></script>
@@ -1287,6 +1288,8 @@
                                         selectedSmartContract = getScDetails(scName, scAddress)
                                     const { price, contractName, contractAddress, acceptingToken, sellingToken, tokenIdentification, contractSubType } = selectedSmartContract
                                     history.replaceState(null, null, `#/smartcontracts/deposit?scName=${contractName}&scAddress=${contractAddress}`)
+                                    const defaultExpiration = new Date(new Date().getTime() + (floGlobals.expirationDays * 24 * 60 * 60 * 1000))
+                                        .toISOString().slice(0, -8);
                                     renderElem(getRef('smart_contract_deposit_form'), html`
                                         <div class="grid gap-0-5">
                                             <span class="label">Select smart contract</span>
@@ -1305,7 +1308,7 @@
                                         </div>
                                         <div class="grid gap-0-5">
                                             <span class="label">Expiration (Time after which unspent amount will be returned)</span>
-                                            <input id="deposit_expiration" type="datetime-local" required>
+                                            <input id="deposit_expiration" value=${defaultExpiration} type="datetime-local" required>
                                         </div>
                                         <div class="grid gap-0-5">
                                             <span class="label">FLO private key</span>
