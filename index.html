@@ -414,7 +414,7 @@
                     <div class="grid gap-1">
                         <h4>Actions</h4>
                         <ul id="smart_contract_actions" class="flex align-center flex-wrap gap-0-5">
-                            <li class="hidden">
+                            <li>
                                 <a class="button smart-contract-action" href="#/smartcontracts/deposit">
                                     <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px"
                                         viewBox="0 0 24 24" width="24px" fill="#000000">
@@ -1272,33 +1272,43 @@
                             case 'deposit': {
                                 const filteredSmartContracts = filterSmartContracts({ type: 'continuos-event' })
                                 if (filteredSmartContracts.length) {
+                                    let selectedSmartContract = filteredSmartContracts[0] || {}
+                                    if (scName && scAddress)
+                                        selectedSmartContract = getScDetails(scName, scAddress)
+                                    const { price, contractName, contractAddress, acceptingToken, sellingToken, tokenIdentification, contractSubType } = selectedSmartContract
+                                    history.replaceState(null, null, `#/smartcontracts/deposit?scName=${contractName}&scAddress=${contractAddress}`)
                                     renderElem(getRef('smart_contract_deposit_form'), html`
                                         <div class="grid gap-0-5">
+                                            <span class="label">Select smart contract</span>
+                                            <sm-select id="selected_smart_contract" onchange="handleSmartContractSelection('deposit')">
+                                                ${render.availableSmartContractOptions(filteredSmartContracts)}
+                                            </sm-select>
+                                        </div>
+                                        <div class="grid gap-0-3">
+                                            <h3>Deposit ${sellingToken} to get ${acceptingToken}</h3>
+                                            <p>Exchange rate: 1 ${sellingToken} = ${price} ${acceptingToken}</p>
+                                                
+                                        </div>
+                                        <div class="grid gap-0-5">
+                                            <span class="label">Amount (${sellingToken})</span>
+                                            <sm-input id="deposit_amount" type="number" type="number" step="0.00000001" min="0.00000001"></sm-input>
+                                        </div>
+                                        <div class="grid gap-0-5">
+                                            <span class="label">Expiration (Time after which unspent amount will be returned)</span>
+                                            <input id="deposit_expiration" type="datetime-local" required>
+                                        </div>
+                                        <div class="grid gap-0-5">
                                             <span class="label">FLO private key</span>
-                                            <sm-input class="password-field" type="password" error-text="Invalid private key" data-private-key required>
+                                            <sm-input id="depositor_private_key" class="password-field" type="password" error-text="Invalid private key" data-private-key required>
                                                 <label slot="right" class="interact">
-                                                    <input type="checkbox" class="hidden" readonly="" onchange="togglePrivateKeyVisibility(this)">
+                                                    <input type="checkbox" class="hidden" readonly onchange="togglePrivateKeyVisibility(this)">
                                                     <svg class="icon invisible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <title>Hide password</title> <path d="M0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0z" fill="none"></path> <path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"></path> </svg>
                                                     <svg class="icon visible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <title>Show password</title> <path d="M0 0h24v24H0z" fill="none"></path> <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"></path> </svg>
                                                 </label>
                                             </sm-input>
                                         </div>
-                                        <div class="grid gap-0-5">
-                                            <span class="label">Select smart contract</span>
-                                            <sm-select>
-                                                ${render.availableSmartContractOptions(filteredSmartContracts)}
-                                            </sm-select>
-                                        </div>
-                                        <div class="grid gap-0-5">
-                                            <span class="label">Amount</span>
-                                            <sm-input type="number" required></sm-input>
-                                        </div>
-                                        <div class="grid gap-0-5">
-                                            <span class="label">Expiration (Time after which unspent amount will be returned)</span>
-                                            <input type="datetime-local" required>
-                                        </div>
                                         <div class="multi-state-button">
-                                            <button class="button button--primary" type="submit" disabled>Deposit</button>
+                                            <button id="deposit_button" class="button button--primary" onclick=${deposit} type="submit" disabled>Deposit</button>
                                         </div>
                                     `)
                                 } else {
@@ -1342,7 +1352,7 @@
                                         ${contractSubType === 'tokenswap' ? html`
                                             <div class="grid gap-0-3">
                                                 <h3>Swap ${acceptingToken} with ${sellingToken}</h3>
-                                                <p>Exchange rate: 1 ${acceptingToken} = ${price} ${sellingToken}
+                                                <p>Exchange rate: 1 ${sellingToken} = ${price} ${acceptingToken}</p>
                                             </div>
                                         `: ''}
                                         <div class="grid gap-0-5">
@@ -2656,6 +2666,45 @@
             const [contractName, contractAddress] = selectedSmartContract.split('_')
             window.location.hash = `#/smartcontracts/${actionType}?scName=${contractName}&scAddress=${contractAddress}`
         }
+        function deposit() {
+            const selectedSmartContract = document.getElementById('selected_smart_contract').value
+            const [contractName, contractAddress] = (selectedSmartContract).split('_')
+            const { contractType, contractSubType, acceptingToken, sellingToken, tokenIdentification } = getScDetails(contractName, contractAddress)
+            const depositAmount = parseFloat(document.getElementById('deposit_amount').value.trim())
+            const depositExpiration = document.getElementById('deposit_expiration').value
+            const depositorPrivateKey = document.getElementById('depositor_private_key').value.trim()
+            const depositorAddress = floCrypto.getFloID(depositorPrivateKey)
+            const floData = `Deposit ${depositAmount} ${sellingToken}# to ${contractName}@ its FLO address being ${contractAddress}$ with deposit-conditions: (1) expiryTime= ${new Date(depositExpiration).toGMTString()}`
+            console.log(floData)
+            buttonLoader('deposit_button', true)
+            floTokenAPI.getBalance(depositorAddress, sellingToken).then(balance => {
+                if (balance < depositAmount) {
+                    buttonLoader('deposit_button', false)
+                    return notify(`Insufficient balance. You have ${balance} ${sellingToken}`, 'error')
+                }
+                getConfirmation('Deposit', {
+                    message: `Are you sure you want to deposit ${depositAmount} ${sellingToken} in ${contractName}?`,
+                    confirmText: 'Deposit',
+                }).then(res => {
+                    if (!res) return
+                    floBlockchainAPI.sendTx(depositorAddress, contractAddress, floGlobals.sendAmt, depositorPrivateKey, floData).then(txid => {
+                        showTransactionResult(true, txid)
+                        getRef('smart_contract_deposit_form').reset()
+                        document.getElementById('deposit_button').disabled = true
+                    }).catch(error => {
+                        showTransactionResult(false, error)
+                        console.error(error)
+
+                    }).finally(() => {
+                        buttonLoader('deposit_button', false)
+                    })
+                })
+            }).catch(error => {
+                notify(`Error getting balance.`, 'error')
+                buttonLoader('deposit_button', false)
+                console.error(error)
+            })
+        }
 
         function participate(e) {
             const selectedSmartContract = document.getElementById('selected_smart_contract').value
@@ -2711,13 +2760,15 @@
                         document.getElementById('participate_button').disabled = true
                     }).catch(error => {
                         showTransactionResult(false, error)
+                        console.error(error)
                     }).finally(() => {
                         buttonLoader('participate_button', false)
                     })
                 })
             }).catch(error => {
-                notify(`Error getting balance. ${error}`, 'error')
+                notify(`Error getting balance.`, 'error')
                 buttonLoader('participate_button', false)
+                console.error(error)
             })
         }
 
@@ -2745,6 +2796,7 @@
                     document.getElementById('update_price_button').disabled = true
                 }).catch((error) => {
                     showTransactionResult(false, error)
+                    console.error(error)
                 }).finally(() => {
                     buttonLoader(e.target.closest('button'), false)
                 })
