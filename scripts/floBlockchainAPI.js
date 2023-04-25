@@ -6,8 +6,8 @@
     const DEFAULT = {
         blockchain: floGlobals.blockchain,
         apiURL: {
-            FLO: ['https://flosight.duckdns.org/', 'https://flosight.ranchimall.net/'],
-            FLO_TEST: ['https://testnet-flosight.duckdns.org', 'https://testnet.flocha.in/']
+            FLO: ['https://flosight.ranchimall.net/'],
+            FLO_TEST: ['https://flosight-testnet.ranchimall.net/']
         },
         sendAmt: 0.001,
         fee: 0.0005,
