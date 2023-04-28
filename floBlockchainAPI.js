@@ -1,4 +1,4 @@
-(function (EXPORTS) { //floBlockchainAPI v2.5.4
+(function (EXPORTS) { //floBlockchainAPI v2.5.5
     /* FLO Blockchain Operator to send/receive data from blockchain using API calls*/
     'use strict';
     const floBlockchainAPI = EXPORTS;
@@ -895,7 +895,7 @@
 
             //fetch options
             let fetch_options = {};
-            fetch_options.mempool = isUndefined(options.mempool) ? 'false' : options.mempool; //DEFAULT: ignore unconfirmed tx
+            fetch_options.mempool = isUndefined(options.mempool) ? false : options.mempool; //DEFAULT: ignore unconfirmed tx
             if (!isUndefined(options.after) || !isUndefined(options.before)) {
                 if (!isUndefined(options.ignoreOld)) //Backward support
                     return reject("Invalid options: cannot use after/before and ignoreOld in same query");
@@ -956,6 +956,81 @@
                 else
                     result.data = filteredData
                 resolve(result);
+
+            }).catch(error => reject(error))
+        })
+    }
+
+    /*Get the latest flo Data that match the caseFn from txs of given Address
+    caseFn: (function) flodata => return bool value
+    options can be used to filter data
+    after       : query after the given txid
+    before      : query before the given txid
+    mempool     : query mempool tx or not (options same as readAllTx, DEFAULT=false: ignore unconfirmed tx)
+    sentOnly    : filters only sent data
+    receivedOnly: filters only received data
+    tx          : (boolean) resolve tx data or not (resolves an Array of Object with tx details)
+    sender      : flo-id(s) of sender
+    receiver    : flo-id(s) of receiver
+    */
+    const getLatestData = floBlockchainAPI.getLatestData = function (addr, caseFn, options = {}) {
+        return new Promise((resolve, reject) => {
+            //fetch options
+            let fetch_options = { latest: true };
+            fetch_options.mempool = isUndefined(options.mempool) ? false : options.mempool; //DEFAULT: ignore unconfirmed tx
+            if (!isUndefined(options.after)) fetch_options.after = options.after;
+            if (!isUndefined(options.before)) fetch_options.before = options.before;
+
+            readTxs(addr, fetch_options).then(response => {
+
+                if (typeof options.senders === "string") options.senders = [options.senders];
+                if (typeof options.receivers === "string") options.receivers = [options.receivers];
+
+                var item = response.items.find(tx => {
+                    if (!tx.confirmations)  //unconfirmed transactions: this should not happen as we send mempool=false in API query
+                        return false;
+
+                    if (options.sentOnly && !tx.vin.some(vin => vin.addr === addr))
+                        return false;
+                    else if (Array.isArray(options.senders) && !tx.vin.some(vin => options.senders.includes(vin.addr)))
+                        return false;
+
+                    if (options.receivedOnly && !tx.vout.some(vout => vout.scriptPubKey.addresses[0] === addr))
+                        return false;
+                    else if (Array.isArray(options.receivers) && !tx.vout.some(vout => options.receivers.includes(vout.scriptPubKey.addresses[0])))
+                        return false;
+
+                    return caseFn(tx.floData) ? true : false;   //return only bool for find fn
+                });
+
+                //if item found, then resolve the result
+                if (!isUndefined(item)) {
+                    const result = { lastKey: response.lastItem };
+                    if (options.tx) {
+                        result.item = {
+                            txid: tx.txid,
+                            time: tx.time,
+                            blockheight: tx.blockheight,
+                            senders: new Set(tx.vin.map(v => v.addr)),
+                            receivers: new Set(tx.vout.map(v => v.scriptPubKey.addresses[0])),
+                            data: tx.floData
+                        }
+                    } else
+                        result.data = tx.floData;
+                    return resolve(result);
+                }
+                //else if address needs chain query
+                else if (response.incomplete) {
+                    let next_options = Object.assign({}, options);
+                    options.before = response.initItem; //this fn uses latest option, so using before to chain query
+                    getLatestData(addr, caseFn, next_options).then(r => {
+                        r.lastKey = response.lastItem;  //update last key as it should be the newest tx
+                        resolve(r);
+                    }).catch(error => reject(error))
+                }
+                //no data match the caseFn, resolve just the lastKey
+                else
+                    resolve({ lastKey: response.lastItem });
 
             }).catch(error => reject(error))
         })
