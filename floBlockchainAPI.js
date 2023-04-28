@@ -1,4 +1,4 @@
-(function (EXPORTS) { //floBlockchainAPI v2.5.2
+(function (EXPORTS) { //floBlockchainAPI v2.5.3
     /* FLO Blockchain Operator to send/receive data from blockchain using API calls*/
     'use strict';
     const floBlockchainAPI = EXPORTS;
@@ -787,11 +787,38 @@
         })
     }
 
-    floBlockchainAPI.getTx = function (txid) {
+    const getTx = floBlockchainAPI.getTx = function (txid) {
         return new Promise((resolve, reject) => {
             promisedAPI(`api/tx/${txid}`)
                 .then(response => resolve(response))
                 .catch(error => reject(error))
+        })
+    }
+
+    /**Wait for the given txid to get confirmation in blockchain
+     * @param  {string} txid of the transaction to wait for
+     * @param  {int} max_retry: maximum number of retries before exiting wait. negative number = Infinite retries  (DEFAULT: -1 ie, infinite retries)
+     * @param  {Array} retry_timeout: time (seconds) between retries (DEFAULT: 20 seconds)
+     * @return {Promise} resolves when tx gets confirmation
+     */
+    const waitForConfirmation = floBlockchainAPI.waitForConfirmation = function (txid, max_retry = -1, retry_timeout = 20) {
+        return new Promise((resolve, reject) => {
+            setTimeout(function () {
+                getTx(txid).then(tx => {
+                    if (!tx)
+                        return reject("Transaction not found");
+                    if (tx.confirmations)
+                        return resolve(tx);
+                    else if (max_retry === 0)    //no more retries
+                        return reject("Waiting timeout: tx still not confirmed");
+                    else {
+                        max_retry = max_retry < 0 ? -1 : max_retry - 1; //decrease retry count (unless infinite retries)
+                        waitForConfirmation(txid, max_retry, retry_timeout)
+                            .then(result => resolve(result))
+                            .catch(error => reject(error))
+                    }
+                }).catch(error => reject(error))
+            }, retry_timeout * 1000)
         })
     }
 
