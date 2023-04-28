@@ -1,4 +1,4 @@
-(function (EXPORTS) { //floBlockchainAPI v2.5.3
+(function (EXPORTS) { //floBlockchainAPI v2.5.4
     /* FLO Blockchain Operator to send/receive data from blockchain using API calls*/
     'use strict';
     const floBlockchainAPI = EXPORTS;
@@ -830,14 +830,19 @@
             let api = `api/addrs/${addr}/txs`;
             //API options
             let api_options = [];
-            if (!isUndefined(options.after))
-                api_options.push(`after=${options.after}`);
-            else {
+            if (!isUndefined(options.after) || !isUndefined(options.before)) {
+                if (!isUndefined(options.after))
+                    api_options.push(`after=${options.after}`);
+                if (!isUndefined(options.before))
+                    api_options.push(`before=${options.before}`);
+            } else {
                 if (!isUndefined(options.from))
                     api_options.push(`from=${options.from}`);
                 if (!isUndefined(options.to))
                     api_options.push(`to=${options.to}`);
             }
+            if (!isUndefined(options.latest))
+                api_options.push('latest');
             if (!isUndefined(options.mempool))
                 api_options.push(`mempool=${options.mempool}`)
             if (api_options.length)
@@ -854,7 +859,10 @@
             readTxs(addr, options).then(response => {
                 if (response.incomplete) {
                     let next_options = Object.assign({}, options);
-                    next_options.after = response.lastItem;
+                    if (options.latest)
+                        next_options.before = response.initItem; //update before for chain query (latest 1st)
+                    else
+                        next_options.after = response.lastItem; //update after for chain query (oldest 1st)
                     readAllTxs(addr, next_options).then(r => {
                         r.items = r.items.concat(response.items);   //latest tx are 1st in array
                         resolve(r);
@@ -871,6 +879,7 @@
     /*Read flo Data from txs of given Address
     options can be used to filter data
     after       : query after the given txid
+    before      : query before the given txid
     mempool     : query mempool tx or not (options same as readAllTx, DEFAULT=false: ignore unconfirmed tx)
     ignoreOld   : ignore old txs (deprecated: support for backward compatibility only, cannot be used with 'after')
     sentOnly    : filters only sent data
@@ -887,15 +896,16 @@
             //fetch options
             let fetch_options = {};
             fetch_options.mempool = isUndefined(options.mempool) ? 'false' : options.mempool; //DEFAULT: ignore unconfirmed tx
-            if (!isUndefined(options.after)) {
+            if (!isUndefined(options.after) || !isUndefined(options.before)) {
                 if (!isUndefined(options.ignoreOld)) //Backward support
-                    return reject("Invalid options: cannot use after and ignoreOld in same query");
-                else
-                    fetch_options.after = options.after;
+                    return reject("Invalid options: cannot use after/before and ignoreOld in same query");
+                //use passed after and/or before options (options remain undefined if not passed)
+                fetch_options.after = options.after;
+                fetch_options.before = options.before;
             }
             readAllTxs(addr, fetch_options).then(response => {
 
-                if (Number.isInteger(options.ignoreOld))  //backward support, cannot be used with options.after
+                if (Number.isInteger(options.ignoreOld))  //backward support, cannot be used with options.after or options.before
                     response.items.splice(-options.ignoreOld);   //negative to count from end of the array
 
                 if (typeof options.senders === "string") options.senders = [options.senders];
