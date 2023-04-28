@@ -1052,6 +1052,39 @@ h3 {
   }
 }
 
+.payee-address-wrapper {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.5rem;
+  &:first-of-type {
+    grid-template-areas: "address" "share";
+  }
+  &:not(:first-of-type) {
+    grid-template-areas: "address address" "share button";
+  }
+  .payee-address {
+    grid-area: address;
+  }
+  .payee-share {
+    grid-area: share;
+  }
+  .icon-only {
+    grid-area: button;
+  }
+  .icon-only {
+    height: 3.18rem;
+  }
+}
+.choice-wrapper {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.5rem;
+  .icon-only {
+    aspect-ratio: 1/1;
+    height: 3.18rem;
+  }
+}
+
 @media screen and (max-width: 40rem) {
   #main_navbar {
     &.hide-away {
@@ -1167,6 +1200,16 @@ h3 {
       grid-template-columns: 1fr 1.5fr;
       align-items: flex-start;
       width: min(50rem, 100%);
+    }
+  }
+  .payee-address-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 8rem 3rem;
+    &:first-of-type {
+      grid-template-areas: "address share share";
+    }
+    &:not(:first-of-type) {
+      grid-template-areas: "address share button";
     }
   }
 }

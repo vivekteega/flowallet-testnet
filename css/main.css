@@ -1121,6 +1121,40 @@ h3 {
   fill: var(--accent-color);
 }
 
+.payee-address-wrapper {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.5rem;
+}
+.payee-address-wrapper:first-of-type {
+  grid-template-areas: "address" "share";
+}
+.payee-address-wrapper:not(:first-of-type) {
+  grid-template-areas: "address address" "share button";
+}
+.payee-address-wrapper .payee-address {
+  grid-area: address;
+}
+.payee-address-wrapper .payee-share {
+  grid-area: share;
+}
+.payee-address-wrapper .icon-only {
+  grid-area: button;
+}
+.payee-address-wrapper .icon-only {
+  height: 3.18rem;
+}
+
+.choice-wrapper {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.5rem;
+}
+.choice-wrapper .icon-only {
+  aspect-ratio: 1/1;
+  height: 3.18rem;
+}
+
 @media screen and (max-width: 40rem) {
   #main_navbar.hide-away {
     bottom: 0;
@@ -1225,6 +1259,16 @@ h3 {
     grid-template-columns: 1fr 1.5fr;
     align-items: flex-start;
     width: min(50rem, 100%);
+  }
+  .payee-address-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 8rem 3rem;
+  }
+  .payee-address-wrapper:first-of-type {
+    grid-template-areas: "address share share";
+  }
+  .payee-address-wrapper:not(:first-of-type) {
+    grid-template-areas: "address share button";
   }
 }
 @media screen and (min-width: 64rem) {
