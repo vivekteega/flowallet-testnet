@@ -1,4 +1,4 @@
-(function (EXPORTS) { //floBlockchainAPI v2.5.1
+(function (EXPORTS) { //floBlockchainAPI v2.5.2
     /* FLO Blockchain Operator to send/receive data from blockchain using API calls*/
     'use strict';
     const floBlockchainAPI = EXPORTS;
@@ -269,6 +269,56 @@
                 broadcastTx(signedTxHash)
                     .then(txid => resolve(txid))
                     .catch(error => reject(error))
+            }).catch(error => reject(error))
+        })
+    }
+
+    //split sufficient UTXOs of a given floID for a parallel sending
+    floBlockchainAPI.splitUTXOs = function (floID, privKey, count, floData = '') {
+        return new Promise((resolve, reject) => {
+            if (!floCrypto.validateFloID(floID, true))
+                return reject(`Invalid floID`);
+            if (!floCrypto.verifyPrivKey(privKey, floID))
+                return reject("Invalid Private Key");
+            if (!floCrypto.validateASCII(floData))
+                return reject("Invalid FLO_Data: only printable ASCII characters are allowed");
+            var fee = DEFAULT.fee;
+            var splitAmt = DEFAULT.sendAmt + fee;
+            var totalAmt = splitAmt * count;
+            getBalance(floID).then(balance => {
+                var fee = DEFAULT.fee;
+                if (balance < totalAmt + fee)
+                    return reject("Insufficient FLO balance!");
+                //get unconfirmed tx list
+                getUnconfirmedSpent(senderAddr).then(unconfirmedSpent => {
+                    getUTXOs(senderAddr).then(utxos => {
+                        var trx = bitjs.transaction();
+                        var utxoAmt = 0.0;
+                        for (let i = utxos.length - 1; (i >= 0) && (utxoAmt < totalAmt + fee); i--) {
+                            //use only utxos with confirmations (strict_utxo mode)
+                            if (utxos[i].confirmations || !strict_utxo) {
+                                if (utxos[i].txid in unconfirmedSpent && unconfirmedSpent[utxos[i].txid].includes(utxos[i].vout))
+                                    continue; //A transaction has already used the utxo, but is unconfirmed.
+                                trx.addinput(utxos[i].txid, utxos[i].vout, utxos[i].scriptPubKey);
+                                utxoAmt += utxos[i].amount;
+                            };
+                        }
+                        if (utxoAmt < totalAmt + fee)
+                            reject("Insufficient FLO: Some UTXOs are unconfirmed");
+                        else {
+                            for (let i = 0; i < count; i++)
+                                trx.addoutput(floID, splitAmt);
+                            var change = utxoAmt - totalAmt - fee;
+                            if (change > DEFAULT.minChangeAmt)
+                                trx.addoutput(floID, change);
+                            trx.addflodata(floData.replace(/\n/g, ' '));
+                            var signedTxHash = trx.sign(privKey, 1);
+                            broadcastTx(signedTxHash)
+                                .then(txid => resolve(txid))
+                                .catch(error => reject(error))
+                        }
+                    }).catch(error => reject(error))
+                }).catch(error => reject(error))
             }).catch(error => reject(error))
         })
     }
