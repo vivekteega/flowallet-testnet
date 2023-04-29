@@ -2951,7 +2951,7 @@
             }
         }
 
-        function createSmartContract() {
+        async function createSmartContract() {
             const { type, subtype } = pagesData.params
             const contractName = document.getElementById('contract_name').value.trim().replace(/\s+/g, '-')
             const creatorPrivateKey = document.getElementById('contract_creator_private_key').value.trim()
@@ -2983,26 +2983,31 @@
                                     payeeAddressesShare[payeeAddress] = payeeShare
                             })
                             // check if payeeAddresses total share is equal to 100 else add remainder
-                            const payeeAddresses = Object.keys(payeeAddressesShare)
-                            const totalShare = payeeAddresses.reduce((acc, payeeAddress) => acc + payeeAddressesShare[payeeAddress], 0)
-                            if (totalShare !== 100) {
-                                getConfirmation('Total share is not equal to 100', {
+                            const payeeAddressesArray = Object.keys(payeeAddressesShare)
+                            const totalShare = payeeAddressesArray.reduce((acc, payeeAddress) => acc + payeeAddressesShare[payeeAddress], 0)
+                            if (totalShare < 100) {
+                                console.log('total share is not equal to 100')
+                                const res = await getConfirmation('Total share is not equal to 100', {
                                     message: `Total share is not equal to 100. Do you want to add remainder to the last payee address?`,
                                     confirmText: 'Add remainder',
                                     cancelText: 'Cancel'
-                                }).then((res) => {
-                                    if (!res) return
-                                    const remainder = 100 - totalShare
-                                    const lastPayeeAddress = payeeAddresses[payeeAddresses.length - 1]
-                                    payeeAddressesShare[lastPayeeAddress] += remainder
-                                    const lastPayeeInput = document.getElementById('payee_container').lastElementChild.querySelector('.payee-share')
-                                    if (lastPayeeInput) {
-                                        lastPayeeInput.value = payeeAddressesShare[lastPayeeAddress]
-                                        lastPayeeInput.scrollIntoView({ behavior: 'smooth', block: 'center' })
-                                    }
                                 })
+                                if (!res) return
+                                const remainder = 100 - totalShare
+                                const lastPayeeAddress = payeeAddressesArray[payeeAddressesArray.length - 1]
+                                payeeAddressesShare[lastPayeeAddress] += remainder
+                                const lastPayeeInput = document.getElementById('payee_container').lastElementChild.querySelector('.payee-share')
+                                if (lastPayeeInput) {
+                                    lastPayeeInput.value = payeeAddressesShare[lastPayeeAddress]
+                                    lastPayeeInput.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                                }
+                                return
+                            } else if (totalShare > 100) {
+                                return notify(`Total share cannot be greater than 100`, 'error')
                             }
-                            floData = `Create a smart contract of the name ${contractName}@ of the type one-time-event* using asset ${contractAsset}# at the FLO address ${creatorAddress}$ with contract-conditions: (1) expiryTime= ${new Date(contractExpiration).toString()} (2) payeeAddress= ${JSON.stringify(payeeAddressesShare)} ${contractParticipationAmount ? `(3) contractamount = ${contractParticipationAmount}` : ''} ${contractMinSubAmount ? `(4) minimumsubscriptionamount  = ${contractMinSubAmount}` : ''} ${contractMaxSubAmount ? `(5) maximumsubscriptionamount  = ${contractMaxSubAmount}` : ''} end-contract-conditions`
+                            const payeeAddressesShareString = Object.entries(payeeAddressesShare).map(([payeeAddress, payeeShare]) => `${payeeAddress}:${payeeShare}`).join(':')
+                            console.log(payeeAddressesShareString)
+                            floData = `Create a smart contract of the name ${contractName}@ of the type one-time-event* using asset ${contractAsset}# at the FLO address ${creatorAddress}$ with contract-conditions: (1) expiryTime= ${new Date(contractExpiration).toString()} (2) payeeAddress= ${payeeAddressesShareString} ${contractParticipationAmount ? `(3) contractamount = ${contractParticipationAmount}` : ''} ${contractMinSubAmount ? `(4) minimumsubscriptionamount = ${contractMinSubAmount}` : ''} ${contractMaxSubAmount ? `(5) maximumsubscriptionamount = ${contractMaxSubAmount}` : ''} end-contract-conditions`
                             if (floData.length > 1040) return notify(`Too many payee addresses! remove some and try again`, 'error')
                             confirmationMessage = `Name: ${contractName} \nType: One-time event \nSubtype: Time trigger \nAsset: ${contractAsset} \nExpiration: ${new Date(contractExpiration).toString()} \nPayee addresses: ${Object.entries(payeeAddressesShare).reduce((str, [address, share]) => `${address}: ${share}%`, '')} \nParticipation amount: ${contractParticipationAmount} ${contractAsset} \nMin subscription amount: ${contractMinSubAmount} ${contractAsset} \nMax subscription amount: ${contractMaxSubAmount} ${contractAsset}`
                             break;
@@ -3013,7 +3018,7 @@
                                 if (userChoiceValue !== '')
                                     userChoices.add(userChoiceValue)
                             })
-                            floData = `Create a smart contract of the name ${contractName}@ of the type one-time-event* using asset ${contractAsset}# at the FLO address ${creatorAddress}$ with contract-conditions:(1) expiryTime= ${new Date(contractExpiration).toString()}  (2) userchoices= ${[...userChoices].join(' | ')} ${contractParticipationAmount ? `(3) contractamount = ${contractParticipationAmount}` : ''} ${contractMinSubAmount ? `(4) minimumsubscriptionamount  = ${contractMinSubAmount}` : ''} ${contractMaxSubAmount ? `(5) maximumsubscriptionamount  = ${contractMaxSubAmount}` : ''} end-contract-conditions`
+                            floData = `Create a smart contract of the name ${contractName}@ of the type one-time-event* using asset ${contractAsset}# at the FLO address ${creatorAddress}$ with contract-conditions:(1) expiryTime= ${new Date(contractExpiration).toString()}  (2) userchoices= ${[...userChoices].join(' | ')} ${contractParticipationAmount ? `(3) contractamount = ${contractParticipationAmount}` : ''} ${contractMinSubAmount ? `(4) minimumsubscriptionamount = ${contractMinSubAmount}` : ''} ${contractMaxSubAmount ? `(5) maximumsubscriptionamount = ${contractMaxSubAmount}` : ''} end-contract-conditions`
                             if (floData.length > 1040) return notify(`Too many participant choices! remove some and try again`, 'error')
                             confirmationMessage = `Name: ${contractName} \nType: One-time event \nSubtype: External trigger \nAsset: ${contractAsset} \nExpiration: ${new Date(contractExpiration).toString()} \nParticipant choices: ${[...userChoices].join(' | ')} \nParticipation amount: ${contractParticipationAmount} ${contractAsset} \nMin subscription amount: ${contractMinSubAmount} ${contractAsset} \nMax subscription amount: ${contractMaxSubAmount} ${contractAsset}`
                             break;
