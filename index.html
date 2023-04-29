@@ -14,9 +14,9 @@
     <script>
         /* Constants for FLO blockchain operations !!Make sure to add this at beginning!! */
         const floGlobals = {
-            blockchain: "FLO",
-            tokenApiUrl: 'https://ranchimallflo.duckdns.org',
-            // tokenURL: 'https://ranchimallflo-testing.duckdns.org/',
+            blockchain: "FLO_TEST",
+            tokenApiUrl: 'https://ranchimallflo-testing.duckdns.org',
+            tokenURL: 'https://ranchimallflo-testing.duckdns.org/',
             expirationDays: 60,
         }
     </script>
@@ -1941,7 +1941,7 @@
                     scrollToTopObserver.disconnect()
                     // retrieve tokens and render them
                     getRef('tokens').classList.add('hidden')
-                    fetchJSON(`https://ranchimallflo.duckdns.org/api/v1.0/getFloAddressBalance?floAddress=${queriedFloId}`).then(({ floAddressBalances }) => {
+                    fetchJSON(`${floGlobals.tokenApiUrl}/api/v2/floAddressBalance/${queriedFloId}`).then(({ floAddressBalances }) => {
                         let ownedTokens = []
                         for (const token in floAddressBalances) {
                             ownedTokens.push(html`
@@ -2335,7 +2335,7 @@
             const senderFloAddr = floCrypto.getFloID(senderPrivateKey)
             Promise.all([
                 floWebWallet.getBalance(senderFloAddr),
-                fetchJSON(`https://ranchimallflo.duckdns.org/api/v1.0/getFloAddressBalance?floAddress=${senderFloAddr}`)
+                fetchJSON(`${floGlobals.tokenApiUrl}/api/v2/floAddressBalance/${senderFloAddr}`)
             ]).then(([retrievedBal, { floAddressBalances }]) => {
                 renderBalance(parseFloat(retrievedBal))
                 let ownedTokens = []
@@ -2507,7 +2507,7 @@
             buttonLoader(getRef('check_balance_button'), true)
             Promise.all([
                 floWebWallet.getBalance(floID),
-                fetchJSON(`https://ranchimallflo.duckdns.org/api/v1.0/getFloAddressBalance?floAddress=${floID}`)
+                fetchJSON(`${floGlobals.tokenApiUrl}/api/v2/floAddressBalance/${floID}`)
             ]).then(([retrievedBal, { floAddressBalances }]) => {
                 console.log(floAddressBalances)
                 renderElem(getRef('balance_wrapper'), html`
