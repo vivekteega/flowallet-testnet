@@ -2083,15 +2083,15 @@
                             </div>
                             <div class="grid gap-0-5">
                                 <span class="label">Participation amount (optional)</span>
-                                <sm-input id="contract_participation_amount" type="number"> </sm-input>
+                                <sm-input id="contract_participation_amount" type="number" step="0.00000001" min="0.00000001"> </sm-input>
                             </div>
                             <div class="grid gap-0-5">
                                 <span class="label">Min. subscription amount (optional)</span>
-                                <sm-input id="contract_min_sub_amount" type="number"> </sm-input>
+                                <sm-input id="contract_min_sub_amount" type="number" step="0.00000001" min="0.00000001"> </sm-input>
                             </div>
                             <div class="grid gap-0-5">
                                 <span class="label">Max. subscription amount (optional)</span>
-                                <sm-input id="contract_max_sub_amount" type="number"> </sm-input>
+                                <sm-input id="contract_max_sub_amount" type="number" step="0.00000001" min="0.00000001"> </sm-input>
                             </div>
                         ` : html`
                             <fieldset class="grid gap-0-5" onchange=${handlePriceTypeChange}>
