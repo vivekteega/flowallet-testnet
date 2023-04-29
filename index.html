@@ -3055,7 +3055,7 @@
                         description: html`Check details about your smart contract <a href=${`https://ranchimall.github.io/floscout/#/contract/${contractName}-${creatorAddress}`} target="_blank" rel="noopener noreferrer">here</a>.
                         <br> It may take some time for the smart contract to be created.`
                     })
-                    getRef('smart_contract_form').reset()
+                    getRef('smart_contract_creation_form').reset()
                     document.getElementById('create_contract_button').disabled = true
                 }).catch((error) => {
                     showTransactionResult(false, error)
