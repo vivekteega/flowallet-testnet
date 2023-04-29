@@ -2097,7 +2097,7 @@
                             <fieldset class="grid gap-0-5" onchange=${handlePriceTypeChange}>
                                 <legend>Price type</legend>
                                 <label class="flex align-center">
-                                    <input type="radio" name="price-type" value="static" checked>
+                                    <input type="radio" name="price-type" value="predetermined" checked>
                                     <span>Static</span>
                                 </label>
                                 <label class="flex align-center">
@@ -2936,7 +2936,7 @@
 
         function handlePriceTypeChange(e) {
             switch (e.target.value) {
-                case 'static':
+                case 'predetermined':
                     e.target.closest('sm-form').querySelector('.oracle-address-wrapper')?.remove()
                     break;
                 case 'dynamic':
