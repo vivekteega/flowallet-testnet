@@ -2809,7 +2809,7 @@
                     switch (contractSubType) {
                         case 'time-trigger':
                             floData = `send ${participationAmount} ${tokenIdentification}# to ${contractName}@`
-                            description = `You have participated in the event. Check out details <a href=${`https://ranchimall.github.io/floscout/#/contract/${contractName}-${contractAddress}`} target='_blank'>here</a>`
+                            description = html`You have participated in the event. Check out details <a href=${`https://ranchimall.github.io/floscout/#/contract/${contractName}-${contractAddress}`} target='_blank'>here</a>`
                             break
                         case 'external-trigger':
                             const userChoice = getRef('smart_contract_participate_form').querySelector('input[name="choice"]:checked').value
