@@ -1107,7 +1107,7 @@
         }
 
         function buttonLoader(id, show) {
-            const button = typeof id === 'string' ? getRef(id) : id;
+            const button = typeof id === 'string' ? document.getElementById(id) : id;
             button.disabled = show;
             const animOptions = {
                 duration: 200,
