@@ -1,4 +1,4 @@
-(function (EXPORTS) { //floDapps v2.3.4
+(function (EXPORTS) { //floDapps v2.3.5
     /* General functions for FLO Dapps*/
     'use strict';
     const floDapps = EXPORTS;
@@ -144,10 +144,13 @@
         }
     });
 
-    var subAdmins, settings
+    var subAdmins, trustedIDs, settings;
     Object.defineProperties(floGlobals, {
         subAdmins: {
             get: () => subAdmins
+        },
+        trustedIDs: {
+            get: () => trustedIDs
         },
         settings: {
             get: () => settings
@@ -317,9 +320,12 @@
                     compactIDB.writeData("lastTx", result.totalTxs, `${DEFAULT.application}|${DEFAULT.adminID}`, DEFAULT.root);
                     compactIDB.readAllData("subAdmins").then(result => {
                         subAdmins = Object.keys(result);
-                        compactIDB.readAllData("settings").then(result => {
-                            settings = result;
-                            resolve("Read app configuration from blockchain");
+                        compactIDB.readAllData("trustedIDs").then(result => {
+                            trustedIDs = Object.keys(result);
+                            compactIDB.readAllData("settings").then(result => {
+                                settings = result;
+                                resolve("Read app configuration from blockchain");
+                            })
                         })
                     })
                 })
