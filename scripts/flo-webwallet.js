@@ -110,27 +110,6 @@
         })
     }
 
-    function waitForConfirmation(txid, max_retry = -1, retry_timeout = 20) {
-        return new Promise((resolve, reject) => {
-            setTimeout(function () {
-                floBlockchainAPI.getTx(txid).then(tx => {
-                    if (!tx)
-                        return reject("Transaction not found");
-                    if (tx.confirmations)
-                        return resolve(tx);
-                    else if (max_retry === 0)    //no more retries
-                        return reject(false);
-                    else {
-                        max_retry = max_retry < 0 ? -1 : max_retry - 1; //decrease retry count (unless infinite retries)
-                        waitForConfirmation(txid, max_retry, retry_timeout)
-                            .then(result => resolve(result))
-                            .catch(error => reject(error))
-                    }
-                }).catch(error => reject(error))
-            }, retry_timeout * 1000)
-        })
-    }
-
     function sendRawTransaction(receiver, utxo, vout, scriptPubKey, data, wif) {
         var trx = bitjs.transaction();
         trx.addinput(utxo, vout, scriptPubKey)
@@ -162,31 +141,39 @@
             else if (invalidAmount.length)
                 return reject(`Invalid amounts: ${invalidAmount}`);
 
-            //check for token balance
-            floTokenAPI.getBalance(sender, token).then(token_balance => {
-                let total_token_amout = amount_list.reduce((a, e) => a + e, 0);
-                if (total_token_amout > token_balance)
-                    return reject(`Insufficient ${token}# balance`);
+            if (receiver_list.length == 0)
+                return reject("Receivers cannot be empty");
 
-                //split utxos
-                floBlockchainAPI.splitUTXOs(sender, privKey, receiver_list.length).then(split_txid => {
-                    //wait for the split utxo to get confirmation
-                    waitForConfirmation(split_txid).then(split_tx => {
-                        //send tokens using the split-utxo
-                        var scriptPubKey = split_tx.vout[0].scriptPubKey.hex;
-                        let promises = [];
-                        for (let i in receiver_list)
-                            promises.push(sendTokens_raw(privKey, receiver_list[i], token, amount_list[i], split_txid, i, scriptPubKey));
-                        Promise.allSettled(promises).then(results => {
-                            let success = Object.fromEntries(results.filter(r => r.status == 'fulfilled').map(r => r.value));
-                            let failed = Object.fromEntries(results.filter(r => r.status == 'rejected').map(r => r.reason));
-                            resolve(success, failed);
-                        })
+            if (receiver_list.length == 1) {
+                let receiver = receiver_list[0], amount = amount_list[0];
+                floTokenAPI.sendToken(privKey, amount, receiver, "", token)
+                    .then(txid => resolve({ success: { [receiver]: txid } }))
+                    .catch(error => reject(error))
+            } else {
+                //check for token balance
+                floTokenAPI.getBalance(sender, token).then(token_balance => {
+                    let total_token_amout = amount_list.reduce((a, e) => a + e, 0);
+                    if (total_token_amout > token_balance)
+                        return reject(`Insufficient ${token}# balance`);
+
+                    //split utxos
+                    floBlockchainAPI.splitUTXOs(sender, privKey, receiver_list.length).then(split_txid => {
+                        //wait for the split utxo to get confirmation
+                        floBlockchainAPI.waitForConfirmation(split_txid).then(split_tx => {
+                            //send tokens using the split-utxo
+                            var scriptPubKey = split_tx.vout[0].scriptPubKey.hex;
+                            let promises = [];
+                            for (let i in receiver_list)
+                                promises.push(sendTokens_raw(privKey, receiver_list[i], token, amount_list[i], split_txid, i, scriptPubKey));
+                            Promise.allSettled(promises).then(results => {
+                                let success = Object.fromEntries(results.filter(r => r.status == 'fulfilled').map(r => r.value));
+                                let failed = Object.fromEntries(results.filter(r => r.status == 'rejected').map(r => r.reason));
+                                resolve({ success, failed });
+                            })
+                        }).catch(error => reject(error))
                     }).catch(error => reject(error))
                 }).catch(error => reject(error))
-
-            }).catch(error => reject(error))
-
+            }
 
         })
     }
