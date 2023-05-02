@@ -1,4 +1,4 @@
-(function (EXPORTS) { //floBlockchainAPI v2.5.5
+(function (EXPORTS) { //floBlockchainAPI v2.5.5a
     /* FLO Blockchain Operator to send/receive data from blockchain using API calls*/
     'use strict';
     const floBlockchainAPI = EXPORTS;
@@ -290,8 +290,8 @@
                 if (balance < totalAmt + fee)
                     return reject("Insufficient FLO balance!");
                 //get unconfirmed tx list
-                getUnconfirmedSpent(senderAddr).then(unconfirmedSpent => {
-                    getUTXOs(senderAddr).then(utxos => {
+                getUnconfirmedSpent(floID).then(unconfirmedSpent => {
+                    getUTXOs(floID).then(utxos => {
                         var trx = bitjs.transaction();
                         var utxoAmt = 0.0;
                         for (let i = utxos.length - 1; (i >= 0) && (utxoAmt < totalAmt + fee); i--) {
