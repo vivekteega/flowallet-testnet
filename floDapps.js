@@ -1,4 +1,4 @@
-(function (EXPORTS) { //floDapps v2.3.5
+(function (EXPORTS) { //floDapps v2.4.0
     /* General functions for FLO Dapps*/
     'use strict';
     const floDapps = EXPORTS;
@@ -258,13 +258,15 @@
             if (!startUpOptions.cloud)
                 return resolve("No cloud for this app");
             compactIDB.readData("lastTx", floCloudAPI.SNStorageID, DEFAULT.root).then(lastTx => {
-                floBlockchainAPI.readData(floCloudAPI.SNStorageID, {
-                    ignoreOld: lastTx,
-                    sentOnly: true,
-                    pattern: "SuperNodeStorage"
-                }).then(result => {
+                var query_options = { sentOnly: true, pattern: floCloudAPI.SNStorageName };
+                if (typeof lastTx == 'number')  //lastTx is tx count (*backward support)
+                    query_options.ignoreOld = lastTx;
+                else if (typeof lastTx == 'string') //lastTx is txid of last tx
+                    query_options.after = lastTx;
+                //fetch data from flosight
+                floBlockchainAPI.readData(floCloudAPI.SNStorageID, query_options).then(result => {
                     for (var i = result.data.length - 1; i >= 0; i--) {
-                        var content = JSON.parse(result.data[i]).SuperNodeStorage;
+                        var content = JSON.parse(result.data[i])[floCloudAPI.SNStorageName];
                         for (let sn in content.removeNodes)
                             compactIDB.removeData("supernodes", sn, DEFAULT.root);
                         for (let sn in content.newNodes)
@@ -276,7 +278,7 @@
                                 compactIDB.writeData("supernodes", r, sn, DEFAULT.root);
                             });
                     }
-                    compactIDB.writeData("lastTx", result.totalTxs, floCloudAPI.SNStorageID, DEFAULT.root);
+                    compactIDB.writeData("lastTx", result.lastItem, floCloudAPI.SNStorageID, DEFAULT.root);
                     compactIDB.readAllData("supernodes", DEFAULT.root).then(nodes => {
                         floCloudAPI.init(nodes)
                             .then(result => resolve("Loaded Supernode list\n" + result))
@@ -292,11 +294,13 @@
             if (!startUpOptions.app_config)
                 return resolve("No configs for this app");
             compactIDB.readData("lastTx", `${DEFAULT.application}|${DEFAULT.adminID}`, DEFAULT.root).then(lastTx => {
-                floBlockchainAPI.readData(DEFAULT.adminID, {
-                    ignoreOld: lastTx,
-                    sentOnly: true,
-                    pattern: DEFAULT.application
-                }).then(result => {
+                var query_options = { sentOnly: true, pattern: DEFAULT.application };
+                if (typeof lastTx == 'number')  //lastTx is tx count (*backward support)
+                    query_options.ignoreOld = lastTx;
+                else if (typeof lastTx == 'string') //lastTx is txid of last tx
+                    query_options.after = lastTx;
+                //fetch data from flosight               
+                floBlockchainAPI.readData(DEFAULT.adminID, query_options).then(result => {
                     for (var i = result.data.length - 1; i >= 0; i--) {
                         var content = JSON.parse(result.data[i])[DEFAULT.application];
                         if (!content || typeof content !== "object")
@@ -317,7 +321,7 @@
                             for (let l in content.settings)
                                 compactIDB.writeData("settings", content.settings[l], l)
                     }
-                    compactIDB.writeData("lastTx", result.totalTxs, `${DEFAULT.application}|${DEFAULT.adminID}`, DEFAULT.root);
+                    compactIDB.writeData("lastTx", result.lastItem, `${DEFAULT.application}|${DEFAULT.adminID}`, DEFAULT.root);
                     compactIDB.readAllData("subAdmins").then(result => {
                         subAdmins = Object.keys(result);
                         compactIDB.readAllData("trustedIDs").then(result => {
