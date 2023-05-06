@@ -45,7 +45,6 @@
                         floGlobals.scMap = new Map()
                         floGlobals.tokens = tokens.sort((a, b) => a.localeCompare(b))
                         floGlobals.smartContracts = smartContracts
-                            .filter(sc => sc.status === 'active')
                             .sort((a, b) => a.contractName.localeCompare(b.contractName))
                         floGlobals.smartContracts.forEach((sc, index) => {
                             floGlobals.scMap.set(`${sc.contractName}_${sc.contractAddress}`, index)
@@ -118,44 +117,111 @@
             <theme-toggle></theme-toggle>
         </header>
         <div id="pages_container">
-            <div id="home" class="page flex h-100">
-                <div class="flex direction-column gap-2 h-100">
-                    <section id="primary_actions_wrapper">
-                        <button id="gen_new_addr_btn" class="button primary-action interact">
-                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24"
-                                height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
+            <div id="search" class="page flex h-100 gap-1-5">
+                <section id="primary_actions_wrapper">
+                    <button id="gen_new_addr_btn" class="button primary-action interact">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24"
+                            height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
+                            <g>
+                                <rect fill="none" height="24" width="24" />
+                            </g>
+                            <g>
                                 <g>
-                                    <rect fill="none" height="24" width="24" />
+                                    <path
+                                        d="M18.32,4.26C16.84,3.05,15.01,2.25,13,2.05v2.02c1.46,0.18,2.79,0.76,3.9,1.62L18.32,4.26z M19.93,11h2.02 c-0.2-2.01-1-3.84-2.21-5.32L18.31,7.1C19.17,8.21,19.75,9.54,19.93,11z M18.31,16.9l1.43,1.43c1.21-1.48,2.01-3.32,2.21-5.32 h-2.02C19.75,14.46,19.17,15.79,18.31,16.9z M13,19.93v2.02c2.01-0.2,3.84-1,5.32-2.21l-1.43-1.43 C15.79,19.17,14.46,19.75,13,19.93z M13,12V7h-2v5H7l5,5l5-5H13z M11,19.93v2.02c-5.05-0.5-9-4.76-9-9.95s3.95-9.45,9-9.95v2.02 C7.05,4.56,4,7.92,4,12S7.05,19.44,11,19.93z" />
                                 </g>
-                                <g>
-                                    <g>
-                                        <path
-                                            d="M18.32,4.26C16.84,3.05,15.01,2.25,13,2.05v2.02c1.46,0.18,2.79,0.76,3.9,1.62L18.32,4.26z M19.93,11h2.02 c-0.2-2.01-1-3.84-2.21-5.32L18.31,7.1C19.17,8.21,19.75,9.54,19.93,11z M18.31,16.9l1.43,1.43c1.21-1.48,2.01-3.32,2.21-5.32 h-2.02C19.75,14.46,19.17,15.79,18.31,16.9z M13,19.93v2.02c2.01-0.2,3.84-1,5.32-2.21l-1.43-1.43 C15.79,19.17,14.46,19.75,13,19.93z M13,12V7h-2v5H7l5,5l5-5H13z M11,19.93v2.02c-5.05-0.5-9-4.76-9-9.95s3.95-9.45,9-9.95v2.02 C7.05,4.56,4,7.92,4,12S7.05,19.44,11,19.93z" />
-                                    </g>
-                                </g>
+                            </g>
+                        </svg>
+                        Generate FLO address
+                    </button>
+                    <button id="retrieve_addr_btn" class="button primary-action interact"
+                        onclick="openPopup('retrieve_flo_id_popup')">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+                            width="24px" fill="#000000">
+                            <path d="M0 0h24v24H0V0z" fill="none" />
+                            <path
+                                d="M14 12c0-1.1-.9-2-2-2s-2 .9-2 2 .9 2 2 2 2-.9 2-2zm-2-9c-4.97 0-9 4.03-9 9H0l4 4 4-4H5c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.51 0-2.91-.49-4.06-1.3l-1.42 1.44C8.04 20.3 9.94 21 12 21c4.97 0 9-4.03 9-9s-4.03-9-9-9z" />
+                        </svg>
+                        Retrieve FLO address
+                    </button>
+                </section>
+                <sm-form id="search_wrapper" class="flex margin-bottom-2" style="--gap: 0.5rem;">
+                    <sm-input type="search" id="search_query_input" class="flex-1" placeholder="Search FLO address"
+                        required>
+                        <svg slot="icon" class="icon" xmlns="http://www.w3.org/2000/svg" height="24px"
+                            viewBox="0 0 24 24" width="24px" fill="#000000">
+                            <path d="M0 0h24v24H0V0z" fill="none" />
+                            <path
+                                d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+                        </svg>
+                    </sm-input>
+                    <button id="process_query" class="button button--primary cta" style="height: 3.2rem;"
+                        onclick="processQuery()" type="submit" disabled>Search</button>
+                </sm-form>
+                <div id="address_details_wrapper" class="grid gap-1-5 hidden">
+                    <div id="transactions_hero_section" class="grid gap-2"
+                        style="background-color: rgba(var(--text-color), 0.03); padding: 1.5rem 1rem; border-radius: 0.5rem;">
+                        <div id="queried_flo_address"></div>
+                        <div class="flex align-center">
+                            <svg class="icon margin-right-0-5" viewBox="0 0 48 48"
+                                style="enable-background:new 0 0 107.65 47.07;" xml:space="preserve">
+                                <path class="flo-logo"
+                                    d="M34.2,32.4c0,0,3.75-0.18,7.41-3.86c2.96-2.98,3.65-6.66,3.99-8.52c-11.04-0.63-12.36,0.99-13.71,1.68
+                                                c-1.19,0.61-5.33,4.55-5.33,4.55s3.06-3.13,3.2-9.94c0.09-4.54-1.02-7.39-2.72-10.64C25.29,2.33,22.79,0,22.79,0l0.01,4.97
+                                                c0,0,4.35,2.84,4.35,11.84c0,6.52-4.35,11.02-4.35,11.02s-4.35-4.5-4.35-11.02c0-9.01,4.35-11.84,4.35-11.84L22.79,0
+                                                c0,0-2.48,2.33-4.23,5.67c-1.7,3.25-2.81,6.1-2.72,10.64c0.13,6.81,3.2,9.94,3.2,9.94s-4.14-3.95-5.33-4.55
+                                                c-1.35-0.69-2.67-2.31-13.71-1.68c0.34,1.86,1.03,5.54,3.99,8.52c3.66,3.68,7.41,3.86,7.41,3.86s-5.05-2.03-7.15-9.45
+                                                c0,0,5.76-0.7,9.63,1.87c2.52,1.67,4.86,4.26,6.79,6.01c0,0-2.58-0.04-6.81,1.88c-2.54,1.15-3.92,2.84-4.44,4.38
+                                                c-0.36,1.06-0.2,2.27-0.2,2.27s3.31,0.31,5.94,0c1.99-0.23,3.42-2.16,3.42-2.16s-2,0.78-3.95,0.78c-2.06,0-2.67-0.66-2.67-0.66
+                                                c0.98-3.64,8.68-5.19,8.68-5.19s-1.34,2.6-1.42,6.5c-0.1,4.79,3.57,8.52,3.57,8.45c0,0.07,3.67-3.66,3.57-8.45
+                                                c-0.08-3.9-1.42-6.5-1.42-6.5s7.71,1.55,8.68,5.19c0,0-0.61,0.66-2.67,0.66c-1.95,0-3.95-0.78-3.95-0.78s1.43,1.93,3.42,2.16
+                                                c2.63,0.31,5.94,0,5.94,0s0.16-1.21-0.2-2.27c-0.52-1.54-1.9-3.23-4.44-4.38c-4.23-1.92-6.81-1.88-6.81-1.88
+                                                c1.93-1.76,4.27-4.34,6.79-6.01c3.87-2.57,9.63-1.87,9.63-1.87C39.26,30.38,34.2,32.4,34.2,32.4z M22.8,43.06
+                                                c-0.95-1.37-1.47-2.13-1.47-4.26c0-2.4,1.12-4.61,1.47-5.14c0.35,0.52,1.47,2.74,1.47,5.14C24.27,40.92,23.75,41.69,22.8,43.06z">
+                                </path>
                             </svg>
-                            Generate FLO address
-                        </button>
-                        <button id="retrieve_addr_btn" class="button primary-action interact"
-                            onclick="openPopup('retrieve_flo_id_popup')">
-                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
-                                width="24px" fill="#000000">
-                                <path d="M0 0h24v24H0V0z" fill="none" />
-                                <path
-                                    d="M14 12c0-1.1-.9-2-2-2s-2 .9-2 2 .9 2 2 2 2-.9 2-2zm-2-9c-4.97 0-9 4.03-9 9H0l4 4 4-4H5c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.51 0-2.91-.49-4.06-1.3l-1.42 1.44C8.04 20.3 9.94 21 12 21c4.97 0 9-4.03 9-9s-4.03-9-9-9z" />
-                            </svg>
-                            Retrieve FLO address
-                        </button>
-                        <button class="button primary-action interact" onclick="openPopup('check_balance_popup')">
-                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
-                                width="24px" fill="#000000">
-                                <path d="M0 0h24v24H0z" fill="none" />
-                                <path
-                                    d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z" />
-                            </svg>
-                            Check balance
-                        </button>
+                            <div class="grid gap-0-5">
+                                <h5>FLO balance</h5>
+                                <span id="flo_balance"></span>
+                            </div>
+                        </div>
+                        <div id="token_list_wrapper" class="grid gap-0-5 hidden">
+                            <div class="flex align-center">
+                                <svg class="icon margin-right-0-5" xmlns="http://www.w3.org/2000/svg" height="24px"
+                                    viewBox="0 0 24 24" width="24px" fill="#000000">
+                                    <path d="M0 0h24v24H0V0z" fill="none" />
+                                    <path
+                                        d="M15 4c-4.42 0-8 3.58-8 8s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z" />
+                                    <path
+                                        d="M3 12c0-2.61 1.67-4.83 4-5.65V4.26C3.55 5.15 1 8.27 1 12s2.55 6.85 6 7.74v-2.09c-2.33-.82-4-3.04-4-5.65z" />
+                                </svg>
+                                <h5>Tokens owned</h5>
+                            </div>
+                            <ul id="token_list"></ul>
+                        </div>
+                    </div>
+                    <section class="grid gap-1">
+                        <div class="flex align-center space-between sticky top-0"
+                            style="background-color: rgba(var(--foreground-color), 1);">
+                            <h4>Transactions</h4>
+                            <sm-chips id="filter_selector" class="hidden">
+                                <sm-chip value="sent" selected>Sent</sm-chip>
+                                <sm-chip value="received">Received</sm-chip>
+                                <sm-chip value="all">All</sm-chip>
+                            </sm-chips>
+                        </div>
+                        <ul id="queried_address_transactions" class="observe-empty-state"></ul>
+                        <div class="empty-state">
+                            <h4>
+                                Looks a bit empty here, no transactions yet.
+                            </h4>
+                        </div>
                     </section>
+                </div>
+                <div id="pagination_wrapper" class="flex gap-0-3 align-center"> </div>
+            </div>
+            <div id="contacts" class="page flex h-100">
+                <div class="flex direction-column gap-2 h-100">
                     <section class="flex direction-column h-100">
                         <div class="grid align-center gap-0-5">
                             <div class="flex align-center">
@@ -233,108 +299,6 @@
                             d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z" />
                     </svg>
                     Add FLO address
-                </button>
-            </div>
-            <div id="transactions" class="hidden page">
-                <header class="grid">
-                    <div class="grid align-center w-100">
-                        <a href="#/home" class="flex interact icon-only">
-                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
-                                width="24px" fill="#000000">
-                                <path d="M0 0h24v24H0z" fill="none" />
-                                <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
-                            </svg>
-                        </a>
-                        <button class="icon-only" style="margin-left:auto" onclick="render.transactions()"
-                            title="Refresh">
-                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
-                                width="24px" fill="#000000">
-                                <path d="M0 0h24v24H0z" fill="none" />
-                                <path
-                                    d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" />
-                            </svg>
-                        </button>
-                    </div>
-                    <div id="queried_flo_address"></div>
-                </header>
-                <section id="transactions_scroller" class="grid gap-2" style="overflow-y: auto;padding: 0 1rem;">
-                    <div id="transactions_hero_section" class="grid gap-2"
-                        style="background-color: rgba(var(--text-color), 0.03); padding: 1.5rem 1rem; border-radius: 0.5rem;">
-                        <div class="flex align-center">
-                            <svg class="icon margin-right-0-5" viewBox="0 0 48 48"
-                                style="enable-background:new 0 0 107.65 47.07;" xml:space="preserve">
-                                <path class="flo-logo"
-                                    d="M34.2,32.4c0,0,3.75-0.18,7.41-3.86c2.96-2.98,3.65-6.66,3.99-8.52c-11.04-0.63-12.36,0.99-13.71,1.68
-                                                    c-1.19,0.61-5.33,4.55-5.33,4.55s3.06-3.13,3.2-9.94c0.09-4.54-1.02-7.39-2.72-10.64C25.29,2.33,22.79,0,22.79,0l0.01,4.97
-                                                    c0,0,4.35,2.84,4.35,11.84c0,6.52-4.35,11.02-4.35,11.02s-4.35-4.5-4.35-11.02c0-9.01,4.35-11.84,4.35-11.84L22.79,0
-                                                    c0,0-2.48,2.33-4.23,5.67c-1.7,3.25-2.81,6.1-2.72,10.64c0.13,6.81,3.2,9.94,3.2,9.94s-4.14-3.95-5.33-4.55
-                                                    c-1.35-0.69-2.67-2.31-13.71-1.68c0.34,1.86,1.03,5.54,3.99,8.52c3.66,3.68,7.41,3.86,7.41,3.86s-5.05-2.03-7.15-9.45
-                                                    c0,0,5.76-0.7,9.63,1.87c2.52,1.67,4.86,4.26,6.79,6.01c0,0-2.58-0.04-6.81,1.88c-2.54,1.15-3.92,2.84-4.44,4.38
-                                                    c-0.36,1.06-0.2,2.27-0.2,2.27s3.31,0.31,5.94,0c1.99-0.23,3.42-2.16,3.42-2.16s-2,0.78-3.95,0.78c-2.06,0-2.67-0.66-2.67-0.66
-                                                    c0.98-3.64,8.68-5.19,8.68-5.19s-1.34,2.6-1.42,6.5c-0.1,4.79,3.57,8.52,3.57,8.45c0,0.07,3.67-3.66,3.57-8.45
-                                                    c-0.08-3.9-1.42-6.5-1.42-6.5s7.71,1.55,8.68,5.19c0,0-0.61,0.66-2.67,0.66c-1.95,0-3.95-0.78-3.95-0.78s1.43,1.93,3.42,2.16
-                                                    c2.63,0.31,5.94,0,5.94,0s0.16-1.21-0.2-2.27c-0.52-1.54-1.9-3.23-4.44-4.38c-4.23-1.92-6.81-1.88-6.81-1.88
-                                                    c1.93-1.76,4.27-4.34,6.79-6.01c3.87-2.57,9.63-1.87,9.63-1.87C39.26,30.38,34.2,32.4,34.2,32.4z M22.8,43.06
-                                                    c-0.95-1.37-1.47-2.13-1.47-4.26c0-2.4,1.12-4.61,1.47-5.14c0.35,0.52,1.47,2.74,1.47,5.14C24.27,40.92,23.75,41.69,22.8,43.06z">
-                                </path>
-                            </svg>
-                            <div class="grid gap-0-5">
-                                <h5>FLO balance</h5>
-                                <span id="flo_balance"></span>
-                            </div>
-                        </div>
-                        <div id="tokens" class="grid gap-0-5 hidden">
-                            <div class="flex align-center">
-                                <svg class="icon margin-right-0-5" xmlns="http://www.w3.org/2000/svg" height="24px"
-                                    viewBox="0 0 24 24" width="24px" fill="#000000">
-                                    <path d="M0 0h24v24H0V0z" fill="none" />
-                                    <path
-                                        d="M15 4c-4.42 0-8 3.58-8 8s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z" />
-                                    <path
-                                        d="M3 12c0-2.61 1.67-4.83 4-5.65V4.26C3.55 5.15 1 8.27 1 12s2.55 6.85 6 7.74v-2.09c-2.33-.82-4-3.04-4-5.65z" />
-                                </svg>
-                                <h5>Tokens owned</h5>
-                            </div>
-                            <ul id="token_list"></ul>
-                        </div>
-                    </div>
-                    <div class="grid gap-0-5">
-                        <div id="transactions_header" class="flex align-center space-between sticky top-0"
-                            style="background-color: rgba(var(--foreground-color),1); padding-bottom: 0.5rem;">
-                            <div class="flex">
-                                <svg class="icon margin-right-0-5" xmlns="http://www.w3.org/2000/svg" height="24px"
-                                    viewBox="0 0 24 24" width="24px" fill="#000000">
-                                    <path d="M0 0h24v24H0z" fill="none" />
-                                    <path d="M16 17.01V10h-2v7.01h-3L15 21l4-3.99h-3zM9 3L5 6.99h3V14h2V6.99h3L9 3z" />
-                                </svg>
-                                <h5>Transactions</h5>
-                            </div>
-                            <sm-chips id="filter_selector">
-                                <sm-chip value="sent" selected>Sent</sm-chip>
-                                <sm-chip value="received">Received</sm-chip>
-                                <sm-chip value="all">All</sm-chip>
-                            </sm-chips>
-                        </div>
-                        <ul id="transactions_list" class="flex observe-empty-state"></ul>
-                        <div class="empty-state">
-                            <h4>
-                                Looks a bit empty here, no transactions yet.
-                            </h4>
-                        </div>
-                    </div>
-                </section>
-                <div class="empty-state justify-center align-center h-100">
-                    <div class="grid justify-center text-center gap-1">
-                        <sm-spinner class="justify-self-center"></sm-spinner>
-                        <span>Loading transactions</span>
-                    </div>
-                </div>
-                <button id="scroll_to_top" class="fab hidden" onclick="backToTop()">
-                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
-                        fill="#000000">
-                        <path d="M0 0h24v24H0z" fill="none" />
-                        <path d="M12 8l-6 6 1.41 1.41L12 10.83l4.59 4.58L18 14z" />
-                    </svg>
                 </button>
             </div>
             <div id="send" class="page hidden gap-1">
@@ -613,13 +577,25 @@
         <nav id="main_navbar">
             <ul>
                 <li>
-                    <a href="#/home" class="nav-item interact">
+                    <a href="#/search" class="nav-item interact">
                         <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
                             width="24px" fill="#000000">
                             <path d="M0 0h24v24H0z" fill="none" />
-                            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+                            <path
+                                d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
                         </svg>
-                        <span class="nav-item__title">Home</span>
+                        <span class="nav-item__title">Search</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#/contacts" class="nav-item interact">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+                            width="24px" fill="#000000">
+                            <path d="M0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0z" fill="none" />
+                            <path
+                                d="M20 0H4v2h16V0zM4 24h16v-2H4v2zM20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-8 2.75c1.24 0 2.25 1.01 2.25 2.25s-1.01 2.25-2.25 2.25S9.75 10.24 9.75 9 10.76 6.75 12 6.75zM17 17H7v-1.5c0-1.67 3.33-2.5 5-2.5s5 .83 5 2.5V17z" />
+                        </svg>
+                        <span class="nav-item__title">Contacts</span>
                     </a>
                 </li>
                 <li>
@@ -789,30 +765,6 @@
             </sm-form>
         </section>
     </sm-popup>
-    <sm-popup id="check_balance_popup">
-        <header slot="header" class="popup__header">
-            <button class="popup__header__close justify-self-start" onclick="closePopup()">
-                <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
-                    fill="#000000">
-                    <path d="M0 0h24v24H0V0z" fill="none" />
-                    <path
-                        d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
-                </svg>
-            </button>
-            <h3>Check balance</h3>
-        </header>
-        <sm-form id="check_balance_form">
-            <sm-input id="check_balance_field" type="text" error-text="Invalid FLO address" placeholder="FLO address"
-                data-flo-address="" required autofocus>
-            </sm-input>
-            <div class="multi-state-button">
-                <button id="check_balance_button" class="button button--primary cta" type="submit"
-                    onclick="checkBalance()" disabled>Check</button>
-            </div>
-        </sm-form>
-        <div id="balance_wrapper" class="hidden grid gap-0-5" style="margin-top: 2rem">
-        </div>
-    </sm-popup>
     <sm-popup id="saved_ids_popup">
         <header slot="header" class="popup__header">
             <button class="popup__header__close justify-self-start" onclick="closePopup()">
@@ -876,7 +828,7 @@
         <li class="transaction grid">
             <div class="flex align-center">
                 <div class="transaction__icon"></div>
-                <div class="transaction__receiver"></div>
+                <div class="transaction__receiver breakable"></div>
             </div>
             <p class="transaction__flo-data breakable"></p>
             <div class="flex align-center space-between">
@@ -1009,10 +961,6 @@
                     break;
                 case 'retrieve_flo_id_popup':
                     getRef('recovered_flo_id_wrapper').classList.add('hidden')
-                    break;
-                case 'check_balance_popup':
-                    getRef('balance_wrapper').classList.add('hidden')
-                    getRef('check_balance_form')._checkValidity()
                     break;
             }
         })
@@ -1232,7 +1180,7 @@
             let searchParams
             let wildcards
             if (targetPage === '') {
-                pageId = 'home'
+                pageId = 'search'
             } else {
                 if (targetPage.includes('/')) {
                     let path;
@@ -1252,20 +1200,35 @@
             if (params)
                 pagesData.params = params
             switch (pageId) {
-                case 'transactions':
-                    const floId = wildcards[0]
-                    if (floId && floCrypto.validateFloID(floId)) {
-                        render.transactions(floId).then(() => {
-                            if (getRef('transactions_list').firstElementChild) {
-                                scrollToTopObserver.observe(getRef('transactions_list').firstElementChild)
-                                getRef('filter_selector').classList.remove('hidden')
-                            } else {
-                                getRef('filter_selector').classList.add('hidden')
+                case 'search': {
+                    const { type, query, page = 1 } = params
+                    switch (type) {
+                        case 'address':
+                            try {
+                                if (floGlobals.query.string !== query) {
+                                    checkBalance(query)
+                                    renderElem(getRef('queried_address_transactions'), html`
+                                        <div class="grid gap-1 justify-items-center text-center" style="margin: 3rem 0">
+                                            <sm-spinner></sm-spinner>
+                                            <span>Loading transactions...</span>
+                                        </div>
+                                    `)
+                                    fetchTransactions(query).then(() => {
+                                        filterFetchedTransactions()
+                                        render.paginatedTransactions(parseInt(page))
+                                    })
+                                } else {
+                                    render.paginatedTransactions(parseInt(page))
+                                }
+                            } catch (err) {
+                                notify(err, 'error')
                             }
-                        })
-                    } else {
-                        notify('Invalid Flo ID', 'error')
+                            break;
+                        case 'txid':
+                            // location.href = `#/tx/${query}`
+                            break;
                     }
+                }
                     break;
                 case 'smartcontracts':
                     const [subpage] = wildcards
@@ -1537,9 +1500,6 @@
                         renderElem(getRef('smart_contract_creation_form'), html``)
                     }
                     break
-                default:
-                    getRef('transactions_list').innerHTML = ''
-                    scrollToTopObserver.disconnect()
             }
             const animOptions = {
                 duration: 100,
@@ -1921,7 +1881,7 @@
             },
             transactionCard(details) {
                 const { sender, receiver, floData, time, txid } = details
-                const queriedFloId = pagesData.wildcards[0]
+                const { query: queriedFloId } = pagesData.params
                 const clone = getRef('transaction_template').content.cloneNode(true).firstElementChild;
                 if (sender === receiver) {
                     clone.querySelector('.transaction__icon').innerHTML = `<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><title>sender and receiver is same</title><path d="M.01 0h24v24h-24V0z" fill="none"/><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>`;
@@ -1936,66 +1896,52 @@
                 clone.querySelector('.transaction__time').textContent = getFormattedTime(time * 1000)
                 return clone
             },
-            async transactions(queriedFloId = pagesData.wildcards[0]) {
-                try {
-                    scrollToTopObserver.disconnect()
-                    // retrieve tokens and render them
-                    getRef('tokens').classList.add('hidden')
-                    fetchJSON(`${floGlobals.tokenApiUrl}/api/v2/floAddressBalance/${queriedFloId}`).then(({ floAddressBalances }) => {
-                        let ownedTokens = []
-                        for (const token in floAddressBalances) {
-                            ownedTokens.push(html`
-                                <li class="token-item">
-                                    <span>${token}: </span><span>${parseFloat((floAddressBalances[token].balance || 0).toFixed(8))}</span>
-                                </li>
-                            `)
-                        }
-                        if (ownedTokens.length) {
-                            renderElem(getRef('token_list'), html`${ownedTokens}`)
-                            getRef('tokens').classList.remove('hidden')
-                        }
-                    }).catch(e => {
-                        console.error(e)
-                    })
-                    // retrieve FLO balance
-                    getRef('flo_balance').innerHTML = `<sm-spinner></sm-spinner>`;
-                    floWebWallet.getBalance(queriedFloId).then((retrievedBal) => {
-                        getRef('flo_balance').textContent = `${parseFloat(retrievedBal.toFixed(3))} FLO`;
-                    }).catch((error) => {
-                        notify(error, 'error');
-                    })
-                    floWebWallet.getLabels().then(allLabels => {
-                        if (allLabels[queriedFloId]) {
-                            renderElem(getRef('queried_flo_address'), html`<h4>${allLabels[queriedFloId]}</h4> <sm-copy clip-text value=${queriedFloId}></sm-copy>`)
-                        } else {
-                            renderElem(getRef('queried_flo_address'), html`<h4><sm-copy clip-text value=${queriedFloId}></sm-copy></h4>`)
-                        }
-                    })
-                    // show spinner
-                    getRef('transactions_scroller').nextElementSibling.classList.remove('hidden')
-                    getRef('transactions_scroller').classList.add('hidden')
-                    getRef('transactions_list').innerHTML = '';
-                    await floWebWallet.syncTransactions(queriedFloId);
-                    let allTransactions = (await floWebWallet.readTransactions(queriedFloId)).reverse();
-                    const filter = getRef('filter_selector').value;
-                    if (filter !== 'all') {
-                        allTransactions = allTransactions.filter(t => filter === 'sent' ? t.sender === queriedFloId : t.receiver === queriedFloId)
-                    }
-                    // render transactions
-                    if (transactionsLazyLoader) {
-                        transactionsLazyLoader.update(allTransactions)
-                    } else {
-                        transactionsLazyLoader = new LazyLoader('#transactions_list', allTransactions, render.transactionCard)
-                        transactionsLazyLoader.init()
-                    }
-                    getRef('transactions_scroller').classList.remove('hidden')
-                    getRef('transactions_scroller').nextElementSibling.classList.add('hidden')
-                    getRef('transactions_scroller').scroll({
-                        top: 0
-                    })
-                } catch (err) {
-                    notify(err, 'error');
+            paginatedTransactions(page = 1) {
+                const startingIndex = ((page - 1) * 20)
+                const endingIndex = startingIndex + 20
+                const { transactions, string: address } = floGlobals.query
+                const renderedTransactions = transactions
+                    .slice(startingIndex, endingIndex)
+                    .map(transaction => render.transactionCard(transaction))
+                renderElem(getRef('queried_address_transactions'), html`${renderedTransactions}`)
+                getRef('transactions_hero_section').scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                })
+                if (renderedTransactions.length) {
+                    getRef('filter_selector').classList.remove('hidden')
+                } else {
+                    getRef('filter_selector').classList.add('hidden')
                 }
+                const paginationSegments = transactions ? Math.ceil(transactions.length / renderTransactions) : 0;
+                let pagination = []
+                let startingPage = page - 2;
+                let showTill = page + 2;
+                if (startingPage < 1) {
+                    showTill += Math.abs(startingPage) + 1;
+                    startingPage = 1;
+                }
+
+                if (showTill > paginationSegments) {
+                    startingPage -= showTill - paginationSegments;
+                    showTill = paginationSegments;
+                }
+                if (paginationSegments > 1) {
+                    for (let i = 1; i <= paginationSegments; i++) {
+                        if (startingPage <= i && i <= showTill) {
+                            pagination.push(html`
+                                <a href=${`#/search?type=address&query=${address}&page=${i}`} class=${`pagination__item ${i === page ? 'pagination__item--active' : ''}`}>
+                                    ${i}
+                                </a> 
+                            `)
+                        } else if (i === showTill + 1 && i < paginationSegments) {
+                            pagination.push(html` <div class="pagination__item">...</div> `)
+                        } else if (i == paginationSegments) {
+                            pagination.push(html` <a href=${`#/search?type=address&query=${address}&page=${i}`} class="pagination__item">${i}</a> `)
+                        }
+                    }
+                }
+                renderElem(getRef('pagination_wrapper'), html`${pagination}`)
             },
             availableAssetOptions() {
                 return (floGlobals.tokens || []).map(token => html` <sm-option value=${token}>${token}</sm-option> `)
@@ -2171,7 +2117,7 @@
                 );
             } else {
                 const target = e.target.closest('.saved-id');
-                window.location.hash = `#/transactions/${target.dataset.floAddress}`
+                window.location.hash = `#/search?type=address&query=${target.dataset.floAddress}&page=1`
             }
         })
         delegate(getRef('saved_ids_picker_list'), 'click', '.saved-id', e => {
@@ -2182,13 +2128,9 @@
         })
 
         getRef('filter_selector').addEventListener('change', async e => {
-            const queriedFloId = pagesData.wildcards[0]
-            const filter = e.target.value
-            let allTransactions = (await floWebWallet.readTransactions(queriedFloId)).reverse()
-            if (filter !== 'all') {
-                allTransactions = allTransactions.filter(t => filter === 'sent' ? t.sender === queriedFloId : t.receiver === queriedFloId)
-            }
-            transactionsLazyLoader.update(allTransactions)
+            floGlobals.query.transactions = (await floWebWallet.readTransactions(floGlobals.query.string)).reverse();
+            filterFetchedTransactions()
+            render.paginatedTransactions()
         })
         const scrollToTopObserver = new IntersectionObserver(entries => {
             entries.forEach(entry => {
@@ -2501,33 +2443,89 @@
             })
         }
 
-        function checkBalance() {
-            getRef('balance_wrapper').classList.add('hidden')
-            const floID = getRef('check_balance_field').value.trim()
-            buttonLoader(getRef('check_balance_button'), true)
-            Promise.all([
-                floWebWallet.getBalance(floID),
-                fetchJSON(`${floGlobals.tokenApiUrl}/api/v2/floAddressBalance/${floID}`)
-            ]).then(([retrievedBal, { floAddressBalances }]) => {
-                console.log(floAddressBalances)
-                renderElem(getRef('balance_wrapper'), html`
-                    <h4>Balance</h4>
-                    <div class="flex gap-0-5 align-center space-between">
-                        <span>FLO:</span>
-                        <strong style="font-size: 1.1rem">${retrievedBal}</strong>
-                    </div>
-                    ${floAddressBalances ? Object.keys(floAddressBalances).map(token => html`
-                        <div class="flex gap-0-5 align-center space-between">
-                            <span>${token}:</span>
-                            <strong style="font-size: 1.1rem">${parseFloat((floAddressBalances[token].balance || 0).toFixed(8))}</strong>
-                        </div>
-                    `) : ''}
-                `)
-                getRef('balance_wrapper').classList.remove('hidden')
+        async function checkBalance(address) {
+            try {
+                getRef('address_details_wrapper').classList.remove('hidden')
+                floWebWallet.getLabels().then(allLabels => {
+                    if (allLabels[queriedFloId]) {
+                        renderElem(getRef('queried_flo_address'), html`<h4>${allLabels[queriedFloId]}</h4> <sm-copy clip-text value=${queriedFloId}></sm-copy>`)
+                    } else {
+                        renderElem(getRef('queried_flo_address'), html`
+                            <p class="label">FLO Address </p>
+                            <h4><sm-copy clip-text value=${queriedFloId}></sm-copy></h4>
+                        `)
+                    }
+                })
+                const queriedFloId = address || getRef('search_query_input').value.trim()
+                getRef('token_list_wrapper').classList.add('hidden')
+                getRef('flo_balance').innerHTML = `<sm-spinner></sm-spinner>`;
+                const [floBalance, tokenBalances] = await Promise.all([
+                    floWebWallet.getBalance(queriedFloId),
+                    fetchJSON(`${floGlobals.tokenApiUrl}/api/v2/floAddressBalance/${queriedFloId}`).then(({ floAddressBalances }) => floAddressBalances)
+                ])
+                let ownedTokens = []
+                for (const token in tokenBalances) {
+                    ownedTokens.push(html`
+                                    <li class="token-item">
+                                        <span>${token}: </span><span>${parseFloat((tokenBalances[token].balance || 0).toFixed(8))}</span>
+                                    </li>
+                                `)
+                }
+                if (ownedTokens.length) {
+                    renderElem(getRef('token_list'), html`${ownedTokens}`)
+                    getRef('token_list_wrapper').classList.remove('hidden')
+                }
+                // retrieve FLO balance
+                getRef('flo_balance').textContent = `${parseFloat(floBalance.toFixed(3))} FLO`;
+            } catch (e) {
+                console.error(e)
+            }
+        }
+        function categorizeText(text) {
+            return new Promise((resolve, reject) => {
+                if (text.length == 34 && floCrypto.validateFloID(text)) {
+                    //console.log('data entered is a FLO address');
+                    resolve('address')
+                } else if (text.length == 64 && returnHexNumber(text)) {
+                    fetchJson(`${floGlobals.tokenApiUrl}/api/v2/categoriseString/` + text)
+                        .then(function (myJson) {
+                            resolve(myJson['type'])
+                        }).catch(err => {
+                            reject(err)
+                        })
+                } else {
+                    resolve('unknown')
+                }
+            })
+        }
+
+        let renderTransactions = 20;
+        floGlobals.query = {
+            transactions: [],
+            string: '',
+        }
+        async function fetchTransactions(address) {
+            try {
+                floGlobals.query.transactions = [];
+                await floWebWallet.syncTransactions(address);
+                floGlobals.query.transactions = (await floWebWallet.readTransactions(address)).reverse();
+                floGlobals.query.string = address;
+            } catch (err) {
+                console.error(err);
+            }
+        }
+        function filterFetchedTransactions() {
+            const filter = getRef('filter_selector').value;
+            if (filter !== 'all') {
+                floGlobals.query.transactions = floGlobals.query.transactions.filter(t => filter === 'sent' ? t.sender === floGlobals.query.string : t.receiver === floGlobals.query.string)
+            }
+        }
+        async function processQuery() {
+            const query = getRef('search_query_input').value.trim()
+            categorizeText(query).then(async type => {
+                window.location.hash = `#/search?type=${type}&query=${query}&page=1`
             }).catch(err => {
                 notify(err, 'error')
-            }).finally(() => {
-                buttonLoader(getRef('check_balance_button'), false)
             })
         }
 
@@ -2602,13 +2600,6 @@
                     notify(error, 'error');
                 })
             })
-        }
-
-        function backToTop() {
-            getRef('transactions_scroller').scroll({
-                top: 0,
-                behavior: 'smooth'
-            });
         }
 
         getRef('flo_data_textarea').addEventListener('keydown', e => {
@@ -2735,7 +2726,8 @@
 
         function filterSmartContracts(options) {
             const { type, subType, dynamic = false } = options || {}
-            let filteredSmartContracts = (floGlobals.smartContracts || []);
+            let filteredSmartContracts = (floGlobals.smartContracts || [])
+                .filter(sc => sc.status === 'active')
             if (type) {
                 filteredSmartContracts = filteredSmartContracts.filter(sc => sc.contractType === type)
                 if (type === 'continuos-event' && dynamic)
@@ -2837,7 +2829,7 @@
             }
             console.log(floData)
             buttonLoader('participate_button', true)
-            floTokenAPI.getBalance(participantAddress, acceptingToken).then(balance => {
+            floTokenAPI.getBalance(participantAddress, acceptingToken || tokenIdentification).then(balance => {
                 if (balance < participationAmount) {
                     buttonLoader('participate_button', false)
                     return notify(`Insufficient balance. You have ${balance} ${acceptingToken || tokenIdentification}`, 'error')
@@ -2958,6 +2950,8 @@
             const creatorAddress = floCrypto.getFloID(creatorPrivateKey)
             let floData
             let confirmationMessage = ''
+            if (floGlobals.scMap.has(`${contractName}_${creatorAddress}`))
+                return notify(`Contract with name: ${contractName} and address: ${creatorAddress} already exists`, 'error')
             switch (type) {
                 case 'one-time-event':
                     const contractAsset = document.getElementById('contract_asset').value;

@@ -497,7 +497,7 @@ h3 {
 }
 
 .observe-empty-state:empty {
-  display: none;
+  display: none !important;
 }
 
 .observe-empty-state:not(:empty) + .empty-state {
@@ -709,13 +709,10 @@ h3 {
   margin-bottom: 0.3rem;
 }
 
-#home {
-  padding: 0;
-}
-#home > :first-child {
+#contacts > :first-child {
   overflow-y: auto;
   align-content: flex-start;
-  padding: 0.5rem 1.5rem 4rem 1.5rem;
+  padding-bottom: 4rem;
 }
 
 #primary_actions_wrapper {
@@ -736,6 +733,67 @@ h3 {
 }
 .primary-action .icon {
   fill: var(--accent-color);
+}
+
+#search {
+  position: relative;
+  height: 100%;
+}
+
+#queried_flo_address h4 {
+  font-size: 1.1rem;
+}
+#queried_flo_address > sm-copy {
+  font-size: 0.8rem;
+}
+
+#token_list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.token-item {
+  font-size: 0.9rem;
+  padding: 0.5rem 1rem;
+  background-color: rgba(var(--text-color), 0.06);
+  border-radius: 0.3rem;
+}
+
+.transaction {
+  gap: 1rem;
+  padding: 1rem;
+  background-color: rgba(var(--text-color), 0.03);
+  border-radius: 0.3rem;
+}
+.transaction:not(:last-of-type) {
+  margin-bottom: 1rem;
+}
+.transaction .icon {
+  fill: var(--accent-color);
+}
+.transaction__time, .transaction__link, .transaction__receiver {
+  font-size: 0.8rem;
+}
+.transaction__receiver {
+  margin-left: 0.5rem;
+  color: rgba(var(--text-color), 0.8);
+}
+.transaction p {
+  font-size: 0.9rem;
+  max-width: unset;
+}
+.transaction__time {
+  justify-self: flex-end;
+  color: rgba(var(--text-color), 0.8);
+}
+
+#search_wrapper {
+  width: min(100%, 36rem);
+}
+
+#search_query_input {
+  justify-self: center;
 }
 
 #saved_ids_list {
@@ -803,77 +861,8 @@ h3 {
   flex-direction: column;
   overflow-y: auto;
   align-content: flex-start;
-  padding: 0 1.5rem;
+  padding: 0 1rem;
   padding-bottom: 3rem;
-}
-
-#transactions {
-  position: relative;
-  height: 100%;
-  padding: 0;
-}
-#transactions header {
-  padding: 1rem 0.7rem;
-}
-#transactions header .grid {
-  grid-template-columns: auto 1fr auto;
-}
-
-#queried_flo_address {
-  margin: 0.5rem 0;
-  margin-left: 0.7rem;
-}
-#queried_flo_address h4 {
-  font-size: 1.1rem;
-}
-#queried_flo_address > sm-copy {
-  font-size: 0.8rem;
-}
-
-#token_list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.token-item {
-  font-size: 0.9rem;
-  padding: 0.5rem 1rem;
-  background-color: rgba(var(--text-color), 0.06);
-  border-radius: 0.3rem;
-}
-
-#transactions_list {
-  flex-direction: column;
-  padding-bottom: 4rem;
-}
-
-.transaction {
-  gap: 1rem;
-  padding: 1rem;
-  background-color: rgba(var(--text-color), 0.03);
-  border-radius: 0.3rem;
-}
-.transaction:not(:last-of-type) {
-  margin-bottom: 1rem;
-}
-.transaction .icon {
-  fill: var(--accent-color);
-}
-.transaction__time, .transaction__link, .transaction__receiver {
-  font-size: 0.8rem;
-}
-.transaction__receiver {
-  margin-left: 0.5rem;
-  color: rgba(var(--text-color), 0.8);
-}
-.transaction p {
-  font-size: 0.9rem;
-  max-width: unset;
-}
-.transaction__time {
-  justify-self: flex-end;
-  color: rgba(var(--text-color), 0.8);
 }
 
 .fab {
@@ -883,11 +872,6 @@ h3 {
   margin: 1.5rem;
   box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.2);
   z-index: 2;
-}
-
-#scroll_to_top {
-  border-radius: 3rem;
-  background-color: rgba(var(--foreground-color), 1);
 }
 
 #add_address_button {
@@ -1009,6 +993,41 @@ h3 {
     transform: scale(1) translateY(0);
   }
 }
+#queried_address_transactions {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 1.5rem;
+}
+
+#pagination_wrapper {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  margin: 0 auto;
+  padding: 0.5rem;
+  background-color: rgba(var(--foreground-color), 1);
+  z-index: 5;
+  border-radius: 0.7rem;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.2);
+  margin: 0.5rem;
+}
+
+.pagination__item {
+  display: flex;
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.3rem;
+}
+.pagination__item--active {
+  background-color: var(--accent-color);
+  color: rgba(var(--background-color), 1);
+}
+
+legend,
+.label {
+  font-size: 0.8rem;
+  color: rgba(var(--text-color), 0.8);
+}
+
 #smartcontracts {
   display: grid;
   min-width: 0;
@@ -1024,11 +1043,6 @@ h3 {
 }
 #smartcontracts fieldset legend {
   padding: 0 0.5rem;
-}
-#smartcontracts legend,
-#smartcontracts .label {
-  font-size: 0.8rem;
-  color: rgba(var(--text-color), 0.8);
 }
 #smartcontracts label {
   padding: 0.3rem 0.5rem;
@@ -1174,6 +1188,13 @@ h3 {
     transform: translateY(100%);
     opacity: 0;
   }
+  #pagination_wrapper {
+    margin: 0;
+    margin-bottom: 4.8rem;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+  }
 }
 @media screen and (min-width: 40rem) {
   sm-popup {
@@ -1199,6 +1220,9 @@ h3 {
   }
   #pages_container {
     grid-area: main;
+  }
+  .page {
+    padding: 0 1.5rem;
   }
   #main_navbar {
     grid-area: nav;
@@ -1272,8 +1296,8 @@ h3 {
   }
 }
 @media screen and (min-width: 64rem) {
-  #transactions_scroller {
-    grid-template-columns: 22rem 1fr;
+  #address_details_wrapper {
+    grid-template-columns: auto 1fr;
     align-items: flex-start;
   }
   #transactions_hero_section {
