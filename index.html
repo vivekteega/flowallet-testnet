@@ -316,6 +316,8 @@
                                 Sender balance will be shown once you enter sender private key
                             </p>
                         </div>
+                    </div>
+                    <div class="grid gap-1">
                         <sm-input id="get_private_key_field" placeholder="Sender's private key" class="password-field"
                             type="password" error-text="Invalid private key" data-private-key required autofocus>
                             <label slot="right" class="interact">
@@ -337,25 +339,34 @@
                                 </svg>
                             </label>
                         </sm-input>
-                        <sm-input id="receiver" class="w-100" placeholder="Receiver's FLO address"
-                            error-text="Invalid FLO address" data-flo-address="" animate required>
-                            <button slot="right" class="icon-only" onclick="openPopup('saved_ids_popup')"
-                                title="Select from saved IDs">
+                        <div class="grid gap-1">
+                            <div id="tx_receiver_wrapper" class="grid gap-1">
+                                <sm-input id="tx_receiver" class="w-100" placeholder="Receiver's FLO address"
+                                    error-text="Invalid FLO address" data-flo-address="" animate required>
+                                    <button slot="right" class="icon-only" onclick="openPopup('saved_ids_popup')"
+                                        title="Select from saved IDs">
+                                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px"
+                                            viewBox="0 0 24 24" width="24px" fill="#000000">
+                                            <path d="M0 0h24v24H0z" fill="none" />
+                                            <path
+                                                d="M21 5v14h2V5h-2zm-4 14h2V5h-2v14zM14 5H2c-.55 0-1 .45-1 1v12c0 .55.45 1 1 1h12c.55 0 1-.45 1-1V6c0-.55-.45-1-1-1zM8 7.75c1.24 0 2.25 1.01 2.25 2.25S9.24 12.25 8 12.25 5.75 11.24 5.75 10 6.76 7.75 8 7.75zM12.5 17h-9v-.75c0-1.5 3-2.25 4.5-2.25s4.5.75 4.5 2.25V17z" />
+                                        </svg>
+                                    </button>
+                                </sm-input>
+                            </div>
+                            <button id="add_token_receiver"
+                                class="button button--small gap-0-5 justify-self-start hidden"
+                                onclick="addTokenReceiver()">
                                 <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
                                     width="24px" fill="#000000">
                                     <path d="M0 0h24v24H0z" fill="none" />
-                                    <path
-                                        d="M21 5v14h2V5h-2zm-4 14h2V5h-2v14zM14 5H2c-.55 0-1 .45-1 1v12c0 .55.45 1 1 1h12c.55 0 1-.45 1-1V6c0-.55-.45-1-1-1zM8 7.75c1.24 0 2.25 1.01 2.25 2.25S9.24 12.25 8 12.25 5.75 11.24 5.75 10 6.76 7.75 8 7.75zM12.5 17h-9v-.75c0-1.5 3-2.25 4.5-2.25s4.5.75 4.5 2.25V17z" />
+                                    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
                                 </svg>
+                                <span>Add token receiver</span>
                             </button>
-                        </sm-input>
-                    </div>
-                    <div class="grid gap-1">
+                        </div>
                         <sm-input id="tx_flo_amount" type="number" placeholder="FLO amount" step="0.00000001"
                             min="0.00000001" error-text="Invalid amount" animate required>
-                        </sm-input>
-                        <sm-input id="tx_token_amount" type="number" class="hidden" placeholder="Token amount"
-                            step="0.00000001" min="0.00000001" error-text="Invalid amount" animate required disabled>
                         </sm-input>
                         <div id="flo_data_wrapper" class="grid gap-0-5">
                             <sm-textarea id="flo_data_textarea" placeholder="FLO data" rows="8" maxlength="1040"
@@ -2122,8 +2133,8 @@
         })
         delegate(getRef('saved_ids_picker_list'), 'click', '.saved-id', e => {
             const target = e.target.closest('.saved-id');
-            getRef('receiver').value = target.dataset.floAddress
-            getRef('receiver').focusIn()
+            document.getElementById('tx_receiver').value = target.dataset.floAddress
+            document.getElementById('tx_receiver').focusIn()
             closePopup()
         })
 
@@ -2297,13 +2308,15 @@
                         </label>
                     `)
                     renderElem(document.getElementById('sender_tokens_wrapper'), html.for(document.getElementById('sender_tokens_wrapper'), senderFloAddr)`
-                        <h5>Tokens</h5>
-                        <p>Select a token, if you want to send a token.</p>
-                        <form onsubmit="event.preventDefault()" onchange=${handleTokenSelection} class="grid gap-1">
+                        <div class="grid">
+                            <h5>Tokens</h5>
+                            <p>Select a token, if you want to send a token.</p>
+                        </div>
+                        <fieldset onchange=${handleTokenSelection} class="grid gap-1">
                             <div class="grid gap-0-5">
                                 ${ownedTokens}
                             </div>
-                        </form>
+                        </fieldset>
                     `)
                     document.getElementById('sender_tokens_wrapper').classList.remove('hidden')
                     handleTokenSelection()
@@ -2316,13 +2329,21 @@
                 resetBalance()
             })
         }
+        floGlobals.sendType = 'flo'
         function clearSelection() {
-            getRef('tx_token_amount').disabled = true
-            getRef('tx_token_amount').classList.add('hidden')
-            getRef('tx_token_amount').value = ''
             getRef('flo_data_wrapper').classList.remove('hidden')
             getRef('flo_data_textarea').value = ''
             getRef('tx_flo_amount').value = ''
+            getRef('tx_flo_amount').classList.remove('hidden')
+            renderElem(getRef('tx_receiver_wrapper'), html`
+                <sm-input id="tx_receiver" class="w-100" placeholder="Receiver's FLO address" error-text="Invalid FLO address" data-flo-address animate required>
+                    <button slot="right" class="icon-only" onclick="openPopup('saved_ids_popup')" title="Select from saved IDs">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <path d="M0 0h24v24H0z" fill="none" /> <path d="M21 5v14h2V5h-2zm-4 14h2V5h-2v14zM14 5H2c-.55 0-1 .45-1 1v12c0 .55.45 1 1 1h12c.55 0 1-.45 1-1V6c0-.55-.45-1-1-1zM8 7.75c1.24 0 2.25 1.01 2.25 2.25S9.24 12.25 8 12.25 5.75 11.24 5.75 10 6.76 7.75 8 7.75zM12.5 17h-9v-.75c0-1.5 3-2.25 4.5-2.25s4.5.75 4.5 2.25V17z" /> </svg>
+                    </button>
+                </sm-input>
+            `)
+            getRef('add_token_receiver').classList.add('hidden')
+            floGlobals.sendType = 'flo'
         }
         function handleTokenSelection() {
             const selectedToken = document.getElementById('sender_tokens_wrapper').querySelector('input[type="radio"]:checked')
@@ -2331,24 +2352,46 @@
             const tokenName = selectedToken.value
             const tokenBalance = parseFloat(selectedToken.dataset.balance)
             getRef('flo_data_wrapper').classList.add('hidden')
-            getRef('tx_token_amount').disabled = false
-            getRef('tx_token_amount').classList.remove('hidden')
-            getRef('tx_token_amount').placeholder = `${tokenName.charAt(0).toUpperCase() + tokenName.slice(1)} amount`
-            getRef('tx_token_amount').setAttribute('max', tokenBalance)
             getRef('tx_flo_amount').value = '0.001'
+            getRef('tx_flo_amount').classList.add('hidden')
+            renderElem(getRef('tx_receiver_wrapper'), html``)
+            addTokenReceiver()
+            getRef('add_token_receiver').classList.remove('hidden')
+            floGlobals.sendType = 'token'
         }
-        getRef('tx_token_amount').addEventListener('input', e => {
-            const tokenAmount = parseFloat(e.target.value.trim())
+        function addTokenReceiver() {
             const selectedToken = document.getElementById('sender_tokens_wrapper').querySelector('input[type="radio"]:checked')
-            const tokenName = selectedToken.value
-            const tokenBalance = parseFloat(selectedToken.dataset.balance)
-            const { rangeOverflow, rangeUnderflow } = e.target.validity;
-            if (rangeUnderflow)
-                e.target.setAttribute('error-text', `Minimum 0.00000001 ${tokenName} allowed`)
-            if (rangeOverflow)
-                e.target.setAttribute('error-text', `You can send ${tokenName} upto ${tokenBalance} only`)
-            getRef('flo_data_textarea').value = `send ${tokenAmount} ${tokenName}#`
-        })
+            const tokenName = selectedToken.value;
+            const isFirst = getRef('tx_receiver_wrapper').children.length === 0
+            getRef('tx_receiver_wrapper').append(html.node`
+                <div class=${`token-receiver-combo ${isFirst ? '' : 'token-receiver-combo--removable'} grid gap-0-5`}>
+                    <sm-input class="token-receiver" class="w-100" placeholder="Receiver's FLO address" error-text="Invalid FLO address" data-flo-address animate required>
+                        <button slot="right" class="icon-only" onclick="openPopup('saved_ids_popup')" title="Select from saved IDs">
+                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <path d="M0 0h24v24H0z" fill="none" /> <path d="M21 5v14h2V5h-2zm-4 14h2V5h-2v14zM14 5H2c-.55 0-1 .45-1 1v12c0 .55.45 1 1 1h12c.55 0 1-.45 1-1V6c0-.55-.45-1-1-1zM8 7.75c1.24 0 2.25 1.01 2.25 2.25S9.24 12.25 8 12.25 5.75 11.24 5.75 10 6.76 7.75 8 7.75zM12.5 17h-9v-.75c0-1.5 3-2.25 4.5-2.25s4.5.75 4.5 2.25V17z" /> </svg>
+                        </button>
+                    </sm-input>
+                    <sm-input class="token-amount" type="number" placeholder=${`${tokenName.charAt(0).toUpperCase() + tokenName.slice(1)} amount`}
+                        step="0.00000001" min="0.00000001" error-text="Min. amount is 0.00000001" animate required>
+                    </sm-input>
+                    ${!isFirst ? html.node`
+                        <button class="button icon-only remove-token-receiver" onclick="removeTokenReceiver(this)" title="Remove">
+                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"/><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                        </button>
+                    ` : ''}
+                </div>    
+            `)
+        }
+        function removeTokenReceiver(elem) {
+            elem.closest('.grid').remove()
+        }
+
+        // getRef('tx_token_amount').addEventListener('input', e => {
+        //     const tokenAmount = parseFloat(e.target.value.trim())
+        //     const selectedToken = document.getElementById('sender_tokens_wrapper').querySelector('input[type="radio"]:checked')
+        //     const tokenName = selectedToken.value
+        //     const tokenBalance = parseFloat(selectedToken.dataset.balance)
+        //     getRef('flo_data_textarea').value = `send ${tokenAmount} ${tokenName}#`
+        // })
         getRef('tx_flo_amount').addEventListener('input', e => {
             const floAmount = parseFloat(e.target.value.trim())
             const { rangeOverflow, rangeUnderflow } = e.target.validity;
@@ -2377,7 +2420,7 @@
                         </p>
                     ` : ''}
                 </div>
-                <div id="sender_tokens_wrapper" class="grid hidden"></div>
+                <div id="sender_tokens_wrapper" class="grid gap-1 hidden"></div>
             `)
         }
 
@@ -2529,34 +2572,82 @@
             })
         }
 
-        function initTransaction() {
-            const privKey = getRef('get_private_key_field').value.trim();
-            const sender = floCrypto.getFloID(privKey)
-            const floAmount = parseFloat(getRef('tx_flo_amount').value.trim());
-            const receiver = getRef('receiver').value.trim();
-            const floData = getRef('flo_data_textarea').value.trim();
-            const selectedToken = document.getElementById('sender_tokens_wrapper').querySelector('input[type="radio"]:checked')
-            const tokenAmount = parseFloat(getRef('tx_token_amount').value.trim())
-            getConfirmation(`Confirm transaction`, {
-                message: `
-                    Sending ${floAmount} FLO ${selectedToken && selectedToken.value !== 'none' ? ` and ${tokenAmount} ${selectedToken.value}` : ''} to ${receiver} 
-                `,
-                confirmText: 'Send',
-            }).then(res => {
-                if (res) {
-                    buttonLoader('send_button', true)
-                    floWebWallet.sendTransaction(sender, receiver, floAmount, floData, privKey).then((transactionId) => {
-                        showTransactionResult(true, transactionId);
-                        getRef('send_form').reset();
-                        getRef('send_button').disabled = true;
-                        resetBalance()
-                    }).catch((error) => {
-                        showTransactionResult(false, error);
-                    }).finally(() => {
-                        buttonLoader('send_button', false)
+        async function initTransaction() {
+            try {
+                const privKey = getRef('get_private_key_field').value.trim();
+                const sender = floCrypto.getFloID(privKey)
+                const floAmount = parseFloat(getRef('tx_flo_amount').value.trim());
+                const floData = getRef('flo_data_textarea').value.trim();
+                const selectedToken = document.getElementById('sender_tokens_wrapper').querySelector('input[type="radio"]:checked')
+                let transactionId
+                if (floGlobals.sendType === 'flo') {
+                    const receiver = document.getElementById('tx_receiver').value.trim();
+                    const consent = await getConfirmation(`Confirm transaction`, {
+                        message: ` Sending ${floAmount} FLO to ${receiver} `,
+                        confirmText: 'Send',
                     })
+                    if (!consent) return;
+                    buttonLoader('send_button', true)
+                    transactionId = await floWebWallet.sendTransaction(sender, receiver, floAmount, floData, privKey)
+                    showTransactionResult(true, transactionId);
+                } else {
+                    const bulkTokenReceivers = {}
+                    getRef('tx_receiver_wrapper').querySelectorAll('.token-receiver-combo').forEach(elem => {
+                        const receiverFloAddress = elem.querySelector('.token-receiver').value.trim()
+                        const receiverTokenAmount = parseFloat(elem.querySelector('.token-amount').value.trim())
+                        if (receiverFloAddress !== '' && receiverTokenAmount) {
+                            if (!bulkTokenReceivers[receiverFloAddress])
+                                bulkTokenReceivers[receiverFloAddress] = 0
+                            bulkTokenReceivers[receiverFloAddress] += receiverTokenAmount
+                        }
+                    })
+                    const tokenReceivers = Object.keys(bulkTokenReceivers)
+                    if (tokenReceivers.length) {
+                        const consent = await getConfirmation(`Confirm transaction`, {
+                            message: `
+                                Sending ${selectedToken.value} tokens to \n\n ${tokenReceivers.map(r => `${r}: ${bulkTokenReceivers[r]} ${selectedToken.value}`).join('\n')}
+                            `,
+                            confirmText: 'Send',
+                        })
+                        if (!consent) return;
+                        buttonLoader('send_button', true)
+                        if (tokenReceivers.length > 1) {
+                            // transfer tokens to multiple addresses
+                            transactionIds = await floWebWallet.bulkTransferTokens(sender, privKey, selectedToken.value, bulkTokenReceivers)
+                            showTransactionResult(true, null, {
+                                title: `Multiple transactions have been initiated`,
+                                description: html`
+                                    <ul class="grid gap-0-5">
+                                        ${tokenReceivers.map((receiver, index) => html`
+                                            <li>
+                                                <a href=${`${floBlockchainAPI.current_server}tx/${transactionIds[receiver]}`} target="_blank">
+                                                    Check ${receiver} (${bulkTokenReceivers[receiver]} ${selectedToken.value}) transaction
+                                                </a>
+                                            </li>
+                                        `)}
+                                    </ul>
+                                `
+                            });
+                        } else {
+                            const floData = `send ${bulkTokenReceivers[tokenReceivers[0]]} ${selectedToken.value}#`
+                            transactionId = await floBlockchainAPI.writeData(sender, floData, privKey, tokenReceivers[0])
+                            showTransactionResult(true, transactionId);
+                        }
+                    } else {
+                        notify('Please enter at least one receiver', 'error')
+                        buttonLoader('send_button', false)
+                        return
+                    }
                 }
-            })
+                getRef('send_form').reset();
+                buttonLoader('send_button', false)
+                getRef('send_button').disabled = true;
+                resetBalance()
+            } catch (e) {
+                console.error(e)
+                showTransactionResult(false, e);
+                buttonLoader('send_button', false)
+            }
         }
 
         function showTransactionResult(success, result, options = {}) {
@@ -2575,7 +2666,7 @@
                 ` : ''}
                 <h3 id="transaction_result__title">${title}</h3>
                 <p id="transaction_result__description"> ${description} </p>
-                ${success ? html`
+                ${success && result ? html`
                     <div class="grid gap-1">
                         <a id="transaction_link" href=${`${floBlockchainAPI.current_server}tx/${result}`} style="margin-top: 1.5rem;" target="_blank">See transaction on blockchain</a>
                         <div class="grid">

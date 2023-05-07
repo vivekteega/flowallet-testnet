@@ -149,7 +149,7 @@
     }
 
     //bulk transfer tokens
-    floWebWallet.bunkTransferTokens = function (sender, privKey, token, receivers) {
+    floWebWallet.bulkTransferTokens = function (sender, privKey, token, receivers) {
         return new Promise((resolve, reject) => {
             if (typeof receivers !== 'object')
                 return reject("receivers must be object in format {receiver1: amount1, receiver2:amount2...}")
@@ -186,8 +186,6 @@
                 }).catch(error => reject(error))
 
             }).catch(error => reject(error))
-
-
         })
     }
 
