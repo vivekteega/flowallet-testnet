@@ -52,7 +52,11 @@
                         routeTo(window.location.hash, { firstLoad: true })
                     }).catch(e => {
                         console.error(e)
-                        notify('Error fetching tokens', 'error')
+                        if (window.location.hash.includes('smartcontracts'))
+                            routeTo('', { firstLoad: true })
+                        else
+                            routeTo(window.location.hash, { firstLoad: true })
+                        getRef('smart_contract_link').classList.add('hidden')
                     }).finally(() => {
                         loader(false)
                     })
@@ -620,7 +624,7 @@
                     </a>
                 </li>
                 <li>
-                    <a href="#/smartcontracts" class="nav-item interact" title='Send FLO data'>
+                    <a id="smart_contract_link" href="#/smartcontracts" class="nav-item interact" title='Send FLO data'>
                         <svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24"
                             height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
                             <path d="M0,0h24v24H0V0z" fill="none" />
