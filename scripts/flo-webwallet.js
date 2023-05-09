@@ -54,18 +54,17 @@
             compactIDB.readData('lastSync', addr).then(lastSync => {
                 const old_support = Number.isInteger(lastSync); //backward support
                 let fetch_options = {};
-                if (typeof lastSync == 'string' && /^[a-f0-9]{64}&/i.test(lastSync))    //txid as lastSync
+                if (typeof lastSync == 'string' && /^[a-f0-9]{64}$/i.test(lastSync))    //txid as lastSync
                     fetch_options.after = lastSync;
-                floBlockchainAPI.readTxs(addr, fetch_options).then(response => {
+                floBlockchainAPI.readAllTxs(addr, fetch_options).then(response => {
                     let newItems = response.items.map(({ time, txid, floData, isCoinBase, vin, vout }) => ({
                         time, txid, floData, isCoinBase,
                         sender: isCoinBase ? `(mined)${vin[0].coinbase}` : vin[0].addr,
                         receiver: isCoinBase ? addr : vout[0].scriptPubKey.addresses[0]
-                    }));
+                    })).reverse();
                     compactIDB.readData('transactions', addr).then(IDBresult => {
                         if ((IDBresult === undefined || old_support))//backward support
                             IDBresult = [];
-                        console.debug(old_support, IDBresult)
                         compactIDB.writeData('transactions', IDBresult.concat(newItems), addr).then(result => {
                             compactIDB.writeData('lastSync', response.lastItem, addr)
                                 .then(result => resolve(newItems))
