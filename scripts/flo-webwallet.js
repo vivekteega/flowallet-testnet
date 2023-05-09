@@ -110,23 +110,6 @@
         })
     }
 
-    function sendRawTransaction(receiver, utxo, vout, scriptPubKey, data, wif) {
-        var trx = bitjs.transaction();
-        trx.addinput(utxo, vout, scriptPubKey)
-        trx.addoutput(receiver, floBlockchainAPI.sendAmt);
-        trx.addflodata(data);
-        var signedTxHash = trx.sign(wif, 1);
-        return floBlockchainAPI.broadcastTx(signedTxHash);
-    }
-
-    function sendTokens_raw(privKey, receiverID, token, amount, utxo, vout, scriptPubKey) {
-        return new Promise((resolve, reject) => {
-            sendRawTransaction(receiverID, utxo, vout, scriptPubKey, `send ${amount} ${token}#`, privKey)
-                .then(txid => resolve([receiverID, txid]))
-                .catch(error => reject([receiverID, error]))
-        })
-    }
-
     //bulk transfer tokens
     floWebWallet.bunkTransferTokens = function (sender, privKey, token, receivers) {
         return new Promise((resolve, reject) => {
