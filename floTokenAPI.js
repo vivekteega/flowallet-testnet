@@ -1,4 +1,4 @@
-(function (EXPORTS) { //floTokenAPI v1.0.4
+(function (EXPORTS) { //floTokenAPI v1.0.4a
     /* Token Operator to send/receive tokens via blockchain using API calls*/
     'use strict';
     const tokenAPI = EXPORTS;
@@ -91,7 +91,7 @@
     }
 
     //bulk transfer tokens
-    tokenAPI.bunkTransferTokens = function (sender, privKey, token, receivers) {
+    tokenAPI.bulkTransferTokens = function (sender, privKey, token, receivers) {
         return new Promise((resolve, reject) => {
             if (typeof receivers !== 'object')
                 return reject("receivers must be object in format {receiver1: amount1, receiver2:amount2...}")
