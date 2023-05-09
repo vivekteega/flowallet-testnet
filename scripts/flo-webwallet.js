@@ -52,45 +52,31 @@
     floWebWallet.syncTransactions = function (addr) {
         return new Promise((resolve, reject) => {
             compactIDB.readData('lastSync', addr).then(lastSync => {
-                lastSync = lastSync | 0;
-                getNewTxs(addr, lastSync).then(APIresult => {
+                const old_support = Number.isInteger(lastSync); //backward support
+                let fetch_options = {};
+                if (typeof lastSync == 'string' && /^[a-f0-9]{64}&/i.test(lastSync))    //txid as lastSync
+                    fetch_options.after = lastSync;
+                floBlockchainAPI.readTxs(addr, fetch_options).then(response => {
+                    let newItems = response.items.map(({ time, txid, floData, isCoinBase, vin, vout }) => ({
+                        time, txid, floData, isCoinBase,
+                        sender: isCoinBase ? `(mined)${vin[0].coinbase}` : vin[0].addr,
+                        receiver: isCoinBase ? addr : vout[0].scriptPubKey.addresses[0]
+                    }));
                     compactIDB.readData('transactions', addr).then(IDBresult => {
-                        if (IDBresult === undefined)
-                            var promise1 = compactIDB.addData('transactions', APIresult.items, addr)
-                        else
-                            var promise1 = compactIDB.writeData('transactions', IDBresult.concat(APIresult.items), addr)
-                        var promise2 = compactIDB.writeData('lastSync', APIresult.totalItems, addr)
-                        Promise.all([promise1, promise2]).then(values => resolve(APIresult.items))
+                        if ((IDBresult === undefined || old_support))//backward support
+                            IDBresult = [];
+                        console.debug(old_support, IDBresult)
+                        compactIDB.writeData('transactions', IDBresult.concat(newItems), addr).then(result => {
+                            compactIDB.writeData('lastSync', response.lastItem, addr)
+                                .then(result => resolve(newItems))
+                                .catch(error => reject(error))
+                        }).catch(error => reject(error))
                     })
-                })
+
+                }).catch(error => reject(error))
             }).catch(error => reject(error))
         })
     }
-
-    //Get new Tx in blockchain since last sync using API
-    async function getNewTxs(addr, ignoreOld) {
-        try {
-            const { totalItems } = await floBlockchainAPI.readTxs(addr, 0, 1);
-            const newItems = totalItems - ignoreOld;
-            if (newItems > 0) {
-                const { items: newTxs } = await floBlockchainAPI.readTxs(addr, 0, newItems * 2);
-                const filteredData = []
-                newTxs
-                    .slice(0, newItems)
-                    .forEach(({ time, txid, floData, isCoinBase, vin, vout }) => {
-                        const sender = isCoinBase ? `(mined)${vin[0].coinbase}` : vin[0].addr;
-                        const receiver = isCoinBase ? addr : vout[0].scriptPubKey.addresses[0];
-                        filteredData.unshift({ time, txid, floData, sender, receiver });
-                    })
-                return { totalItems, items: filteredData };
-            } else {
-                return { totalItems, items: [] };
-            }
-        } catch (error) {
-            throw new Error(`Failed to get new transactions for ${addr}: ${error.message}`);
-        }
-    }
-
 
     //read transactions stored in IDB : resolves Array(storedItems)
     floWebWallet.readTransactions = function (addr) {
@@ -111,9 +97,9 @@
     }
 
     //bulk transfer tokens
-    floWebWallet.bunkTransferTokens = function (sender, privKey, token, receivers) {
+    floWebWallet.bulkTransferTokens = function (sender, privKey, token, receivers) {
         return new Promise((resolve, reject) => {
-            floTokenAPI.bunkTransferTokens(sender, privKey, token, receivers)
+            floTokenAPI.bulkTransferTokens(sender, privKey, token, receivers)
                 .then(result => resolve(result))
                 .catch(error => reject(error))
         })
