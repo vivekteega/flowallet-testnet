@@ -1,4 +1,4 @@
-(function (EXPORTS) { //floBlockchainAPI v2.5.6
+(function (EXPORTS) { //floBlockchainAPI v2.5.6a
     /* FLO Blockchain Operator to send/receive data from blockchain using API calls*/
     'use strict';
     const floBlockchainAPI = EXPORTS;
@@ -6,7 +6,7 @@
     const DEFAULT = {
         blockchain: floGlobals.blockchain,
         apiURL: {
-            FLO: ['https://flosight.duckdns.org/', 'https://flosight.ranchimall.net/'],
+            FLO: ['https://flosight.ranchimall.net/'],
             FLO_TEST: ['https://flosight-testnet.ranchimall.net/']
         },
         sendAmt: 0.0003,
@@ -853,7 +853,7 @@
     }
 
     //Read All Txs of Address (newest first)
-    const readAllTxs = floBlockchainAPI.readAllTxs = function (addr, options) {
+    const readAllTxs = floBlockchainAPI.readAllTxs = function (addr, options = {}) {
         return new Promise((resolve, reject) => {
             readTxs(addr, options).then(response => {
                 if (response.incomplete) {
