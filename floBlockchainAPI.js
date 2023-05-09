@@ -1,4 +1,4 @@
-(function (EXPORTS) { //floBlockchainAPI v2.5.1
+(function (EXPORTS) { //floBlockchainAPI v2.5.6a
     /* FLO Blockchain Operator to send/receive data from blockchain using API calls*/
     'use strict';
     const floBlockchainAPI = EXPORTS;
@@ -6,8 +6,8 @@
     const DEFAULT = {
         blockchain: floGlobals.blockchain,
         apiURL: {
-            FLO: ['https://flosight.duckdns.org/', 'https://flosight.ranchimall.net/'],
-            FLO_TEST: ['https://testnet-flosight.duckdns.org', 'https://testnet.flocha.in/']
+            FLO: ['https://flosight.ranchimall.net/'],
+            FLO_TEST: ['https://flosight-testnet.ranchimall.net/']
         },
         sendAmt: 0.0003,
         fee: 0.0002,
@@ -16,6 +16,7 @@
     };
 
     const SATOSHI_IN_BTC = 1e8;
+    const isUndefined = val => typeof val === 'undefined';
 
     const util = floBlockchainAPI.util = {};
 
@@ -111,9 +112,11 @@
     });
 
     //Promised function to get data from API
-    const promisedAPI = floBlockchainAPI.promisedAPI = floBlockchainAPI.fetch = function (apicall) {
+    const promisedAPI = floBlockchainAPI.promisedAPI = floBlockchainAPI.fetch = function (apicall, query_params = undefined) {
         return new Promise((resolve, reject) => {
-            //console.log(apicall);
+            if (!isUndefined(query_params))
+                apicall += '?' + new URLSearchParams(JSON.parse(JSON.stringify(query_params))).toString();
+            //console.debug(apicall);
             fetch_api(apicall)
                 .then(result => resolve(result))
                 .catch(error => reject(error));
@@ -123,13 +126,13 @@
     //Get balance for the given Address
     const getBalance = floBlockchainAPI.getBalance = function (addr, after = null) {
         return new Promise((resolve, reject) => {
-            let api = `api/addr/${addr}/balance`;
+            let api = `api/addr/${addr}/balance`, query_params = {};
             if (after) {
                 if (typeof after === 'string' && /^[0-9a-z]{64}$/i.test(after))
-                    api += '?after=' + after;
+                    query_params.after = after;
                 else return reject("Invalid 'after' parameter");
             }
-            promisedAPI(api).then(result => {
+            promisedAPI(api, query_params).then(result => {
                 if (typeof result === 'object' && result.lastItem) {
                     getBalance(addr, result.lastItem)
                         .then(r => resolve(util.toFixed(r + result.data)))
@@ -269,6 +272,56 @@
                 broadcastTx(signedTxHash)
                     .then(txid => resolve(txid))
                     .catch(error => reject(error))
+            }).catch(error => reject(error))
+        })
+    }
+
+    //split sufficient UTXOs of a given floID for a parallel sending
+    floBlockchainAPI.splitUTXOs = function (floID, privKey, count, floData = '') {
+        return new Promise((resolve, reject) => {
+            if (!floCrypto.validateFloID(floID, true))
+                return reject(`Invalid floID`);
+            if (!floCrypto.verifyPrivKey(privKey, floID))
+                return reject("Invalid Private Key");
+            if (!floCrypto.validateASCII(floData))
+                return reject("Invalid FLO_Data: only printable ASCII characters are allowed");
+            var fee = DEFAULT.fee;
+            var splitAmt = DEFAULT.sendAmt + fee;
+            var totalAmt = splitAmt * count;
+            getBalance(floID).then(balance => {
+                var fee = DEFAULT.fee;
+                if (balance < totalAmt + fee)
+                    return reject("Insufficient FLO balance!");
+                //get unconfirmed tx list
+                getUnconfirmedSpent(floID).then(unconfirmedSpent => {
+                    getUTXOs(floID).then(utxos => {
+                        var trx = bitjs.transaction();
+                        var utxoAmt = 0.0;
+                        for (let i = utxos.length - 1; (i >= 0) && (utxoAmt < totalAmt + fee); i--) {
+                            //use only utxos with confirmations (strict_utxo mode)
+                            if (utxos[i].confirmations || !strict_utxo) {
+                                if (utxos[i].txid in unconfirmedSpent && unconfirmedSpent[utxos[i].txid].includes(utxos[i].vout))
+                                    continue; //A transaction has already used the utxo, but is unconfirmed.
+                                trx.addinput(utxos[i].txid, utxos[i].vout, utxos[i].scriptPubKey);
+                                utxoAmt += utxos[i].amount;
+                            };
+                        }
+                        if (utxoAmt < totalAmt + fee)
+                            reject("Insufficient FLO: Some UTXOs are unconfirmed");
+                        else {
+                            for (let i = 0; i < count; i++)
+                                trx.addoutput(floID, splitAmt);
+                            var change = utxoAmt - totalAmt - fee;
+                            if (change > DEFAULT.minChangeAmt)
+                                trx.addoutput(floID, change);
+                            trx.addflodata(floData.replace(/\n/g, ' '));
+                            var signedTxHash = trx.sign(privKey, 1);
+                            broadcastTx(signedTxHash)
+                                .then(txid => resolve(txid))
+                                .catch(error => reject(error))
+                        }
+                    }).catch(error => reject(error))
+                }).catch(error => reject(error))
             }).catch(error => reject(error))
         })
     }
@@ -737,7 +790,7 @@
         })
     }
 
-    floBlockchainAPI.getTx = function (txid) {
+    const getTx = floBlockchainAPI.getTx = function (txid) {
         return new Promise((resolve, reject) => {
             promisedAPI(`api/tx/${txid}`)
                 .then(response => resolve(response))
@@ -745,46 +798,77 @@
         })
     }
 
-    const isUndefined = val => typeof val === 'undefined';
+    /**Wait for the given txid to get confirmation in blockchain
+     * @param  {string} txid of the transaction to wait for
+     * @param  {int} max_retry: maximum number of retries before exiting wait. negative number = Infinite retries  (DEFAULT: -1 ie, infinite retries)
+     * @param  {Array} retry_timeout: time (seconds) between retries (DEFAULT: 20 seconds)
+     * @return {Promise} resolves when tx gets confirmation
+     */
+    const waitForConfirmation = floBlockchainAPI.waitForConfirmation = function (txid, max_retry = -1, retry_timeout = 20) {
+        return new Promise((resolve, reject) => {
+            setTimeout(function () {
+                getTx(txid).then(tx => {
+                    if (!tx)
+                        return reject("Transaction not found");
+                    if (tx.confirmations)
+                        return resolve(tx);
+                    else if (max_retry === 0)    //no more retries
+                        return reject("Waiting timeout: tx still not confirmed");
+                    else {
+                        max_retry = max_retry < 0 ? -1 : max_retry - 1; //decrease retry count (unless infinite retries)
+                        waitForConfirmation(txid, max_retry, retry_timeout)
+                            .then(result => resolve(result))
+                            .catch(error => reject(error))
+                    }
+                }).catch(error => reject(error))
+            }, retry_timeout * 1000)
+        })
+    }
 
     //Read Txs of Address between from and to
     const readTxs = floBlockchainAPI.readTxs = function (addr, options = {}) {
         return new Promise((resolve, reject) => {
             let api = `api/addrs/${addr}/txs`;
             //API options
-            let api_options = [];
-            if (!isUndefined(options.after))
-                api_options.push(`after=${options.after}`);
-            else {
+            let query_params = {};
+            if (!isUndefined(options.after) || !isUndefined(options.before)) {
+                if (!isUndefined(options.after))
+                    query_params.after = options.after;
+                if (!isUndefined(options.before))
+                    query_params.before = options.before;
+            } else {
                 if (!isUndefined(options.from))
-                    api_options.push(`from=${options.from}`);
+                    query_params.from = options.from;
                 if (!isUndefined(options.to))
-                    api_options.push(`to=${options.to}`);
+                    query_params.to = options.to;
             }
+            if (!isUndefined(options.latest))
+                query_params.latest = latest;
             if (!isUndefined(options.mempool))
-                api_options.push(`mempool=${options.mempool}`)
-            if (api_options.length)
-                api += "?" + api_options.join('&');
-            promisedAPI(api)
+                query_params.mempool = options.mempool;
+            promisedAPI(api, query_params)
                 .then(response => resolve(response))
                 .catch(error => reject(error))
         });
     }
 
     //Read All Txs of Address (newest first)
-    const readAllTxs = floBlockchainAPI.readAllTxs = function (addr, options) {
+    const readAllTxs = floBlockchainAPI.readAllTxs = function (addr, options = {}) {
         return new Promise((resolve, reject) => {
             readTxs(addr, options).then(response => {
                 if (response.incomplete) {
                     let next_options = Object.assign({}, options);
-                    next_options.after = response.lastItem;
+                    if (options.latest)
+                        next_options.before = response.initItem; //update before for chain query (latest 1st)
+                    else
+                        next_options.after = response.lastItem; //update after for chain query (oldest 1st)
                     readAllTxs(addr, next_options).then(r => {
                         r.items = r.items.concat(response.items);   //latest tx are 1st in array
                         resolve(r);
                     }).catch(error => reject(error))
                 } else
                     resolve({
-                        lastKey: response.lastItem || options.after,
+                        lastItem: response.lastItem || options.after,
                         items: response.items
                     });
             })
@@ -794,6 +878,7 @@
     /*Read flo Data from txs of given Address
     options can be used to filter data
     after       : query after the given txid
+    before      : query before the given txid
     mempool     : query mempool tx or not (options same as readAllTx, DEFAULT=false: ignore unconfirmed tx)
     ignoreOld   : ignore old txs (deprecated: support for backward compatibility only, cannot be used with 'after')
     sentOnly    : filters only sent data
@@ -808,17 +893,18 @@
         return new Promise((resolve, reject) => {
 
             //fetch options
-            let fetch_options = {};
-            fetch_options.mempool = isUndefined(options.mempool) ? 'false' : options.mempool; //DEFAULT: ignore unconfirmed tx
-            if (!isUndefined(options.after)) {
+            let query_options = {};
+            query_options.mempool = isUndefined(options.mempool) ? false : options.mempool; //DEFAULT: ignore unconfirmed tx
+            if (!isUndefined(options.after) || !isUndefined(options.before)) {
                 if (!isUndefined(options.ignoreOld)) //Backward support
-                    return reject("Invalid options: cannot use after and ignoreOld in same query");
-                else
-                    fetch_options.after = options.after;
+                    return reject("Invalid options: cannot use after/before and ignoreOld in same query");
+                //use passed after and/or before options (options remain undefined if not passed)
+                query_options.after = options.after;
+                query_options.before = options.before;
             }
-            readAllTxs(addr, fetch_options).then(response => {
+            readAllTxs(addr, query_options).then(response => {
 
-                if (Number.isInteger(options.ignoreOld))  //backward support, cannot be used with options.after
+                if (Number.isInteger(options.ignoreOld))  //backward support, cannot be used with options.after or options.before
                     response.items.splice(-options.ignoreOld);   //negative to count from end of the array
 
                 if (typeof options.senders === "string") options.senders = [options.senders];
@@ -863,12 +949,87 @@
                     data: tx.floData
                 } : tx.floData);
 
-                const result = { lastKey: response.lastKey };
+                const result = { lastItem: response.lastItem };
                 if (options.tx)
                     result.items = filteredData;
                 else
                     result.data = filteredData
                 resolve(result);
+
+            }).catch(error => reject(error))
+        })
+    }
+
+    /*Get the latest flo Data that match the caseFn from txs of given Address
+    caseFn: (function) flodata => return bool value
+    options can be used to filter data
+    after       : query after the given txid
+    before      : query before the given txid
+    mempool     : query mempool tx or not (options same as readAllTx, DEFAULT=false: ignore unconfirmed tx)
+    sentOnly    : filters only sent data
+    receivedOnly: filters only received data
+    tx          : (boolean) resolve tx data or not (resolves an Array of Object with tx details)
+    sender      : flo-id(s) of sender
+    receiver    : flo-id(s) of receiver
+    */
+    const getLatestData = floBlockchainAPI.getLatestData = function (addr, caseFn, options = {}) {
+        return new Promise((resolve, reject) => {
+            //fetch options
+            let query_options = { latest: true };
+            query_options.mempool = isUndefined(options.mempool) ? false : options.mempool; //DEFAULT: ignore unconfirmed tx
+            if (!isUndefined(options.after)) query_options.after = options.after;
+            if (!isUndefined(options.before)) query_options.before = options.before;
+
+            readTxs(addr, query_options).then(response => {
+
+                if (typeof options.senders === "string") options.senders = [options.senders];
+                if (typeof options.receivers === "string") options.receivers = [options.receivers];
+
+                var item = response.items.find(tx => {
+                    if (!tx.confirmations)  //unconfirmed transactions: this should not happen as we send mempool=false in API query
+                        return false;
+
+                    if (options.sentOnly && !tx.vin.some(vin => vin.addr === addr))
+                        return false;
+                    else if (Array.isArray(options.senders) && !tx.vin.some(vin => options.senders.includes(vin.addr)))
+                        return false;
+
+                    if (options.receivedOnly && !tx.vout.some(vout => vout.scriptPubKey.addresses[0] === addr))
+                        return false;
+                    else if (Array.isArray(options.receivers) && !tx.vout.some(vout => options.receivers.includes(vout.scriptPubKey.addresses[0])))
+                        return false;
+
+                    return caseFn(tx.floData) ? true : false;   //return only bool for find fn
+                });
+
+                //if item found, then resolve the result
+                if (!isUndefined(item)) {
+                    const result = { lastItem: response.lastItem };
+                    if (options.tx) {
+                        result.item = {
+                            txid: tx.txid,
+                            time: tx.time,
+                            blockheight: tx.blockheight,
+                            senders: new Set(tx.vin.map(v => v.addr)),
+                            receivers: new Set(tx.vout.map(v => v.scriptPubKey.addresses[0])),
+                            data: tx.floData
+                        }
+                    } else
+                        result.data = tx.floData;
+                    return resolve(result);
+                }
+                //else if address needs chain query
+                else if (response.incomplete) {
+                    let next_options = Object.assign({}, options);
+                    options.before = response.initItem; //this fn uses latest option, so using before to chain query
+                    getLatestData(addr, caseFn, next_options).then(r => {
+                        r.lastItem = response.lastItem;  //update last key as it should be the newest tx
+                        resolve(r);
+                    }).catch(error => reject(error))
+                }
+                //no data match the caseFn, resolve just the lastItem
+                else
+                    resolve({ lastItem: response.lastItem });
 
             }).catch(error => reject(error))
         })
