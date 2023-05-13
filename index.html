@@ -208,7 +208,7 @@
                     </div>
                     <section class="grid gap-1">
                         <div class="flex align-center space-between sticky top-0"
-                            style="background-color: rgba(var(--foreground-color), 1);">
+                            style="background-color: rgba(var(--foreground-color), 1);transition: background-color .3s;">
                             <h4>Transactions</h4>
                             <sm-chips id="filter_selector" class="hidden">
                                 <sm-chip value="sent" selected>Sent</sm-chip>
@@ -1224,12 +1224,6 @@
                             try {
                                 if (floGlobals.query.string !== query) {
                                     checkBalance(query)
-                                    renderElem(getRef('queried_address_transactions'), html`
-                                        <div class="grid gap-1 justify-items-center text-center" style="margin: 3rem 0">
-                                            <sm-spinner></sm-spinner>
-                                            <span>Loading transactions...</span>
-                                        </div>
-                                    `)
                                     fetchTransactions(query).then(() => {
                                         filterFetchedTransactions()
                                         render.paginatedTransactions(parseInt(page))
@@ -1916,8 +1910,8 @@
             paginatedTransactions(page = 1) {
                 const startingIndex = ((page - 1) * 20)
                 const endingIndex = startingIndex + 20
-                const { transactions, string: address } = floGlobals.query
-                const renderedTransactions = transactions
+                const { transactions, string: address, filteredTransactions } = floGlobals.query
+                const renderedTransactions = (filteredTransactions || transactions)
                     .slice(startingIndex, endingIndex)
                     .map(transaction => render.transactionCard(transaction))
                 renderElem(getRef('queried_address_transactions'), html`${renderedTransactions}`)
@@ -1930,7 +1924,7 @@
                 } else {
                     getRef('filter_selector').classList.add('hidden')
                 }
-                const paginationSegments = transactions ? Math.ceil(transactions.length / renderTransactions) : 0;
+                const paginationSegments = (filteredTransactions || transactions) ? Math.ceil((filteredTransactions || transactions).length / renderTransactions) : 0;
                 let pagination = []
                 let startingPage = page - 2;
                 let showTill = page + 2;
@@ -2144,8 +2138,7 @@
             closePopup()
         })
 
-        getRef('filter_selector').addEventListener('change', async e => {
-            floGlobals.query.transactions = (await floWebWallet.readTransactions(floGlobals.query.string)).reverse();
+        getRef('filter_selector').addEventListener('change', e => {
             filterFetchedTransactions()
             render.paginatedTransactions()
         })
@@ -2555,18 +2548,26 @@
         }
         async function fetchTransactions(address) {
             try {
-                floGlobals.query.transactions = [];
-                await floWebWallet.syncTransactions(address);
-                floGlobals.query.transactions = (await floWebWallet.readTransactions(address)).reverse();
+                renderElem(getRef('pagination_wrapper'), html``)
+                renderElem(getRef('queried_address_transactions'), html`
+                    <div class="grid gap-1 justify-items-center text-center" style="margin: 3rem 0">
+                        <sm-spinner></sm-spinner>
+                        <span>Loading transactions...</span>
+                    </div>
+                `)
+                const { items, lastItem, initItem } = await floWebWallet.listTransactions(address);
+                floGlobals.query.transactions = items;
                 floGlobals.query.string = address;
+                floGlobals.query.filteredTransactions = null
             } catch (err) {
-                console.error(err);
+                renderElem(getRef('queried_address_transactions'), html` <span>Failed to load transactions</span> `)
+                throw err;
             }
         }
         function filterFetchedTransactions() {
             const filter = getRef('filter_selector').value;
             if (filter !== 'all') {
-                floGlobals.query.transactions = floGlobals.query.transactions.filter(t => filter === 'sent' ? t.sender === floGlobals.query.string : t.receiver === floGlobals.query.string)
+                floGlobals.query.filteredTransactions = floGlobals.query.transactions.filter(t => filter === 'sent' ? t.sender === floGlobals.query.string : t.receiver === floGlobals.query.string)
             }
         }
         async function processQuery() {
