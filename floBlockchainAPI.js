@@ -1,4 +1,4 @@
-(function (EXPORTS) { //floBlockchainAPI v2.5.6a
+(function (EXPORTS) { //floBlockchainAPI v2.5.6b
     /* FLO Blockchain Operator to send/receive data from blockchain using API calls*/
     'use strict';
     const floBlockchainAPI = EXPORTS;
@@ -843,7 +843,7 @@
                     query_params.to = options.to;
             }
             if (!isUndefined(options.latest))
-                query_params.latest = latest;
+                query_params.latest = options.latest;
             if (!isUndefined(options.mempool))
                 query_params.mempool = options.mempool;
             promisedAPI(api, query_params)
