@@ -1149,6 +1149,8 @@ legend,
     left: 50%;
     right: auto;
     transform: translateX(-50%);
+    width: calc(100vw - 2rem);
+    flex-wrap: wrap;
   }
 }
 @media screen and (min-width: 40rem) {
