@@ -1218,18 +1218,24 @@
                 pagesData.params = params
             switch (pageId) {
                 case 'search': {
-                    const { type, query, page = 1 } = params
+                    let { type, query, page = 1 } = params
                     switch (type) {
                         case 'address':
                             try {
+                                page = parseInt(page)
                                 if (floGlobals.query.string !== query) {
                                     checkBalance(query)
                                     fetchTransactions(query).then(() => {
                                         filterFetchedTransactions()
-                                        render.paginatedTransactions(parseInt(page))
+                                        render.paginatedTransactions(page)
+                                    })
+                                } else if (page % Math.ceil(1000 / txsPerPage) === 0 && floGlobals.query.transactions.length <= page * txsPerPage) {
+                                    fetchTransactions(query, true).then(() => {
+                                        filterFetchedTransactions()
+                                        render.paginatedTransactions(page)
                                     })
                                 } else {
-                                    render.paginatedTransactions(parseInt(page))
+                                    render.paginatedTransactions(page)
                                 }
                             } catch (err) {
                                 notify(err, 'error')
@@ -1908,9 +1914,13 @@
                 return clone
             },
             paginatedTransactions(page = 1) {
-                const startingIndex = ((page - 1) * 20)
-                const endingIndex = startingIndex + 20
                 const { transactions, string: address, filteredTransactions } = floGlobals.query
+                let startingIndex = ((page - 1) * txsPerPage)
+                if (filteredTransactions && startingIndex > filteredTransactions.length) {
+                    startingIndex = 0;
+                    window.history.replaceState({}, '', `#/search?type=address&query=${address}&page=1`)
+                }
+                const endingIndex = startingIndex + txsPerPage
                 const renderedTransactions = (filteredTransactions || transactions)
                     .slice(startingIndex, endingIndex)
                     .map(transaction => render.transactionCard(transaction))
@@ -1924,7 +1934,7 @@
                 } else {
                     getRef('filter_selector').classList.add('hidden')
                 }
-                const paginationSegments = (filteredTransactions || transactions) ? Math.ceil((filteredTransactions || transactions).length / renderTransactions) : 0;
+                const paginationSegments = (filteredTransactions || transactions) ? Math.ceil((filteredTransactions || transactions).length / txsPerPage) : 0;
                 let pagination = []
                 let startingPage = page - 2;
                 let showTill = page + 2;
@@ -2540,13 +2550,13 @@
                 }
             })
         }
-
-        let renderTransactions = 20;
         floGlobals.query = {
             transactions: [],
             string: '',
+            filteredTransactions: null
         }
-        async function fetchTransactions(address) {
+        const txsPerPage = 25;
+        async function fetchTransactions(address, loadOlder = false) {
             try {
                 renderElem(getRef('pagination_wrapper'), html``)
                 renderElem(getRef('queried_address_transactions'), html`
@@ -2555,10 +2565,24 @@
                         <span>Loading transactions...</span>
                     </div>
                 `)
-                const { items, lastItem, initItem } = await floWebWallet.listTransactions(address);
-                floGlobals.query.transactions = items;
-                floGlobals.query.string = address;
-                floGlobals.query.filteredTransactions = null
+                if (loadOlder) {
+                    const { items, initItem } = await floWebWallet.listTransactions.syncOld(address, floGlobals.query.initItem)
+                    floGlobals.query = {
+                        transactions: [...items, ...floGlobals.query.transactions],
+                        string: address,
+                        initItem,
+                        filteredTransactions: null
+                    }
+                } else {
+                    const { items, lastItem, initItem } = await floWebWallet.listTransactions(address)
+                    floGlobals.query = {
+                        transactions: items,
+                        string: address,
+                        lastItem,
+                        initItem,
+                        filteredTransactions: null
+                    }
+                }
             } catch (err) {
                 renderElem(getRef('queried_address_transactions'), html` <span>Failed to load transactions</span> `)
                 throw err;
@@ -2568,6 +2592,8 @@
             const filter = getRef('filter_selector').value;
             if (filter !== 'all') {
                 floGlobals.query.filteredTransactions = floGlobals.query.transactions.filter(t => filter === 'sent' ? t.sender === floGlobals.query.string : t.receiver === floGlobals.query.string)
+            } else {
+                floGlobals.query.filteredTransactions = null
             }
         }
         async function processQuery() {
