@@ -30,10 +30,10 @@
         })
     }
 
-    //get balance of addr using API : resolves (balance)
-    floWebWallet.getBalance = function (addr) {
+    //get balance of address using API : resolves (balance)
+    floWebWallet.getBalance = function (address) {
         return new Promise((resolve, reject) => {
-            floBlockchainAPI.getBalance(addr)
+            floBlockchainAPI.getBalance(address)
                 .then(txid => resolve(txid))
                 .catch(error => reject(error))
         })
@@ -48,45 +48,52 @@
         })
     }
 
-    //sync new transactions from blockchain using API and stores in IDB : resolves Array(newItems)
-    floWebWallet.syncTransactions = function (addr) {
+    function listTransactions_raw(address, options = {}) {
         return new Promise((resolve, reject) => {
-            compactIDB.readData('lastSync', addr).then(lastSync => {
-                const old_support = Number.isInteger(lastSync); //backward support
-                let fetch_options = {};
-                if (typeof lastSync == 'string' && /^[a-f0-9]{64}$/i.test(lastSync))    //txid as lastSync
-                    fetch_options.after = lastSync;
-                floBlockchainAPI.readAllTxs(addr, fetch_options).then(response => {
-                    let newItems = response.items.map(({ time, txid, floData, isCoinBase, vin, vout }) => ({
-                        time, txid, floData, isCoinBase,
-                        sender: isCoinBase ? `(mined)${vin[0].coinbase}` : vin[0].addr,
-                        receiver: isCoinBase ? addr : vout[0].scriptPubKey.addresses[0]
-                    })).reverse();
-                    compactIDB.readData('transactions', addr).then(IDBresult => {
-                        if ((IDBresult === undefined || old_support))//backward support
-                            IDBresult = [];
-                        compactIDB.writeData('transactions', IDBresult.concat(newItems), addr).then(result => {
-                            compactIDB.writeData('lastSync', response.lastItem, addr)
-                                .then(result => resolve(newItems))
-                                .catch(error => reject(error))
-                        }).catch(error => reject(error))
-                    })
-
-                }).catch(error => reject(error))
+            options.latest = true;
+            floBlockchainAPI.readTxs(address, options).then(response => {
+                const result = {}
+                result.items = response.items.map(({ time, txid, floData, isCoinBase, vin, vout }) => ({
+                    time, txid, floData, isCoinBase,
+                    sender: isCoinBase ? `(mined)${vin[0].coinbase}` : vin[0].addr,
+                    receiver: isCoinBase ? address : vout[0].scriptPubKey.addresses[0]
+                }));
+                result.lastItem = response.lastItem;
+                result.initItem = response.initItem;
+                resolve(result);
             }).catch(error => reject(error))
         })
     }
 
-    //read transactions stored in IDB : resolves Array(storedItems)
-    floWebWallet.readTransactions = function (addr) {
+
+    floWebWallet.listTransactions = function (address) {
         return new Promise((resolve, reject) => {
-            compactIDB.readData('transactions', addr)
-                .then(IDBresult => resolve(IDBresult))
+            listTransactions_raw(address)
+                .then(result => resolve(result))
                 .catch(error => reject(error))
         })
     }
 
-    //get address-label pairs from IDB : resolves Object(addr:label)
+
+    floWebWallet.listTransactions.syncNew = function (address, lastItem) {
+        return new Promise((resolve, reject) => {
+            listTransactions_raw(address, { after: lastItem }).then(result => {
+                delete result.initItem;
+                resolve(result);
+            }).catch(error => reject(error))
+        })
+    }
+
+    floWebWallet.listTransactions.syncOld = function (address, initItem) {
+        return new Promise((resolve, reject) => {
+            listTransactions_raw(address, { before: initItem }).then(result => {
+                delete result.lastItem;
+                resolve(result);
+            }).catch(error => reject(error))
+        })
+    }
+
+    //get address-label pairs from IDB : resolves Object(floID:label)
     floWebWallet.getLabels = function () {
         return new Promise((resolve, reject) => {
             compactIDB.readAllData('labels')

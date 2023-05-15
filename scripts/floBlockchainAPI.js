@@ -843,7 +843,7 @@
                     query_params.to = options.to;
             }
             if (!isUndefined(options.latest))
-                query_params.latest = latest;
+                query_params.latest = options.latest;
             if (!isUndefined(options.mempool))
                 query_params.mempool = options.mempool;
             promisedAPI(api, query_params)
