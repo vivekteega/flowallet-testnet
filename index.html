@@ -1949,7 +1949,13 @@
                 }
                 if (paginationSegments > 1) {
                     for (let i = 1; i <= paginationSegments; i++) {
-                        if (startingPage <= i && i <= showTill) {
+                        if (i === 1) {
+                            pagination.push(html`
+                                <a href=${`#/search?type=address&query=${address}&page=${i}`} class=${`pagination__item ${i === page ? 'pagination__item--active' : ''}`}>
+                                    ${i}
+                                </a> 
+                            `)
+                        } else if (startingPage <= i && i <= showTill) {
                             pagination.push(html`
                                 <a href=${`#/search?type=address&query=${address}&page=${i}`} class=${`pagination__item ${i === page ? 'pagination__item--active' : ''}`}>
                                     ${i}
@@ -1961,6 +1967,9 @@
                             pagination.push(html` <a href=${`#/search?type=address&query=${address}&page=${i}`} class="pagination__item">${i}</a> `)
                         }
                     }
+                }
+                if (startingPage > 2) {
+                    pagination.splice(1, 0, html` <div class="pagination__item">...</div> `);
                 }
                 renderElem(getRef('pagination_wrapper'), html`${pagination}`)
             },
