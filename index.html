@@ -222,6 +222,9 @@
                                 Looks a bit empty here, no transactions yet.
                             </h4>
                         </div>
+                        <button id="load_more_transactions" onclick="loadMoreTransactions()"
+                            style="margin-top: -4rem; height: fit-content;"
+                            class="button justify-self-center hidden">Load more</button>
                     </section>
                 </div>
                 <div id="pagination_wrapper" class="flex gap-0-3 align-center"> </div>
@@ -1230,10 +1233,7 @@
                                         render.paginatedTransactions(page)
                                     })
                                 } else if (page % Math.ceil(1000 / txsPerPage) === 0 && floGlobals.query.transactions.length <= page * txsPerPage) {
-                                    fetchTransactions(query, true).then(() => {
-                                        filterFetchedTransactions()
-                                        render.paginatedTransactions(page)
-                                    })
+                                    loadMoreTransactions()
                                 } else {
                                     render.paginatedTransactions(page)
                                 }
@@ -1913,12 +1913,13 @@
                 clone.querySelector('.transaction__time').textContent = getFormattedTime(time * 1000)
                 return clone
             },
-            paginatedTransactions(page = 1) {
+            paginatedTransactions(page = parseInt(pagesData.params.page) || 1) {
                 const { transactions, string: address, filteredTransactions } = floGlobals.query
                 let startingIndex = ((page - 1) * txsPerPage)
-                if (filteredTransactions && startingIndex > filteredTransactions.length) {
+                if ((filteredTransactions?.length || transactions.length) < startingIndex) {
                     startingIndex = 0;
                     window.history.replaceState({}, '', `#/search?type=address&query=${address}&page=1`)
+                    pagesData.params.page = page = 1;
                 }
                 const endingIndex = startingIndex + txsPerPage
                 const renderedTransactions = (filteredTransactions || transactions)
@@ -1967,11 +1968,19 @@
                             pagination.push(html` <a href=${`#/search?type=address&query=${address}&page=${i}`} class="pagination__item">${i}</a> `)
                         }
                     }
+                    if (startingPage > 2) {
+                        pagination.splice(1, 0, html` <div class="pagination__item">...</div> `);
+                    }
+                    renderElem(getRef('pagination_wrapper'), html`${pagination}`)
+                    getRef('pagination_wrapper').classList.remove('hidden')
+                } else {
+                    getRef('pagination_wrapper').classList.add('hidden')
                 }
-                if (startingPage > 2) {
-                    pagination.splice(1, 0, html` <div class="pagination__item">...</div> `);
+                if (filteredTransactions && paginationSegments === page && filteredTransactions.length % txsPerPage !== 0 && transactions.length % txsPerPage === 0) {
+                    document.getElementById('load_more_transactions').classList.remove('hidden')
+                } else {
+                    document.getElementById('load_more_transactions').classList.add('hidden')
                 }
-                renderElem(getRef('pagination_wrapper'), html`${pagination}`)
             },
             availableAssetOptions() {
                 return (floGlobals.tokens || []).map(token => html` <sm-option value=${token}>${token}</sm-option> `)
@@ -2567,6 +2576,7 @@
         const txsPerPage = 25;
         async function fetchTransactions(address, loadOlder = false) {
             try {
+                document.getElementById('load_more_transactions').classList.add('hidden')
                 renderElem(getRef('pagination_wrapper'), html``)
                 renderElem(getRef('queried_address_transactions'), html`
                     <div class="grid gap-1 justify-items-center text-center" style="margin: 3rem 0">
@@ -2611,6 +2621,12 @@
                 window.location.hash = `#/search?type=${type}&query=${query}&page=1`
             }).catch(err => {
                 notify(err, 'error')
+            })
+        }
+        function loadMoreTransactions() {
+            fetchTransactions(floGlobals.query.string, true).then(() => {
+                filterFetchedTransactions()
+                render.paginatedTransactions()
             })
         }
 
