@@ -1,4 +1,4 @@
-(function (EXPORTS) { //btcOperator v1.1.3
+(function (EXPORTS) { //btcOperator v1.1.3a
     /* BTC Crypto and API Operator */
     const btcOperator = EXPORTS;
 
@@ -402,7 +402,12 @@
                         return reject("Send amount is less than fee");
 
                 }
-                tx.outs = tx.outs.filter(o => o.value <= DUST_AMT); //remove all output with value less than DUST amount
+                //remove all output with value less than DUST amount
+                let filtered_outputs = [], dust_value = 0;
+                tx.outs.forEach(o => o.value >= DUST_AMT ? filtered_outputs.push(o) : dust_value += o.value);
+                tx.outs = filtered_outputs;
+                //update result values
+                result.fee += util.Sat_to_BTC(dust_value);
                 result.output_size = output_size;
                 result.output_amount = total_amount - (fee_from_receiver ? result.fee : 0);
                 result.total_size = BASE_TX_SIZE + output_size + result.input_size;
@@ -578,18 +583,18 @@
                                 current_value = current_value.intValue();
                             //edit the value as required
                             if (current_value > inc_fee) {
-                                tx.out[i].value = current_value - inc_fee;
+                                tx.outs[i].value = current_value - inc_fee;
                                 inc_fee = 0;
                             } else {
                                 inc_fee -= current_value;
-                                tx.out[i].value = 0;
+                                tx.outs[i].value = 0;
                             }
                         }
                     if (inc_fee > 0) {
                         let max_possible_fee = util.BTC_to_Sat(new_fee) - inc_fee; //in satoshi
                         return reject(`Insufficient output values to increase fee. Maximum fee possible: ${util.Sat_to_BTC(max_possible_fee)}`);
                     }
-                    tx.outs = tx.outs.filter(o => o.value <= DUST_AMT); //remove all output with value less than DUST amount
+                    tx.outs = tx.outs.filter(o => o.value >= DUST_AMT); //remove all output with value less than DUST amount
 
                     //remove existing signatures and reset the scripts
                     let wif_keys = [];
