@@ -1,11 +1,12 @@
-(function (EXPORTS) { //btcOperator v1.1.3a
+(function (EXPORTS) { //btcOperator v1.1.3b
     /* BTC Crypto and API Operator */
     const btcOperator = EXPORTS;
 
     //This library uses API provided by chain.so (https://chain.so/)
     const URL = "https://blockchain.info/";
 
-    const DUST_AMT = 546;
+    const DUST_AMT = 546,
+        MIN_FEE_UPDATE = 219;
 
     const fetch_api = btcOperator.fetch = function (api, json_res = true) {
         return new Promise((resolve, reject) => {
@@ -576,6 +577,8 @@
 
                     //edit output values to increase fee
                     let inc_fee = util.BTC_to_Sat(new_fee - tx_parsed.fee);
+                    if (inc_fee < MIN_FEE_UPDATE)
+                        return reject(`Insufficient additional fee. Minimum increment: ${MIN_FEE_UPDATE}`);
                     for (let i = tx.outs.length - 1; i >= 0 && inc_fee > 0; i--)   //reduce in reverse order
                         if (edit_output_address.has(tx_parsed.outputs[i].address)) {
                             let current_value = tx.outs[i].value;
