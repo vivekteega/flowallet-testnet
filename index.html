@@ -2164,6 +2164,7 @@
             document.getElementById('tx_receiver').value = target.dataset.floAddress
             document.getElementById('tx_receiver').focusIn()
             closePopup()
+            getRef('send_form')._checkValidity()
         })
 
         getRef('filter_selector').addEventListener('change', e => {
@@ -2371,6 +2372,7 @@
             `)
             getRef('add_token_receiver').classList.add('hidden')
             floGlobals.sendType = 'flo'
+            getRef('send_form').elementsChanged()
         }
         function handleTokenSelection() {
             const selectedToken = document.getElementById('sender_tokens_wrapper').querySelector('input[type="radio"]:checked')
@@ -2385,6 +2387,7 @@
             addTokenReceiver()
             getRef('add_token_receiver').classList.remove('hidden')
             floGlobals.sendType = 'token'
+            getRef('send_form').elementsChanged()
         }
         function addTokenReceiver() {
             const selectedToken = document.getElementById('sender_tokens_wrapper').querySelector('input[type="radio"]:checked')
@@ -2407,18 +2410,11 @@
                     ` : ''}
                 </div>    
             `)
+            getRef('send_form').elementsChanged()
         }
         function removeTokenReceiver(elem) {
             elem.closest('.grid').remove()
         }
-
-        // getRef('tx_token_amount').addEventListener('input', e => {
-        //     const tokenAmount = parseFloat(e.target.value.trim())
-        //     const selectedToken = document.getElementById('sender_tokens_wrapper').querySelector('input[type="radio"]:checked')
-        //     const tokenName = selectedToken.value
-        //     const tokenBalance = parseFloat(selectedToken.dataset.balance)
-        //     getRef('flo_data_textarea').value = `send ${tokenAmount} ${tokenName}#`
-        // })
         getRef('tx_flo_amount').addEventListener('input', e => {
             const floAmount = parseFloat(e.target.value.trim())
             const { rangeOverflow, rangeUnderflow } = e.target.validity;
@@ -2458,7 +2454,7 @@
                     <h5>Balance</h5>
                 </div>
                 <p style="line-height: 1.2; opacity: 0.7;">
-                    Sender balance will be shown once you enter a valid address
+                    Sender balance will be shown once you enter it's private key
                 </p>
             `)
         }
