@@ -1930,7 +1930,7 @@
                     behavior: 'smooth',
                     block: 'start'
                 })
-                if (renderedTransactions.length) {
+                if (floGlobals.query.transactions.length) {
                     getRef('filter_selector').classList.remove('hidden')
                 } else {
                     getRef('filter_selector').classList.add('hidden')
@@ -2421,7 +2421,7 @@
             if (rangeUnderflow)
                 e.target.setAttribute('error-text', `Minimum 0.00000001 FLO allowed`)
             if (rangeOverflow)
-                e.target.setAttribute('error-text', `You can send FLO upto ${getRef('sender_balance').textContent} only`)
+                e.target.setAttribute('error-text', `You can send FLO upto ${parseFloat(getRef('sender_balance').textContent) - floGlobals.fee} only`)
         })
 
         function renderBalance(balance = 0, loading = false) {
