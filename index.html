@@ -2303,10 +2303,12 @@
         }
 
         getRef('get_private_key_field').addEventListener('input', debounce(e => {
-            if (e.target.isValid) {
-                checkSenderBalance()
-            } else {
-                resetBalance()
+            if (e.target.tagName === 'SM-INPUT') {
+                if (e.target.isValid) {
+                    checkSenderBalance()
+                } else {
+                    resetBalance()
+                }
             }
         }, 100))
 
@@ -2421,7 +2423,7 @@
             if (rangeUnderflow)
                 e.target.setAttribute('error-text', `Minimum 0.00000001 FLO allowed`)
             if (rangeOverflow)
-                e.target.setAttribute('error-text', `You can send FLO upto ${parseFloat(getRef('sender_balance').textContent) - floGlobals.fee} only`)
+                e.target.setAttribute('error-text', `You can send FLO upto ${parseFloat(document.getElementById('sender_balance').textContent) - floGlobals.fee} only`)
         })
 
         function renderBalance(balance = 0, loading = false) {
