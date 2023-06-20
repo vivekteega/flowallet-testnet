@@ -2091,7 +2091,7 @@
                                 </label>
                             </fieldset>
                             <div class="grid gap-0-5">
-                                <span class="label">Input token</span>
+                                <span class="label">Participation token</span>
                                 <sm-select id="contract_input_token">
                                     ${render.availableAssetOptions()}
                                 </sm-select>
@@ -2101,7 +2101,7 @@
                                 <sm-input id="contract_initial_price" type="number" required> </sm-input>
                             </div>
                             <div class="grid gap-0-5">
-                                <span class="label">Output token</span>
+                                <span class="label">Deposit token</span>
                                 <sm-select id="contract_output_token">
                                     ${render.availableAssetOptions()}
                                 </sm-select>
@@ -2904,7 +2904,7 @@
             floTokenAPI.getBalance(depositorAddress, sellingToken).then(balance => {
                 if (balance < depositAmount) {
                     buttonLoader('deposit_button', false)
-                    return notify(`Insufficient balance. You have ${balance} ${sellingToken}`, 'error')
+                    return notify(`Insufficient balance.\n You have ${balance} ${sellingToken}`, 'error')
                 }
                 getConfirmation('Deposit', {
                     message: `Are you sure you want to deposit ${depositAmount} ${sellingToken} in ${contractName}?`,
@@ -3169,15 +3169,15 @@
                     switch (subtype) {
                         case 'tokenswap':
                             const priceType = document.querySelector('input[name="price-type"]:checked').value
-                            const inputToken = document.getElementById('contract_input_token').value
-                            const outputToken = document.getElementById('contract_output_token').value
-                            if (inputToken === outputToken) return notify(`Input and output token cannot be same`, 'error')
+                            const participationToken = document.getElementById('contract_input_token').value
+                            const depositToken = document.getElementById('contract_output_token').value
+                            if (participationToken === depositToken) return notify(`Participation and deposit token cannot be same`, 'error')
                             const initialPrice = parseFloat(document.getElementById('contract_initial_price').value.trim()) || 0;
                             let oracleAddress
                             if (priceType === 'dynamic')
                                 oracleAddress = document.getElementById('contract_oracle_address').value.trim()
-                            floData = `Create Smart Contract with the name ${contractName}@ of the type continuous-event* at the address ${creatorAddress}$ with contract-conditions : (1) subtype = tokenswap (2) accepting_token = ${inputToken}# (3) selling_token = ${outputToken}# (4) price = '${initialPrice}' (5) priceType = ${priceType} ${oracleAddress ? `(6) oracle_address = ${oracleAddress}` : ''} end-contract-conditions`
-                            confirmationMessage = `Name: ${contractName} \nType: Continuous event \nSubtype: Token swap \nInput token: ${inputToken} \nOutput token: ${outputToken} \nInitial price: ${initialPrice} ${inputToken} \nPrice type: ${priceType} ${oracleAddress ? `\nOracle address: ${oracleAddress}` : ''}`
+                            floData = `Create Smart Contract with the name ${contractName}@ of the type continuous-event* at the address ${creatorAddress}$ with contract-conditions : (1) subtype = tokenswap (2) accepting_token = ${participationToken}# (3) selling_token = ${depositToken}# (4) price = '${initialPrice}' (5) priceType = ${priceType} ${oracleAddress ? `(6) oracle_address = ${oracleAddress}` : ''} end-contract-conditions`
+                            confirmationMessage = `Name: ${contractName} \nType: Continuous event \nSubtype: Token swap \nParticipation token: ${participationToken} \nDeposit token: ${depositToken} \nInitial price: ${initialPrice} ${participationToken} \nPrice type: ${priceType} ${oracleAddress ? `\nOracle address: ${oracleAddress}` : ''}`
                             break;
                     }
                     break;
