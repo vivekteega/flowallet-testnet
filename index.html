@@ -3177,7 +3177,7 @@
                             if (priceType === 'dynamic')
                                 oracleAddress = document.getElementById('contract_oracle_address').value.trim()
                             floData = `Create Smart Contract with the name ${contractName}@ of the type continuous-event* at the address ${creatorAddress}$ with contract-conditions : (1) subtype = tokenswap (2) accepting_token = ${participationToken}# (3) selling_token = ${depositToken}# (4) price = '${initialPrice}' (5) priceType = ${priceType} ${oracleAddress ? `(6) oracle_address = ${oracleAddress}` : ''} end-contract-conditions`
-                            confirmationMessage = `Name: ${contractName} \nType: Continuous event \nSubtype: Token swap \nParticipation token: ${participationToken} \nDeposit token: ${depositToken} \nInitial price: ${initialPrice} ${participationToken} \nPrice type: ${priceType} ${oracleAddress ? `\nOracle address: ${oracleAddress}` : ''}`
+                            confirmationMessage = `Name: ${contractName} \nType: Continuous event \nSubtype: Token swap \nDeposit token: ${depositToken} \nParticipation token: ${participationToken}  \nInitial price: ${initialPrice} ${participationToken} per ${depositToken} \nPrice type: ${priceType} ${oracleAddress ? `\nOracle address: ${oracleAddress}` : ''}`
                             break;
                     }
                     break;
