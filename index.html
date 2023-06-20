@@ -2091,20 +2091,20 @@
                                 </label>
                             </fieldset>
                             <div class="grid gap-0-5">
+                                <span class="label">Deposit token</span>
+                                <sm-select id="contract_output_token">
+                                    ${render.availableAssetOptions()}
+                                </sm-select>
+                            </div>
+                            <div class="grid gap-0-5">
                                 <span class="label">Participation token</span>
                                 <sm-select id="contract_input_token">
                                     ${render.availableAssetOptions()}
                                 </sm-select>
                             </div>
                             <div class="grid gap-0-5">
-                                <span class="label">Price</span>
+                                <span class="label">Price (1 deposit token = ? participation token)</span>
                                 <sm-input id="contract_initial_price" type="number" required> </sm-input>
-                            </div>
-                            <div class="grid gap-0-5">
-                                <span class="label">Deposit token</span>
-                                <sm-select id="contract_output_token">
-                                    ${render.availableAssetOptions()}
-                                </sm-select>
                             </div>
                         `}  
                         <div class="grid gap-0-5">
