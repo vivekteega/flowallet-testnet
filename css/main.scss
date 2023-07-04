@@ -558,6 +558,22 @@ h3 {
 #main_header {
   padding: 0.6rem 1rem;
 }
+.app-brand{
+  display: flex;
+  gap: 0.3rem;
+  align-items: center;
+  .icon{
+    height: 1.7rem;
+    width: 1.7rem;
+  }
+}
+.app-name{
+  &__company{
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: rgba(var(--text-color), 0.8);
+  }
+}
 #main_card {
   display: flex;
   flex-direction: column;
