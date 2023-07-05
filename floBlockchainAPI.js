@@ -1,4 +1,4 @@
-(function (EXPORTS) { //floBlockchainAPI v3.0.1a
+(function (EXPORTS) { //floBlockchainAPI v3.0.1b
     /* FLO Blockchain Operator to send/receive data from blockchain using API calls via FLO Blockbook*/
     'use strict';
     const floBlockchainAPI = EXPORTS;
@@ -910,9 +910,9 @@
                     if (!tx.confirmations)  //unconfirmed transactions: this should not happen as we send mempool=false in API query
                         return false;
 
-                    if (options.sentOnly && !tx.vin.some(vin => vin.scriptSig.addresses[0] === addr))
+                    if (options.sentOnly && !tx.vin.some(vin => vin.addresses[0] === addr))
                         return false;
-                    else if (Array.isArray(options.senders) && !tx.vin.some(vin => options.senders.includes(vin.scriptSig.addresses[0])))
+                    else if (Array.isArray(options.senders) && !tx.vin.some(vin => options.senders.includes(vin.addresses[0])))
                         return false;
 
                     if (options.receivedOnly && !tx.vout.some(vout => vout.scriptPubKey.addresses[0] === addr))
@@ -938,7 +938,7 @@
                     txid: tx.txid,
                     time: tx.time,
                     blockheight: tx.blockheight,
-                    senders: new Set(tx.vin.map(v => v.scriptSig.addresses[0])),
+                    senders: new Set(tx.vin.map(v => v.addresses[0])),
                     receivers: new Set(tx.vout.map(v => v.scriptPubKey.addresses[0])),
                     data: tx.floData
                 } : tx.floData);
@@ -996,9 +996,9 @@
                     if (!tx.confirmations)  //unconfirmed transactions: this should not happen as we send mempool=false in API query
                         return false;
 
-                    if (options.sentOnly && !tx.vin.some(vin => vin.scriptSig.addresses[0] === addr))
+                    if (options.sentOnly && !tx.vin.some(vin => vin.addresses[0] === addr))
                         return false;
-                    else if (Array.isArray(options.senders) && !tx.vin.some(vin => options.senders.includes(vin.scriptSig.addresses[0])))
+                    else if (Array.isArray(options.senders) && !tx.vin.some(vin => options.senders.includes(vin.addresses[0])))
                         return false;
 
                     if (options.receivedOnly && !tx.vout.some(vout => vout.scriptPubKey.addresses[0] === addr))
@@ -1017,7 +1017,7 @@
                             txid: item.txid,
                             time: item.time,
                             blockheight: item.blockheight,
-                            senders: new Set(item.vin.map(v => v.scriptSig.addresses[0])),
+                            senders: new Set(item.vin.map(v => v.addresses[0])),
                             receivers: new Set(item.vout.map(v => v.scriptPubKey.addresses[0])),
                             data: item.floData
                         }
