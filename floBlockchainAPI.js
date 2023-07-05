@@ -1,4 +1,4 @@
-(function (EXPORTS) { //floBlockchainAPI v3.0.1
+(function (EXPORTS) { //floBlockchainAPI v3.0.1a
     /* FLO Blockchain Operator to send/receive data from blockchain using API calls via FLO Blockbook*/
     'use strict';
     const floBlockchainAPI = EXPORTS;
@@ -802,9 +802,11 @@
             if (options.confirmed)  //Default is false in server, so only add confirmed filter if confirmed has a true value
                 query_params.confirmed = true;
 
-            promisedAPI(`api/address/${addr}`, query_params)
-                .then(response => resolve(response))
-                .catch(error => reject(error))
+            promisedAPI(`api/address/${addr}`, query_params).then(response => {
+                if (!Array.isArray(response.txs))    //set empty array if address doesnt have any tx
+                    response.txs = [];
+                resolve(response)
+            }).catch(error => reject(error))
         });
     }
 
