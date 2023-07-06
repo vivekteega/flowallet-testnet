@@ -2514,9 +2514,9 @@
                 getRef('address_details_wrapper').classList.remove('hidden')
                 floWebWallet.getLabels().then(allLabels => {
                     if (allLabels[queriedFloId]) {
-                        getRef('queried_flo_address').innerHTML = html`<h4>${allLabels[queriedFloId]}</h4> <sm-copy clip-text value=${queriedFloId}></sm-copy>`;
+                        getRef('queried_flo_address').innerHTML = `<h4>${allLabels[queriedFloId]}</h4> <sm-copy clip-text value=${queriedFloId}></sm-copy>`;
                     } else {
-                        getRef('queried_flo_address').innerHTML = html`
+                        getRef('queried_flo_address').innerHTML = `
                             <p class="label">FLO Address </p>
                             <h4><sm-copy clip-text value=${queriedFloId}></sm-copy></h4>
                         `;
