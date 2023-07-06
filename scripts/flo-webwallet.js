@@ -48,46 +48,76 @@
         })
     }
 
-    function listTransactions_raw(address, options = {}) {
+    function formatTx(address, tx) {
+        let result = {
+            time: tx.time,
+            block: tx.blockheight,
+            blockhash: tx.blockhash,
+            txid: tx.txid,
+            floData: tx.floData,
+            confirmations: tx.confirmations
+        }
+
+        //format receivers
+        let receivers = {};
+        for (let vout of tx.vout) {
+            if (vout.scriptPubKey.isAddress) {
+                let id = vout.scriptPubKey.addresses[0];
+                if (id in receivers)
+                    receivers[id] += vout.value;
+                else receivers[id] = vout.value;
+            }
+        }
+        result.receivers = receivers;
+        //format senders (or mined)
+        if (!tx.vin[0].isAddress) { //mined (ie, coinbase)
+            let coinbase = tx.vin[0].coinbase;
+            result.mine = coinbase;
+            result.mined = { [coinbase]: tx.valueOut }
+        } else {
+            result.sender = tx.vin[0].addresses[0];
+            result.receiver = tx.vout[0].scriptPubKey.addresses[0];
+            result.fees = tx.fees;
+            let senders = {};
+            for (let vin of tx.vin) {
+                if (vin.isAddress) {
+                    let id = vin.addresses[0];
+                    if (id in senders)
+                        senders[id] += vin.value;
+                    else senders[id] = vin.value;
+                }
+            }
+            result.senders = senders;
+
+            //remove change amounts
+            for (let id in senders) {
+                if (id in receivers) {
+                    if (senders[id] > receivers[id]) {
+                        senders[id] -= receivers[id];
+                        delete receivers[id];
+                    } else if (senders[id] < receivers[id]) { //&& id != address 
+                        receivers[id] -= senders[id];
+                        delete senders[id];
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
+
+    floWebWallet.listTransactions = function (address, page_options = {}) {
         return new Promise((resolve, reject) => {
-            options.latest = true;
+            let options = {};
+            if (Number.isInteger(page_options.page))
+                options.page = page_options.page;
+            if (Number.isInteger(page_options.pageSize))
+                options.pageSize = page_options.pageSize;
             floBlockchainAPI.readTxs(address, options).then(response => {
                 const result = {}
-                result.items = response.items.map(({ time, txid, floData, isCoinBase, vin, vout }) => ({
-                    time, txid, floData, isCoinBase,
-                    sender: isCoinBase ? `(mined)${vin[0].coinbase}` : vin[0].addr,
-                    receiver: isCoinBase ? address : vout[0].scriptPubKey.addresses[0]
-                }));
-                result.lastItem = response.lastItem;
-                result.initItem = response.initItem;
-                resolve(result);
-            }).catch(error => reject(error))
-        })
-    }
-
-
-    floWebWallet.listTransactions = function (address) {
-        return new Promise((resolve, reject) => {
-            listTransactions_raw(address)
-                .then(result => resolve(result))
-                .catch(error => reject(error))
-        })
-    }
-
-
-    floWebWallet.listTransactions.syncNew = function (address, lastItem) {
-        return new Promise((resolve, reject) => {
-            listTransactions_raw(address, { after: lastItem }).then(result => {
-                delete result.initItem;
-                resolve(result);
-            }).catch(error => reject(error))
-        })
-    }
-
-    floWebWallet.listTransactions.syncOld = function (address, initItem) {
-        return new Promise((resolve, reject) => {
-            listTransactions_raw(address, { before: initItem }).then(result => {
-                delete result.lastItem;
+                result.items = response.txs.map(tx => formatTx(address, tx));
+                result.page = response.page;
+                result.totalPages = response.totalPages;
                 resolve(result);
             }).catch(error => reject(error))
         })

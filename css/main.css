@@ -776,7 +776,7 @@ h3 {
 }
 
 .transaction {
-  gap: 1rem;
+  gap: 1.2rem;
   padding: 1rem;
   background-color: rgba(var(--text-color), 0.03);
   border-radius: 0.3rem;
@@ -792,7 +792,29 @@ h3 {
 }
 .transaction__receiver {
   margin-left: 0.5rem;
-  color: rgba(var(--text-color), 0.8);
+  color: rgba(var(--text-color), 0.9);
+  font-weight: 500;
+}
+.transaction__amount {
+  font-weight: 700;
+}
+.transaction.mined .transaction__icon .icon, .transaction.received .transaction__icon .icon, .transaction.self .transaction__icon .icon {
+  fill: var(--green);
+}
+.transaction.mined .transaction__amount, .transaction.received .transaction__amount, .transaction.self .transaction__amount {
+  color: var(--green);
+}
+.transaction.mined .transaction__amount::before, .transaction.received .transaction__amount::before, .transaction.self .transaction__amount::before {
+  content: "+ ";
+}
+.transaction.sent .transaction__icon .icon {
+  fill: var(--danger-color);
+}
+.transaction.sent .transaction__amount {
+  color: var(--danger-color);
+}
+.transaction.sent .transaction__amount::before {
+  content: "- ";
 }
 .transaction p {
   font-size: 0.9rem;

@@ -558,17 +558,17 @@ h3 {
 #main_header {
   padding: 0.6rem 1rem;
 }
-.app-brand{
+.app-brand {
   display: flex;
   gap: 0.3rem;
   align-items: center;
-  .icon{
+  .icon {
     height: 1.7rem;
     width: 1.7rem;
   }
 }
-.app-name{
-  &__company{
+.app-name {
+  &__company {
     font-size: 0.8rem;
     font-weight: 500;
     color: rgba(var(--text-color), 0.8);
@@ -741,7 +741,7 @@ h3 {
   border-radius: 0.3rem;
 }
 .transaction {
-  gap: 1rem;
+  gap: 1.2rem;
   padding: 1rem;
   background-color: rgba(var(--text-color), 0.03);
   border-radius: 0.3rem;
@@ -758,7 +758,39 @@ h3 {
   }
   &__receiver {
     margin-left: 0.5rem;
-    color: rgba(var(--text-color), 0.8);
+    color: rgba(var(--text-color), 0.9);
+    font-weight: 500;
+  }
+  &__amount {
+    font-weight: 700;
+  }
+  &.mined,
+  &.received,
+  &.self {
+    .transaction__icon {
+      .icon {
+        fill: var(--green);
+      }
+    }
+    .transaction__amount {
+      color: var(--green);
+      &::before {
+        content: "+ ";
+      }
+    }
+  }
+  &.sent {
+    .transaction__icon {
+      .icon {
+        fill: var(--danger-color);
+      }
+    }
+    .transaction__amount {
+      color: var(--danger-color);
+      &::before {
+        content: "- ";
+      }
+    }
   }
   p {
     font-size: 0.9rem;
