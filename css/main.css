@@ -797,6 +797,9 @@ h3 {
   color: rgba(var(--text-color), 0.9);
   font-weight: 500;
 }
+.transaction__receiver:hover {
+  color: var(--accent-color);
+}
 .transaction__amount {
   font-weight: 700;
 }

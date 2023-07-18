@@ -762,6 +762,9 @@ h3 {
     margin-left: 0.5rem;
     color: rgba(var(--text-color), 0.9);
     font-weight: 500;
+    &:hover {
+      color: var(--accent-color);
+    }
   }
   &__amount {
     font-weight: 700;
