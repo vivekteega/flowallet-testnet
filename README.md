@@ -3,7 +3,10 @@ FLO Web Wallet
 
 These are client-side scripts that can generate FLO addresses, send FLO transactions to the blockchain and monitor FLO data from the blockchain
 
-NOTE: Use respective file for mainnet and testnet
+NOTE: Use respective file for mainnet and testnet  
+
+### Live URL for FLO Wallet:
+*https://ranchimall.github.io/flowallet/*  
 
 ## Instructions to use 
 
