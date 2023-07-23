@@ -2386,11 +2386,10 @@
             getRef('flo_data_wrapper').classList.add('hidden')
             getRef('tx_flo_amount').value = '0.001'
             getRef('tx_flo_amount').classList.add('hidden')
-            renderElem(getRef('tx_receiver_wrapper'), html``)
+            getRef('tx_receiver_wrapper').innerHTML = ''
             addTokenReceiver()
             getRef('add_token_receiver').classList.remove('hidden')
             floGlobals.sendType = 'token'
-            getRef('send_form').elementsChanged()
         }
         function addTokenReceiver() {
             const selectedToken = document.getElementById('sender_tokens_wrapper').querySelector('input[type="radio"]:checked')
