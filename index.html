@@ -2314,14 +2314,14 @@
         }, 100))
 
         function checkSenderBalance() {
-            renderBalance(0, true)
+            renderBalance({ balance: 0, showLoader: true })
             const senderPrivateKey = getRef('get_private_key_field').value.trim()
             const senderFloAddr = floCrypto.getFloID(senderPrivateKey)
             Promise.all([
                 floWebWallet.getBalance(senderFloAddr),
                 fetchJSON(`${floGlobals.tokenApiUrl}/api/v2/floAddressBalance/${senderFloAddr}`)
             ]).then(([retrievedBal, { floAddressBalances }]) => {
-                renderBalance(parseFloat(retrievedBal))
+                renderBalance({ balance: parseFloat(retrievedBal), address: senderFloAddr })
                 let ownedTokens = []
                 for (const token in floAddressBalances) {
                     ownedTokens.push(html`
@@ -2366,6 +2366,7 @@
             getRef('flo_data_textarea').value = ''
             getRef('tx_flo_amount').value = ''
             getRef('tx_flo_amount').classList.remove('hidden')
+            renderElem(getRef('tx_receiver_wrapper'), html``)
             renderElem(getRef('tx_receiver_wrapper'), html`
                 <sm-input id="tx_receiver" class="w-100" placeholder="Receiver's FLO address" error-text="Invalid FLO address" data-flo-address animate required>
                     <button slot="right" class="icon-only" onclick="openPopup('saved_ids_popup')" title="Select from saved IDs">
@@ -2426,20 +2427,26 @@
                 e.target.setAttribute('error-text', `You can send FLO upto ${parseFloat(document.getElementById('sender_balance').textContent) - floGlobals.fee} only`)
         })
 
-        function renderBalance(balance = 0, loading = false) {
+        function renderBalance(options = {}) {
+            const { balance = 0, showLoader, address = '' } = options
+            console.log(options)
             getRef('tx_flo_amount').setAttribute('max', balance)
             renderElem(getRef('balance_card'), html`
-                <div class="grid">
+                <div class="grid gap-1">
                     <div class="flex align-center space-between">
                         <h5>Balance</h5>
                         <button id="refresh_balance_button" class="button button--small button--colored hidden"
                             onclick="checkSenderBalance()">Refresh</button>
                     </div>
                     <div class="flex align-end gap-0-3">
-                        <b id="sender_balance" style="font-size: 2.5rem;line-height: 1;">${loading ? html`<sm-spinner></sm-spinner>` : balance}</b>
+                        <b id="sender_balance" style="font-size: 2.5rem;line-height: 1;">${showLoader ? html`<sm-spinner></sm-spinner>` : balance}</b>
                         <span>FLO</span>
                     </div>
-                    ${!loading && balance == 0 ? html`
+                    <div class="grid gap-0-3">
+                        <span class="label">Sender FLO Address</span>
+                        <h4>${address}</h4>
+                    </div>
+                    ${!showLoader && balance == 0 ? html`
                         <p style="margin-top: 1.5rem; color: var(--danger-color)">
                             You don't have any FLO in your wallet. Please add some FLO to your wallet to send FLO.
                         </p>
