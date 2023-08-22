@@ -1216,11 +1216,7 @@
                                 page = parseInt(page)
                                 if (floGlobals.query.string !== query) {
                                     checkBalance(query)
-                                }/* else if (floGlobals.query.totalPages <= page * txsPerPage) {
-                                    loadMoreTransactions()
-                                } else {
-                                    render.paginatedTransactions(page)
-                                }*/
+                                }
                                 fetchTransactions(query, page).then(() => {
                                     filterFetchedTransactions()
                                     render.paginatedTransactions(page)
@@ -1230,7 +1226,6 @@
                             }
                             break;
                         case 'txid':
-                            // location.href = `#/tx/${query}`
                             break;
                     }
                 }
@@ -2623,6 +2618,9 @@
         }
         async function processQuery() {
             const query = getRef('search_query_input').value.trim()
+            if (pagesData.params.query === query) {
+                return routeTo(window.location.hash)
+            }
             categorizeText(query).then(async type => {
                 window.location.hash = `#/search?type=${type}&query=${query}&page=1`
             }).catch(err => {
