@@ -7,7 +7,7 @@
         blockchain: floGlobals.blockchain,
         apiURL: {
             FLO: ['https://blockbook.ranchimall.net/'],
-            FLO_TEST: []
+            FLO_TEST: ['https://blockbook-testnet.ranchimall.net/']
         },
         sendAmt: 0.0003,
         fee: 0.0002,
