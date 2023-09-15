@@ -3113,9 +3113,9 @@
                         return notify(`Contract expiration datetime cannot be in the past`, 'error')
                     }
                     const contractParticipationAmount = parseFloat(document.getElementById('contract_participation_amount').value.trim()) || 0;
-                    const contractMinSubAmount = parseFloat(document.getElementById('contract_min_sub_amount').value.trim()) || 0;
-                    const contractMaxSubAmount = parseFloat(document.getElementById('contract_max_sub_amount').value.trim()) || 0;
-                    if (contractMinSubAmount > contractMaxSubAmount) {
+                    const contractMinSubAmount = parseFloat(document.getElementById('contract_min_sub_amount').value.trim());
+                    const contractMaxSubAmount = parseFloat(document.getElementById('contract_max_sub_amount').value.trim());
+                    if (contractMinSubAmount && contractMaxSubAmount && contractMinSubAmount > contractMaxSubAmount) {
                         return notify(`Contract minimum subscription amount cannot be greater than maximum subscription amount`, 'error')
                     }
                     switch (subtype) {
