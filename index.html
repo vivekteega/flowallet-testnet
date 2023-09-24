@@ -2856,7 +2856,7 @@
             let filteredSmartContracts = floGlobals.smartContracts || [];
             if (type) {
                 filteredSmartContracts = filteredSmartContracts.filter(sc => {
-                    if (type === 'external-trigger') {
+                    if (subType && subType === 'external-trigger') {
                         return sc.status === 'expired'; // only inactive contracts can be triggered externally
                     } else if (type === 'continuos-event' && dynamic) {
                         return sc.status === 'active' && sc.contractType === type && sc.oracle_address;
