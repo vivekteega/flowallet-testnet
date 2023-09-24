@@ -1442,7 +1442,7 @@
                                             </div>
                                         </fieldset>
                                         <div class="grid gap-0-5">
-                                            <span class="label">Contract address FLO private key</span>
+                                            <span class="label">Committee address FLO private key</span>
                                             <sm-input id="trigger_private_key" class="password-field" type="password" error-text="Invalid private key" data-private-key="" required="">
                                                 <label slot="right" class="interact">
                                                     <input type="checkbox" class="hidden" readonly="" onchange="togglePrivateKeyVisibility(this)">
@@ -3028,9 +3028,9 @@
             const triggerOutcome = getRef('smart_contract_trigger_form').querySelector('input[name="outcome"]:checked').value
             const floData = `${contractName}@ triggerCondition:"${triggerOutcome}"`
             console.log(floData)
-            if (contractAddress !== triggerAddress) {
-                return notify(`Private key doesn't match with contract trigger address`, 'error')
-            }
+            // if (contractAddress !== triggerAddress) {
+            //     return notify(`Private key doesn't match with contract trigger address`, 'error')
+            // }
             getConfirmation('Trigger contract', {
                 message: `Triggering ${contractName} with outcome: ${triggerOutcome}`,
                 confirmText: 'Trigger',
