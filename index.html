@@ -3045,7 +3045,7 @@
             }).then((res) => {
                 if (!res) return
                 buttonLoader('trigger_contract_button', true)
-                floBlockchainAPI.writeData(contractAddress, floData, triggerPrivateKey, contractAddress).then((txid) => {
+                floBlockchainAPI.writeData(triggerAddress, floData, triggerPrivateKey, contractAddress).then((txid) => {
                     showTransactionResult(true, txid, {
                         title: 'Contract trigger initiated',
                     })
