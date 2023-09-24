@@ -43,7 +43,7 @@
             compactIDB.initDB("FLOwebWallet", IDBObjects).then(async result => {
                 render.savedIds();
                 if (!floGlobals.tokens || !floGlobals.smartContracts) {
-                    fetchJSON(`${floGlobals.tokenApiUrl}/api/v2/tokenSmartContractList`).then(({ tokens, smartContracts }) => {
+                    fetchJson(`${floGlobals.tokenApiUrl}/api/v2/tokenSmartContractList`).then(({ tokens, smartContracts }) => {
                         floGlobals.scMap = new Map()
                         floGlobals.tokens = tokens.sort((a, b) => a.localeCompare(b))
                         floGlobals.smartContracts = smartContracts
@@ -1244,32 +1244,6 @@
                                 getRef('smart_contract_creation_form').querySelectorAll('[data-flo-address]').forEach(input => {
                                     input.customValidation = floCrypto.validateFloID
                                 })
-                                switch (type) {
-                                    case 'one-time-event':
-                                        switch (subtype) {
-                                            case 'time-trigger':
-                                                const payeeAddressObserver = new MutationObserver((mutations) => {
-                                                    mutations.forEach((mutation) => {
-                                                        if (mutation.type === 'childList') {
-                                                            if (mutation.addedNodes.length) {
-
-                                                            }
-                                                            if (mutation.removedNodes.length) {
-
-                                                            }
-                                                        }
-                                                    });
-                                                });
-                                                payeeAddressObserver.observe(document.getElementById('payee_container'), { childList: true });
-                                                break;
-                                            case 'external-trigger':
-                                                break;
-                                        }
-                                        break;
-                                    case 'continuous-event':
-
-                                        break;
-                                }
                                 showChildElement('smartcontracts', 1, { entry: slideInLeft, exit: slideOutLeft })
                                 break;
                             case 'deposit': {
@@ -1718,7 +1692,7 @@
         handleMobileChange(mobileQuery)
 
         // fetch data and return json
-        async function fetchJSON(url, options = {}) {
+        async function fetchJson(url, options = {}) {
             const response = await fetch(url, options)
             const json = await response.json()
             if (response.ok) {
@@ -2314,7 +2288,7 @@
             const senderFloAddr = floCrypto.getFloID(senderPrivateKey)
             Promise.all([
                 floWebWallet.getBalance(senderFloAddr),
-                fetchJSON(`${floGlobals.tokenApiUrl}/api/v2/floAddressBalance/${senderFloAddr}`)
+                fetchJson(`${floGlobals.tokenApiUrl}/api/v2/floAddressBalance/${senderFloAddr}`)
             ]).then(([retrievedBal, { floAddressBalances }]) => {
                 renderBalance({ balance: parseFloat(retrievedBal), address: senderFloAddr })
                 let ownedTokens = []
@@ -2531,7 +2505,7 @@
                 getRef('flo_balance').innerHTML = `<sm-spinner></sm-spinner>`;
                 const [floBalance, tokenBalances] = await Promise.all([
                     floWebWallet.getBalance(queriedFloId),
-                    fetchJSON(`${floGlobals.tokenApiUrl}/api/v2/floAddressBalance/${queriedFloId}`).then(({ floAddressBalances }) => floAddressBalances)
+                    fetchJson(`${floGlobals.tokenApiUrl}/api/v2/floAddressBalance/${queriedFloId}`).then(({ floAddressBalances }) => floAddressBalances)
                 ])
                 let ownedTokens = []
                 for (const token in tokenBalances) {
@@ -2817,7 +2791,7 @@
                     name = floGlobals.smartContracts[0].contractName
                     address = floGlobals.smartContracts[0].contractAddress
                 }
-                fetchJSON(`${floGlobals.tokenApiUrl}/api/v2/smartContractInfo?contractName=${name}&contractAddress=${address}`)
+                fetchJson(`${floGlobals.tokenApiUrl}/api/v2/smartContractInfo?contractName=${name}&contractAddress=${address}`)
                     .then(info => {
                         console.log(info)
                         const {
@@ -3118,8 +3092,17 @@
                     if (contractMinSubAmount && contractMaxSubAmount && contractMinSubAmount > contractMaxSubAmount) {
                         return notify(`Contract minimum subscription amount cannot be greater than maximum subscription amount`, 'error')
                     }
+                    const contractConditions = {}
+                    if (contractExpiration)
+                        contractConditions.expiryTime = new Date(contractExpiration).toString()
+                    if (contractParticipationAmount)
+                        contractConditions.contractamount = contractParticipationAmount
+                    if (contractMinSubAmount)
+                        contractConditions.minimumsubscriptionamount = contractMinSubAmount
+                    if (contractMaxSubAmount)
+                        contractConditions.maximumsubscriptionamount = contractMaxSubAmount
                     switch (subtype) {
-                        case 'time-trigger':
+                        case 'time-trigger': {
                             const payeeAddressesShare = {}
                             document.querySelectorAll('.payee-address-wrapper').forEach((payeeAddressWrapper) => {
                                 const payeeAddress = payeeAddressWrapper.querySelector('.payee-address').value.trim()
@@ -3153,29 +3136,35 @@
                                 return notify(`Total share cannot be greater than 100`, 'error')
                             }
                             const payeeAddressesShareString = Object.entries(payeeAddressesShare).map(([payeeAddress, payeeShare]) => `${payeeAddress}:${payeeShare}`).join(':')
-                            console.log(payeeAddressesShareString)
-                            floData = `Create a smart contract of the name ${contractName}@ of the type one-time-event* using asset ${contractAsset}# at the FLO address ${creatorAddress}$ with contract-conditions: (1) expiryTime= ${new Date(contractExpiration).toString()} (2) payeeAddress= ${payeeAddressesShareString} ${contractParticipationAmount ? `(3) contractamount = ${contractParticipationAmount}` : ''} ${contractMinSubAmount ? `(4) minimumsubscriptionamount = ${contractMinSubAmount}` : ''} ${contractMaxSubAmount ? `(5) maximumsubscriptionamount = ${contractMaxSubAmount}` : ''} end-contract-conditions`
+
+                            if (payeeAddressesShareString)
+                                contractConditions.payeeAddress = payeeAddressesShareString
+                            const contractConditionsString = Object.entries(contractConditions).map(([key, value], index) => `(${index + 1}) ${key}= ${value}`).join(' ')
+                            floData = `Create a smart contract of the name ${contractName}@ of the type one-time-event* using asset ${contractAsset}# at the FLO address ${creatorAddress}$ with contract-conditions: ${contractConditionsString} end-contract-conditions`
                             if (floData.length > 1040) return notify(`Too many payee addresses! remove some and try again`, 'error')
                             // add confirmation message with contract details only if they are defined
-                            confirmationMessage = `Name: ${contractName} \nType: One time event \nSubtype: Time trigger \nAsset: ${contractAsset} \nExpiration: ${new Date(contractExpiration).toString()} \nPayee addresses: ${payeeAddressesShareString} ${contractParticipationAmount ? `\nParticipation amount: ${contractParticipationAmount}` : ''} ${contractMinSubAmount ? `\nMinimum subscription amount: ${contractMinSubAmount}` : ''} ${contractMaxSubAmount ? `\nMaximum subscription amount: ${contractMaxSubAmount}` : ''}`
-                            break;
-                        case 'external-trigger':
+                            confirmationMessage = `Name: ${contractName} \nType: One time event \nSubtype: Time trigger \nAsset: ${contractAsset} \nExpiration: ${new Date(contractExpiration).toString()} \nPayee addresses: ${payeeAddressesShareString} ${contractParticipationAmount ? `\nParticipation amount: ${contractParticipationAmount} ${contractAsset}` : ''} ${contractMinSubAmount ? `\nMinimum subscription amount: ${contractMinSubAmount} ${contractAsset}` : ''} ${contractMaxSubAmount ? `\nMaximum subscription amount: ${contractMaxSubAmount} ${contractAsset}` : ''}`
+                        } break;
+                        case 'external-trigger': {
                             const userChoices = new Set()
                             document.querySelectorAll('.user-choice').forEach((userChoice) => {
                                 const userChoiceValue = userChoice.value.trim()
                                 if (userChoiceValue !== '')
                                     userChoices.add(userChoiceValue)
                             })
-                            floData = `Create a smart contract of the name ${contractName}@ of the type one-time-event* using asset ${contractAsset}# at the FLO address ${creatorAddress}$ with contract-conditions:(1) expiryTime= ${new Date(contractExpiration).toString()}  (2) userchoices= ${[...userChoices].join(' | ')} ${contractParticipationAmount ? `(3) contractamount = ${contractParticipationAmount}` : ''} ${contractMinSubAmount ? `(4) minimumsubscriptionamount = ${contractMinSubAmount}` : ''} ${contractMaxSubAmount ? `(5) maximumsubscriptionamount = ${contractMaxSubAmount}` : ''} end-contract-conditions`
+                            if (userChoices.size)
+                                contractConditions.userchoices = [...userChoices].join(' | ')
+                            const contractConditionsString = Object.entries(contractConditions).map(([key, value], index) => `(${index + 1}) ${key}= ${value}`).join(' ')
+                            floData = `Create a smart contract of the name ${contractName}@ of the type one-time-event* using asset ${contractAsset}# at the FLO address ${creatorAddress}$ with contract-conditions:${contractConditionsString} end-contract-conditions`
                             if (floData.length > 1040) return notify(`Too many participant choices! remove some and try again`, 'error')
                             // add confirmation message with contract details only if they are defined
-                            confirmationMessage = `Name: ${contractName} \nType: One time event \nSubtype: External trigger \nAsset: ${contractAsset} \nExpiration: ${new Date(contractExpiration).toString()} \nUser choices: ${[...userChoices].join(' | ')} ${contractParticipationAmount ? `\nParticipation amount: ${contractParticipationAmount}` : ''} ${contractMinSubAmount ? `\nMinimum subscription amount: ${contractMinSubAmount}` : ''} ${contractMaxSubAmount ? `\nMaximum subscription amount: ${contractMaxSubAmount}` : ''}`
-                            break;
+                            confirmationMessage = `Name: ${contractName} \nType: One time event \nSubtype: External trigger \nAsset: ${contractAsset} \nExpiration: ${new Date(contractExpiration).toString()} \nUser choices: ${[...userChoices].join(' | ')} ${contractParticipationAmount ? `\nParticipation amount: ${contractParticipationAmount} ${contractAsset}` : ''} ${contractMinSubAmount ? `\nMinimum subscription amount: ${contractMinSubAmount} ${contractAsset}` : ''} ${contractMaxSubAmount ? `\nMaximum subscription amount: ${contractMaxSubAmount} ${contractAsset}` : ''}`
+                        } break;
                     }
                     break;
                 case 'continuous-event':
                     switch (subtype) {
-                        case 'tokenswap':
+                        case 'tokenswap': {
                             const priceType = document.querySelector('input[name="price-type"]:checked').value
                             const participationToken = document.getElementById('contract_input_token').value
                             const depositToken = document.getElementById('contract_output_token').value
@@ -3186,7 +3175,7 @@
                                 oracleAddress = document.getElementById('contract_oracle_address').value.trim()
                             floData = `Create Smart Contract with the name ${contractName}@ of the type continuous-event* at the address ${creatorAddress}$ with contract-conditions : (1) subtype = tokenswap (2) accepting_token = ${participationToken}# (3) selling_token = ${depositToken}# (4) price = '${initialPrice}' (5) priceType = ${priceType} ${oracleAddress ? `(6) oracle_address = ${oracleAddress}` : ''} end-contract-conditions`
                             confirmationMessage = `Name: ${contractName} \nType: Continuous event \nSubtype: Token swap \nDeposit token: ${depositToken} \nParticipation token: ${participationToken}  \nInitial price: ${initialPrice} ${participationToken} per ${depositToken} \nPrice type: ${priceType} ${oracleAddress ? `\nOracle address: ${oracleAddress}` : ''}`
-                            break;
+                        } break;
                     }
                     break;
             }
