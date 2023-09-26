@@ -54,11 +54,7 @@
                         routeTo(window.location.hash, { firstLoad: true })
                     }).catch(e => {
                         console.error(e)
-                        if (window.location.hash.includes('smartcontracts'))
-                            routeTo('', { firstLoad: true })
-                        else
-                            routeTo(window.location.hash, { firstLoad: true })
-                        getRef('smart_contract_link').classList.add('hidden')
+                        routeTo(window.location.hash, { firstLoad: true, smartContractsUnavailable: true })
                     }).finally(() => {
                         loader(false)
                     })
@@ -1182,7 +1178,7 @@
 
         let tempData
         async function routeTo(targetPage, options = {}) {
-            const { firstLoad, hashChange } = options
+            const { firstLoad, hashChange, smartContractsUnavailable = false } = options
             let pageId
             let params = {}
             let searchParams
@@ -1233,6 +1229,10 @@
                 case 'smartcontracts':
                     const [subpage] = wildcards
                     const { type, subtype, scName, scAddress } = params
+                    if (smartContractsUnavailable) {
+                        notify('Smart contracts are currently unavailable, please try again later.', 'error')
+                        return
+                    }
                     if (subpage) {
                         switch (subpage) {
                             case 'create':
